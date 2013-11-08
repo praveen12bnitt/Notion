@@ -1,0 +1,146 @@
+package edu.mayo.qia.pacs;
+
+import java.io.File;
+import java.sql.SQLException;
+
+import javax.jms.ConnectionFactory;
+import javax.sql.DataSource;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.broker.BrokerPlugin;
+import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.plugin.StatisticsBrokerPlugin;
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.jms.listener.adapter.MessageListenerAdapter;
+import org.springframework.jms.support.converter.MappingJacksonMessageConverter;
+import org.springframework.jms.support.converter.MessageType;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import com.googlecode.flyway.core.Flyway;
+
+@Configuration
+@EnableScheduling
+@EnableAsync
+public class Beans {
+  static Logger logger = Logger.getLogger(Beans.class);
+
+  @Autowired
+  Sorter sorter;
+
+  @Bean
+  public DataSource dataSource() throws SQLException {
+    String path = new File(PACS.directory, "DB").getPath();
+    String driverClass = "org.apache.derby.jdbc.EmbeddedDriver";
+    String url = "jdbc:derby:directory:" + path + ";create=true";
+    // Emulate our Connection pooling setup
+    BasicDataSource dbcp = new BasicDataSource();
+    dbcp.setDriverClassName(driverClass);
+    dbcp.setUrl(url);
+    dbcp.setDefaultAutoCommit(true);
+    return dbcp;
+
+  }
+
+  @Bean
+  public ConnectionFactory connectionFactory() throws Exception {
+    BrokerService broker = new BrokerService();
+    broker.setPersistent(true);
+    broker.setDataDirectoryFile(new File(PACS.directory, "MQ"));
+    broker.setEnableStatistics(true);
+    broker.setUseShutdownHook(false);
+    StatisticsBrokerPlugin statsPlugin = new StatisticsBrokerPlugin();
+    broker.setPlugins(new BrokerPlugin[] { statsPlugin });
+    broker.start();
+    ConnectionFactory f = new ActiveMQConnectionFactory("vm://localhost");
+    return f;
+  }
+
+  @Bean
+  @DependsOn("flyway")
+  public JdbcTemplate template() throws SQLException {
+    JdbcTemplate template = new JdbcTemplate();
+    template.setDataSource(dataSource());
+    return template;
+  }
+
+  @Bean
+  @DependsOn("dataSource")
+  public Flyway flyway() throws Exception {
+    Flyway flyway = new Flyway();
+    flyway.setDataSource(dataSource());
+    flyway.setInitOnMigrate(true);
+    flyway.migrate();
+    return flyway;
+  }
+
+  @Bean
+  @DependsOn("flyway")
+  public DefaultMessageListenerContainer sorterContainer() throws Exception {
+    DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
+    MessageListenerAdapter adapter = new MessageListenerAdapter();
+    adapter.setDelegate(sorter);
+    container.setMessageListener(adapter);
+    container.setTaskExecutor(taskExecutor());
+    container.setMaxConcurrentConsumers(3);
+    container.setMaxMessagesPerTask(10);
+    container.setDestinationName(PACS.sorterQueue);
+    container.setConnectionFactory(connectionFactory());
+    container.setSessionTransacted(true);
+    container.setAutoStartup(true);
+    return container;
+  }
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
+    return objectMapper;
+  }
+
+  @Bean
+  public MappingJacksonMessageConverter messageConverter() {
+    MappingJacksonMessageConverter messageConverter = new MappingJacksonMessageConverter();
+    messageConverter.setTargetType(MessageType.TEXT);
+    messageConverter.setTypeIdPropertyName("JavaClass");
+    messageConverter.setObjectMapper(objectMapper());
+    return messageConverter;
+  }
+
+  @Bean
+  @DependsOn("flyway")
+  public JmsTemplate jmsTemplate() throws Exception {
+    JmsTemplate jmsTemplate = new JmsTemplate();
+    jmsTemplate.setConnectionFactory(connectionFactory());
+    jmsTemplate.setMessageConverter(messageConverter());
+    return jmsTemplate;
+  }
+
+  @Bean
+  public TaskScheduler taskScheduler() {
+    return new ThreadPoolTaskScheduler();
+  }
+
+  @Bean
+  @DependsOn("flyway")
+  public ThreadPoolTaskExecutor taskExecutor() {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+    taskExecutor.setCorePoolSize(2);
+    taskExecutor.setMaxPoolSize(100);
+    return taskExecutor;
+  }
+
+}

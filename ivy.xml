@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE ivy-module [
+<!ENTITY spring.version "3.2.2.RELEASE">
+]>
+<!--
+ResearchPACS dependancies.
+-->
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info
+      organisation="Mayo Clinic"
+      module="ResearchPACS"
+      status="integration">
+  </info>
+  <configurations>
+    <!-- The default configuration, which should be deployed to the server -->
+    <conf name="default" />
+    <!-- A configuration for testing, not needed at runtime -->
+    <conf name="testing" />
+  </configurations>
+
+  <dependencies>
+    <dependency org="javax.activation" name="activation" rev="1.1"/>
+
+    <dependency org="log4j" name="log4j" rev="1.2.16">
+      <artifact name="log4j" type="jar"/>
+      <exclude org="com.fasterxml.uuid" name="java-uuid-dependency"/>
+    </dependency>
+
+    <dependency org="com.fasterxml.uuid" name="java-uuid-generator" rev="3.1.3" >
+      <artifact name="java-uuid-generator" type="jar"/>
+    </dependency>
+    
+    <!-- Embedded database -->
+    <dependency org="com.h2database" name="h2" rev="1.3.170" />
+    
+    <!-- Testing: Mock libraries -->
+    <dependency org="org.mockito" name="mockito-all" rev="1.9.5" conf="default->master">
+      <exclude name="hamcrest-core"/>
+    </dependency>
+
+
+    <dependency org="jdbm" name="jdbm" rev="1.0"/>
+    <dependency org="dcm4che" name="dcm4che14" rev="1.4.28"/>
+
+    <!-- Apache commons -->
+    <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
+    <dependency org="commons-dbcp" name="commons-dbcp" rev="1.4"/>
+    <dependency org="commons-io" name="commons-io" rev="2.1" transitive="false"/>
+    <dependency org="commons-cli" name="commons-cli" rev="1.2"/>
+    <dependency org="org.apache.commons" name="commons-compress" rev="1.5"/>
+
+    <!-- Spring -->
+    <dependency org="org.springframework" name="spring-core" rev="&spring.version;" conf="default->master">
+      <!-- Make sure to exclude the servlet jars -->
+    </dependency>
+    
+   <dependency org="org.springframework" name="spring-jdbc" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-web" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-beans" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-aspects" rev="&spring.version;" conf="default->master"/>
+    <!-- <dependency org="org.springframework" name="spring-asm" rev="&spring.version;" conf="default->master"/> -->
+    <dependency org="org.springframework" name="spring-jms" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-aop" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-context" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-expression" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.springframework" name="spring-instrument" rev="&spring.version;" />
+    <dependency org="org.springframework" name="spring-context-support" rev="&spring.version;" transitive="false"/>
+    <dependency org="org.springframework" name="spring-tx" rev="&spring.version;">
+      <exclude org="com.ibm.websphere"/>
+      <exclude org="javax.ejb"/>
+    </dependency>
+    <dependency org="org.springframework" name="spring-test" rev="&spring.version;" conf="default->master"/>
+    <dependency org="org.aopalliance" name="com.springsource.org.aopalliance" rev="1.0.0" />
+    <dependency org="cglib" name="cglib-nodep" rev="2.2.2">
+      <exclude name="ant"/>
+    </dependency>
+
+    <!-- AspectJ -->
+    <dependency org="org.aspectj" name="aspectjrt" rev="1.5.4" />
+    <dependency org="org.aspectj" name="aspectjweaver" rev="1.5.4" />
+    
+    <!-- DCM4CHE -->
+    <dependency org="dcm4che" name="dcm4che-core" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che" name="dcm4che-net" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che" name="dcm4che-image" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che" name="dcm4che-filecache" rev="2.0.24" conf="default->master"/>
+
+  <!-- Apache ActiveMQ -->
+    <dependency org="org.apache.activemq" 
+                name="activemq-core" 
+                rev="5.7.0" >
+      <exclude org="groovy"/>
+      <exclude org="ant"/>
+    </dependency>
+    <!-- <dependency org="org.apache.activemq" name="activemq-core" rev="5.7.0" conf="default->default"/> -->
+    <dependency org="org.apache.activemq" name="activemq-pool" rev="5.7.0" conf="default->default"/>
+
+
+
+    <!-- Misc -->
+    <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="1.9.11" conf="default->master"/>
+    <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="1.9.11" conf="default->master"/>
+    <dependency org="joda-time" name="joda-time" rev="2.1" />
+    <dependency org="org.quartz-scheduler" name="quartz" rev="2.1.6" conf="default->master"/>
+    <dependency org="org.slf4j" name="slf4j-api" rev="1.6.6"/>
+    <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.6" transitive="false" conf="default->master"/>
+    <dependency org="junit" name="junit" rev="4.11" conf="default->default"/>            
+
+    <!-- Flyway DB Migration tool -->
+    <dependency org="com.googlecode.flyway" name="flyway-core" rev="2.0.3" transitive="false"/>
+    
+    <!-- Authentication -->
+    <dependency org="org.apache.shiro" name="shiro-core" rev="1.2.2" conf="default->default" transitive="false"/>
+    <dependency org="org.apache.shiro" name="shiro-spring" rev="1.2.2" conf="default->default" transitive="false"/>
+    <dependency org="org.apache.shiro" name="shiro-web" rev="1.2.2" conf="default->default" transitive="false"/>
+    <dependency org="commons-beanutils" name="commons-beanutils-core" rev="1.8.3" />
+
+    <!-- REST Services -->
+    <dependency org="com.sun.jersey" name="jersey-core" rev="1.17"/>
+    <dependency org="com.sun.jersey" name="jersey-client" rev="1.17" conf="default->master"/>
+    <dependency org="com.sun.jersey" name="jersey-server" rev="1.17"/>
+    <dependency org="com.sun.jersey" name="jersey-grizzly2" rev="1.17"/>
+    
+  </dependencies>
+  
+</ivy-module>

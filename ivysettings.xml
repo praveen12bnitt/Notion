@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivysettings>
+  <settings defaultResolver="custom"/>
+  <resolvers>
+    <chain name="custom">
+      <ibiblio name="default" m2compatible="true"/>
+      <ibiblio name="dcm4che" m2compatible="true" root="http://www.dcm4che.org/maven2"/>
+    </chain>
+  </resolvers>
+</ivysettings>
