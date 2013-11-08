@@ -6,7 +6,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.BasicConfigurator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class PACS {
@@ -24,7 +23,10 @@ public class PACS {
    * @param args
    */
   public static void main(String[] args) {
-    BasicConfigurator.configure();
+    new PACS(args);
+  }
+
+  public PACS(String[] args) {
     Options options = new Options();
     options.addOption("p", "port", true, "Port to listen for DICOM traffic, default is 11117");
     options.addOption("r", "rest", true, "Port to listen for REST traffic, default is 11118");
@@ -40,6 +42,9 @@ public class PACS {
     } else {
       directory = new File(System.getProperty("user.dir"));
     }
+    if (!directory.exists()) {
+      directory.mkdirs();
+    }
 
     DICOMPort = Integer.parseInt(commandLine.getOptionValue("port", "11117"));
     RESTPort = Integer.parseInt(commandLine.getOptionValue("rest", "11118"));
@@ -48,7 +53,5 @@ public class PACS {
     context = new AnnotationConfigApplicationContext();
     context.scan("edu.mayo.qia.pacs");
     context.refresh();
-
   }
-
 }
