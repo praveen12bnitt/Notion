@@ -14,6 +14,11 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
+
 import edu.mayo.qia.pacs.PACS;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,6 +28,12 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static PACS pacs = null;
   static final int DICOMPort = 12345;
   static final int RESTPort = 12346;
+  static Client client;
+  static {
+    ClientConfig config = new DefaultClientConfig();
+    config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+    client = Client.create(config);
+  }
 
   @Override
   public synchronized void initialize(GenericApplicationContext applicationContext) {

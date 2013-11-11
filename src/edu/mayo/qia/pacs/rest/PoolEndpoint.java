@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.rest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -30,14 +31,21 @@ public class PoolEndpoint {
   }
 
   /** Create a pool. */
-  @PUT
+  @POST
   @Consumes(MediaType.APPLICATION_JSON)
   public Response createPool(Pool pool) {
-    // Does the pool exist?
-    Integer count = template.queryForObject("select count(*) from POOL where Name = ?", Integer.class, pool.getName());
-    if (count != 0) {
-      return Response.status(Response.Status.FORBIDDEN).entity("Forbidden").build();
+
+    // Does the name conform to what we expect?
+    if (!pool.name.matches("\\w+")) {
+      return Response.status(Response.Status.FORBIDDEN).entity("Pool name must consist of letters, numbers and underscores only").build();
+
     }
-    return Response.status(Response.Status.FORBIDDEN).entity("Forbidden").build();
+
+    // Does the pool exist?
+    Integer count = template.queryForObject("select count(*) from POOL where Name = ?", Integer.class, pool.name);
+    if (count != 0) {
+      return Response.status(Response.Status.FORBIDDEN).entity("Pool already exists").build();
+    }
+    return Response.ok().build();
   }
 }
