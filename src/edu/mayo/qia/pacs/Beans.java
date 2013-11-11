@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.SQLException;
 
 import javax.jms.ConnectionFactory;
@@ -30,13 +31,21 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.context.WebApplicationContext;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.spring.SpringComponentProvider;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 import com.googlecode.flyway.core.Flyway;
+
+import edu.mayo.qia.pacs.rest.SpringContext;
 
 @Configuration
 @EnableScheduling
@@ -155,24 +164,50 @@ public class Beans {
     // The following code was extracted from ServerConfiguration and Google
 
     HttpServer server = new HttpServer();
+
     final NetworkListener listener = new NetworkListener("grizzly", NetworkListener.DEFAULT_NETWORK_HOST, PACS.RESTPort);
     listener.setSecure(false);
     listener.getTransport().getWorkerThreadPoolConfig().setCorePoolSize(1);
     listener.getTransport().getWorkerThreadPoolConfig().setMaxPoolSize(10);
     listener.getTransport().setSelectorRunnersCount(5);
     server.addListener(listener);
-
+    
+    server.getServerConfiguration().
+    
+    
     // Here's the recommended approach
     // http://jersey.576304.n2.nabble.com/Right-way-to-create-embedded-grizzly-with-already-instantiated-Application-tt1470802.html#a1484718
-    ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
+    // ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
+    ResourceConfig rc = new ResourceConfig();
+    rc.packages("edu.mayo.qia.pacs.rest");
+
+    // This is what Jersey looks for the web app context
+    // return getWebApplicationContext(sc,
+    // WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+    rc.property(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, new SpringContext());
+
+    // rc.
+    SpringComponentProvider scp = new SpringComponentProvider();
+    // rc.register(scp);
+
+    // HttpServer server =
+    // GrizzlyHttpServerFactory.createHttpServer(URI.create("http://0.0.0.0:9000/"),
+    // rc);
+
+    // Resource.Builder resourceBuilder = Resource.builder();
+    // resourceBuilder.
+
     // Add POJO mapping
     // rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
-    SpringComponentProviderFactory handler = new SpringComponentProviderFactory(rc, PACS.context);
-    HttpHandler processor = ContainerFactory.createContainer(HttpHandler.class, rc, handler);
+    // SpringComponentProviderFactory handler = new
+    // SpringComponentProviderFactory(rc, PACS.context);
+    // HttpHandler processor =
+    // ContainerFactory.createContainer(HttpHandler.class, rc, handler);
+    HttpHandler processor = ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
+
     server.getServerConfiguration().addHttpHandler(processor, "");
 
     server.start();
     return server;
   }
-
 }

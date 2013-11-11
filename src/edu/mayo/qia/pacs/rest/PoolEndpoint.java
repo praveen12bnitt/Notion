@@ -12,11 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import com.sun.jersey.spi.resource.Singleton;
-
 import edu.mayo.qia.pacs.components.Pool;
 
-@Singleton
 @Component
 @Path("/pool")
 public class PoolEndpoint {
