@@ -24,8 +24,9 @@ public class PoolEndpoint {
   /** List all the pools */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Response listPools() {
-    return Response.ok(new Pool("test", "value")).build();
+  public Pool listPools() {
+    return new Pool("Test", "value");
+    // return Response.ok(new Pool("test", "value")).build();
   }
 
   /** Create a pool. */

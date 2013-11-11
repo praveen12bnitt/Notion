@@ -1,6 +1,11 @@
 package edu.mayo.qia.pacs.components;
 
-public class Pool {
+import java.io.Serializable;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Pool implements Serializable {
 
   String name;
   String path;

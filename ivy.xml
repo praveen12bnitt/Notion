@@ -101,6 +101,11 @@ ResearchPACS dependancies.
     <!-- Misc -->
     <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="1.9.11" conf="default->master"/>
     <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="1.9.11" conf="default->master"/>
+    <dependency org="org.codehaus.jackson" name="jackson-jaxrs" rev="1.9.11" conf="default->master"/>
+    <dependency org="org.codehaus.jackson" name="jackson-xc" rev="1.9.11" conf="default->master"/>
+    
+    
+    
     <dependency org="joda-time" name="joda-time" rev="2.1" />
     <dependency org="org.quartz-scheduler" name="quartz" rev="2.1.6" conf="default->master"/>
     <dependency org="org.slf4j" name="slf4j-api" rev="1.6.6"/>
@@ -117,13 +122,21 @@ ResearchPACS dependancies.
     <dependency org="commons-beanutils" name="commons-beanutils-core" rev="1.8.3" />
 
     <!-- REST Services -->
+     <!-- REST Services -->
+    <dependency org="com.sun.jersey" name="jersey-core" rev="1.17"/>
+    <dependency org="com.sun.jersey" name="jersey-client" rev="1.17" conf="default->master"/>
+    <dependency org="com.sun.jersey" name="jersey-server" rev="1.17"/>
+    <dependency org="com.sun.jersey.contribs" name="jersey-spring" rev="1.17"/>
+    <dependency org="com.sun.jersey" name="jersey-json" rev="1.17" transitive="false"/>
+    <dependency org="com.sun.jersey" name="jersey-grizzly2" rev="1.17"/>
+    <!--
 	<dependency org="org.glassfish.jersey.core" name="jersey-client" rev="2.3"/>
     <dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.3"/>
     <dependency org="org.glassfish.jersey.core" name="jersey-common" rev="2.3"/>
     <dependency org="org.glassfish.jersey.connectors" name="jersey-grizzly-connector" rev="2.3"/>
     <dependency org="org.glassfish.jersey.containers" name="jersey-container-grizzly2-http" rev="2.3"/>
    	<dependency org="org.glassfish.jersey.ext" name="jersey-spring3" rev="2.3"/>
-            
+         -->   
     <!-- 
     
     
