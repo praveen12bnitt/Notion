@@ -1,6 +1,7 @@
 package edu.mayo.qia.pacs;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.jms.ConnectionFactory;
@@ -14,6 +15,9 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +35,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.googlecode.flyway.core.Flyway;
+import com.sun.jersey.api.container.ContainerFactory;
+import com.sun.jersey.api.core.PackagesResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.spi.spring.container.SpringComponentProviderFactory;
 
 @Configuration
 @EnableScheduling
@@ -143,4 +152,30 @@ public class Beans {
     return taskExecutor;
   }
 
+  @Bean
+  public HttpServer httpServer() throws IOException {
+    // We want to manage the server threads ourselves
+    // The following code was extracted from ServerConfiguration and Google
+    HttpServer server = new HttpServer();
+    final NetworkListener listener = new NetworkListener("grizzly", NetworkListener.DEFAULT_NETWORK_HOST, PACS.RESTPort);
+    listener.setSecure(false);
+    listener.getTransport().getWorkerThreadPoolConfig().setCorePoolSize(1);
+    listener.getTransport().getWorkerThreadPoolConfig().setMaxPoolSize(10);
+    listener.getTransport().setSelectorRunnersCount(5);
+    server.addListener(listener);
+    // Here's the recommended approach
+    // http://jersey.576304.n2.nabble.com/Right-way-to-create-embedded-grizzly-with-already-instantiated-Application-tt1470802.html#a1484718
+    ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
+    rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
+    // HttpServer server =
+    // GrizzlyServerFactory.createHttpServer(URI.create("http://" +
+    // NetworkListener.DEFAULT_NETWORK_HOST + ":" + PACS.RESTPort + "/"), rc);
+
+    SpringComponentProviderFactory handler = new SpringComponentProviderFactory(rc, PACS.context);
+    HttpHandler processor = ContainerFactory.createContainer(HttpHandler.class, rc, handler);
+    server.getServerConfiguration().addHttpHandler(processor, "");
+
+    server.start();
+    return server;
+  }
 }
