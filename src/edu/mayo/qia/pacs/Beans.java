@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -28,6 +29,7 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MappingJacksonMessageConverter;
 import org.springframework.jms.support.converter.MessageType;
+import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -49,6 +51,20 @@ public class Beans {
 
   @Autowired
   Sorter sorter;
+
+  @Bean
+  public LocalSessionFactoryBean sessionFactory() throws SQLException {
+    Properties hibernateProperties = new Properties();
+    hibernateProperties.setProperty("hibernate.show_sql", "true");
+    // setProperty("hibernate.globally_quoted_identifiers", "true");
+    hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
+    LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+    sessionFactory.setDataSource(dataSource());
+    sessionFactory.setPackagesToScan(new String[] { "edu.mayo.qia.pacs.components" });
+    sessionFactory.setHibernateProperties(hibernateProperties);
+
+    return sessionFactory;
+  }
 
   @Bean
   public DataSource dataSource() throws SQLException {

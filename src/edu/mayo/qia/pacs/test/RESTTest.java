@@ -1,6 +1,6 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.net.URI;
 
@@ -44,6 +44,8 @@ public class RESTTest extends PACSTest {
     Pool pool = new Pool("empty", "empty");
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, pool);
     assertEquals("Got result", 200, response.getStatus());
+    logger.info("Entity back: " + response.getEntity(Pool.class));
+    assertTrue("Assigned an id", response.getEntity(Pool.class).poolKey != 0);
   }
 
   @Test
