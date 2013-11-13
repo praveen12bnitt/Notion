@@ -39,6 +39,11 @@ public class RESTTest extends PACSTest {
 
   @Test
   public void createPool() {
+    // CURL Code
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty");
