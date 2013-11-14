@@ -183,6 +183,7 @@ public class Beans {
     // http://jersey.576304.n2.nabble.com/Right-way-to-create-embedded-grizzly-with-already-instantiated-Application-tt1470802.html#a1484718
     ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
     rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
+
     // HttpServer server =
     // GrizzlyServerFactory.createHttpServer(URI.create("http://" +
     // NetworkListener.DEFAULT_NETWORK_HOST + ":" + PACS.RESTPort + "/"), rc);

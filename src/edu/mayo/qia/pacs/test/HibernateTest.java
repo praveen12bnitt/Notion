@@ -46,7 +46,7 @@ public class HibernateTest extends PACSTest {
 
     List<Pool> result = criteria.list();
     assertTrue("Fetched pool", result.size() == 1);
-    assertTrue("Has the proper comment", result.get(0).path.equals("One"));
+    assertTrue("Has the proper comment", result.get(0).description.equals("One"));
 
     result.get(0).name = "Two";
     session.beginTransaction();

@@ -49,8 +49,9 @@ public class RESTTest extends PACSTest {
     Pool pool = new Pool("empty", "empty");
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, pool);
     assertEquals("Got result", 200, response.getStatus());
-    logger.info("Entity back: " + response.getEntity(Pool.class));
-    assertTrue("Assigned an id", response.getEntity(Pool.class).poolKey != 0);
+    pool = response.getEntity(Pool.class);
+    logger.info("Entity back: " + pool);
+    assertTrue("Assigned an id", pool.poolKey != 0);
   }
 
   @Test
