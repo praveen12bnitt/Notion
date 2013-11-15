@@ -2,6 +2,9 @@ package edu.mayo.qia.pacs.rest;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -15,11 +18,17 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import com.sun.jersey.api.core.HttpContext;
+import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.jersey.spi.inject.Inject;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.SessionManager;
@@ -28,9 +37,14 @@ import edu.mayo.qia.pacs.components.Pool;
 @Component
 @Path("/pool")
 public class PoolEndpoint {
+  static Logger logger = Logger.getLogger(PoolEndpoint.class);
+  Pool myPool;
 
   @Context
-  SessionManager sessionManager;
+  Integer myInteger;
+
+  @Context
+  ResourceConfig resourceConfig;
 
   @Autowired
   JdbcTemplate template;
@@ -42,19 +56,22 @@ public class PoolEndpoint {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<Pool> listPools() {
-    Session session = sessionFactory.openSession();
+    logger.error("My Customing wiring is: " + myInteger);
+    logger.error("Tried to wire this at " + resourceConfig);
+    logger.error("mpPool  " + myPool);
+    Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     List<Pool> result = session.createCriteria(Pool.class).list();
+    session.getTransaction().commit();
     return result;
   }
 
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/devices")
   public DeviceEndpoint devices(@PathParam("id") int id) {
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     DeviceEndpoint device = PACS.context.getBean(DeviceEndpoint.class);
     device.pool = (Pool) session.byId(Pool.class).getReference(id);
-    session.close();
     return device;
   }
 

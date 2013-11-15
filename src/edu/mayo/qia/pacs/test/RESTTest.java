@@ -38,12 +38,19 @@ public class RESTTest extends PACSTest {
   }
 
   @Test
+  public void listPools() {
+    ClientResponse response = null;
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
+    logger.debug("Loading: " + uri);
+    response = client.resource(uri).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+    assertEquals("Got result", 200, response.getStatus());
+  }
+
+  @Test
   public void createPool() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty");
