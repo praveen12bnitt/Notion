@@ -100,7 +100,10 @@ CREATE  INDEX study_status_idx on STUDY (StudyStatus ASC);
 CREATE TABLE Pool (
   PoolKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   Name VARCHAR(250) NOT NULL,
-  Description VARCHAR(250) NOT NULL
+  ApplicationEntityTitle VARCHAR(256),
+  Description VARCHAR(250) NOT NULL,
+  
+  CONSTRAINT Unique_AETitle UNIQUE(ApplicationEntityTitle)
 );
 
 CREATE TABLE DEVICE (
