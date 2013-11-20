@@ -2,10 +2,6 @@ package edu.mayo.qia.pacs.rest;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,26 +21,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.sun.jersey.api.core.HttpContext;
-import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.jersey.spi.inject.Inject;
+import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
-import edu.mayo.qia.pacs.SessionManager;
 import edu.mayo.qia.pacs.components.Pool;
+
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
 @Path("/pool")
+@Scope("singleton")
 public class PoolEndpoint {
   static Logger logger = Logger.getLogger(PoolEndpoint.class);
-  Pool myPool;
-
-  @Context
-  Integer myInteger;
-
-  @Context
-  ResourceConfig resourceConfig;
 
   @Autowired
   JdbcTemplate template;
@@ -52,13 +43,13 @@ public class PoolEndpoint {
   @Autowired
   SessionFactory sessionFactory;
 
+  @Context
+  ResourceContext resourceContext;
+
   /** List all the pools */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<Pool> listPools() {
-    logger.error("My Customing wiring is: " + myInteger);
-    logger.error("Tried to wire this at " + resourceConfig);
-    logger.error("mpPool  " + myPool);
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     List<Pool> result = session.createCriteria(Pool.class).list();
@@ -67,12 +58,12 @@ public class PoolEndpoint {
   }
 
   /** Devices */
-  @Path("/{id: [1-9][0-9]*}/devices")
+  @Path("/{id: [1-9][0-9]*}/device")
   public DeviceEndpoint devices(@PathParam("id") int id) {
-    Session session = sessionFactory.getCurrentSession();
-    DeviceEndpoint device = PACS.context.getBean(DeviceEndpoint.class);
-    device.pool = (Pool) session.byId(Pool.class).getReference(id);
-    return device;
+    DeviceEndpoint deviceEndpoint;
+    deviceEndpoint = resourceContext.getResource(DeviceEndpoint.class);
+    deviceEndpoint.poolKey = id;
+    return deviceEndpoint;
   }
 
   /** Create a pool. */
@@ -82,14 +73,18 @@ public class PoolEndpoint {
   public Response createPool(Pool pool) {
 
     // Does the name conform to what we expect?
-    if (!pool.name.matches("\\w+")) {
-      return Response.status(Response.Status.FORBIDDEN).entity("Pool name must consist of letters, numbers and underscores only").build();
+    if (!pool.applicationEntityTitle.matches("\\w+")) {
+      return Response.status(Response.Status.FORBIDDEN).entity("ApplicationEntityTitle must consist of letters, numbers and underscores only").build();
     }
-    Session session = sessionFactory.openSession();
+    // Does the name conform to what we expect?
+    if (pool.applicationEntityTitle.length() > 16) {
+      return Response.status(Response.Status.FORBIDDEN).entity("ApplicationEntityTitle must be less than 16 characters: " + pool.applicationEntityTitle + " is " + pool.applicationEntityTitle.length() + " characters long").build();
+    }
+
+    Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     session.save(pool);
     session.getTransaction().commit();
-    session.close();
     return Response.ok(pool).build();
   }
 
@@ -100,14 +95,11 @@ public class PoolEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response modifyPool(@PathParam("id") int id, Pool update) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
-    session.beginTransaction();
+    Session session = sessionFactory.getCurrentSession();
     Pool pool = (Pool) session.byId(Pool.class).getReference(id);
     // Update the pool
     pool.update(update);
     session.update(pool);
-    session.getTransaction().commit();
-    session.close();
     return Response.ok(pool).build();
   }
 
@@ -116,13 +108,12 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   public Response modifyPool(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     Pool pool = (Pool) session.byId(Pool.class).getReference(id);
     // Delete
     session.delete(pool);
     session.getTransaction().commit();
-    session.close();
     return Response.ok().build();
   }
 }

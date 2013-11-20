@@ -4,6 +4,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -29,6 +32,9 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static final int DICOMPort = 12345;
   static final int RESTPort = 12346;
   static Client client;
+
+  static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).build();
+
   static {
     ClientConfig config = new DefaultClientConfig();
     config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);

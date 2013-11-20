@@ -38,7 +38,7 @@ public class RequestProvider implements InjectableProvider<Context, Type> {
       return new Injectable<Pool>() {
         @Override
         public Pool getValue() {
-          return new Pool("Foo", "Constructed");
+          return new Pool("Foo", "Constructed", "foo");
         }
       };
 

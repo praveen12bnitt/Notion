@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs.components;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,22 +23,24 @@ public final class Pool {
 
   public String name;
   public String description;
+  public String applicationEntityTitle;
 
   @JsonIgnore
-  @OneToMany
-  @JoinColumn(name = "PoolKey")
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
+  // @JoinColumn(name = "PoolKey")
   public Set<Device> devices = new HashSet<Device>();
 
-  public Pool(String name, String path) {
+  public Pool(String name, String path, String applicationEntityTitle) {
     this.name = name;
     this.description = path;
+    this.applicationEntityTitle = applicationEntityTitle;
   }
 
   public Pool() {
   }
 
   public String toString() {
-    return "Pool(" + poolKey + "): " + description + ": " + description;
+    return this.name + "(" + poolKey + ") " + "description: " + description + " AETitle: " + applicationEntityTitle;
   }
 
   @JsonIgnore

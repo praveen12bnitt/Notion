@@ -14,17 +14,20 @@ public final class Device {
   @Id
   @GeneratedValue
   public int deviceKey;
-  public int poolKey;
   public String applicationEntityTitle;
   public String hostName;
   public int port;
 
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-  @JoinColumn(name = "PoolKey", insertable = false, updatable = false)
+  @JoinColumn(name = "PoolKey")
   private Pool pool;
 
   public Pool getPool() {
     return pool;
+  }
+
+  public void setPool(Pool pool) {
+    this.pool = pool;
   }
 
 }

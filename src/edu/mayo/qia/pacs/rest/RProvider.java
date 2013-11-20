@@ -26,7 +26,7 @@ public class RProvider extends PerRequestTypeInjectableProvider<Context, Pool> {
     return new Injectable<Pool>() {
       @Override
       public Pool getValue() {
-        return new Pool("Injected", "Injected from RProvider");
+        return new Pool("Injected", "Injected from RProvider", "title");
       }
     };
   }

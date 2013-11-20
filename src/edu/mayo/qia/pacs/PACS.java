@@ -53,7 +53,7 @@ public class PACS {
 
     // Load our beans
     context = new AnnotationConfigApplicationContext();
-    context.scan("edu.mayo.qia.pacs");
+    context.scan("edu.mayo.qia.pacs", "edu.mayo.qia.pacs.dao");
     context.refresh();
 
     logger.info("\n=====\n\nResearch PACS Started\n\tREST PORT: " + RESTPort + "\n\tDICOM Port: " + DICOMPort + "\n\tHome directory: " + directory.getAbsolutePath() + "\n\tURL: http://localhost:" + RESTPort + "\n\n=====\n");
