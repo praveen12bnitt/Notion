@@ -18,6 +18,8 @@ public class PACS {
   public static final String sorterQueue = "pacs.sorter";
   static Logger logger = Logger.getLogger(PACS.class);
 
+  public static String version = "1.0.0.0";
+
   /**
    * Start the research PACS in the current directory, or the one specified on
    * the command line.

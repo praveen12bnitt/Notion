@@ -27,6 +27,7 @@ import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.PoolManager;
 
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -43,6 +44,9 @@ public class PoolEndpoint {
   @Autowired
   SessionFactory sessionFactory;
 
+  @Autowired
+  PoolManager poolManager;
+
   @Context
   ResourceContext resourceContext;
 
@@ -52,6 +56,7 @@ public class PoolEndpoint {
   public List<Pool> listPools() {
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
+    @SuppressWarnings("unchecked")
     List<Pool> result = session.createCriteria(Pool.class).list();
     session.getTransaction().commit();
     return result;
@@ -74,17 +79,19 @@ public class PoolEndpoint {
 
     // Does the name conform to what we expect?
     if (!pool.applicationEntityTitle.matches("\\w+")) {
-      return Response.status(Response.Status.FORBIDDEN).entity("ApplicationEntityTitle must consist of letters, numbers and underscores only").build();
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle must consist of letters, numbers and underscores only")).build();
     }
     // Does the name conform to what we expect?
     if (pool.applicationEntityTitle.length() > 16) {
-      return Response.status(Response.Status.FORBIDDEN).entity("ApplicationEntityTitle must be less than 16 characters: " + pool.applicationEntityTitle + " is " + pool.applicationEntityTitle.length() + " characters long").build();
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle must be less than 16 characters: " + pool.applicationEntityTitle + " is " + pool.applicationEntityTitle.length() + " characters long"))
+          .build();
     }
 
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     session.save(pool);
     session.getTransaction().commit();
+    poolManager.newPool(pool);
     return Response.ok(pool).build();
   }
 
@@ -96,10 +103,18 @@ public class PoolEndpoint {
   public Response modifyPool(@PathParam("id") int id, Pool update) {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
+    session.beginTransaction();
     Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+    session.getTransaction().commit();
+    if (!pool.applicationEntityTitle.equals(update.applicationEntityTitle)) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle can not be changed existing: " + pool.applicationEntityTitle + " attepted change: " + update.applicationEntityTitle)).build();
+
+    }
     // Update the pool
+    session.beginTransaction();
     pool.update(update);
     session.update(pool);
+    session.getTransaction().commit();
     return Response.ok(pool).build();
   }
 

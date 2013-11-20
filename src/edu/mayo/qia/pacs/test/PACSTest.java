@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.FileUtils;
@@ -34,6 +35,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static Client client;
 
   static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).build();
+  static final String JSON = MediaType.APPLICATION_JSON;
 
   static {
     ClientConfig config = new DefaultClientConfig();
