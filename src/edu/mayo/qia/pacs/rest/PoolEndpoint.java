@@ -78,8 +78,8 @@ public class PoolEndpoint {
   public Response createPool(Pool pool) {
 
     // Does the name conform to what we expect?
-    if (!pool.applicationEntityTitle.matches("\\w+")) {
-      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle must consist of letters, numbers and underscores only")).build();
+    if (!pool.applicationEntityTitle.matches("[a-zA-Z_\\-0-9]+")) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle must consist of letters, numbers dashes, and underscores only")).build();
     }
     // Does the name conform to what we expect?
     if (pool.applicationEntityTitle.length() > 16) {
