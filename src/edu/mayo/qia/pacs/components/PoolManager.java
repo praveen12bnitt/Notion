@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
@@ -15,6 +14,7 @@ import javax.annotation.PreDestroy;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +94,10 @@ public class PoolManager {
     future.cancel(true);
   }
 
-  /** Handle a request to create an image */
+  /**
+   * Handle a request to create an image, NB: must only handle one request at a
+   * time.
+   */
   public void handleMessage(ProcessIncomingInstance request) throws Exception {
 
     // Index the file
@@ -120,18 +123,48 @@ public class PoolManager {
     logger.debug("Final path: " + outFile);
     outFile.getParentFile().mkdirs();
 
+    // Insert
+    Session session = sessionFactory.getCurrentSession();
+    session.beginTransaction();
+    Pool pool = (Pool) session.merge(container.pool);
+
+    Query query;
+    query = session.createQuery("from STUDY where PoolKey = :poolkey and StudyInstanceUID = :suid");
+    query.setInteger("poolkey", pool.poolKey);
+    query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+    Study study = (Study) query.uniqueResult();
+    if (study == null) {
+      study = new Study(tags);
+      study.pool = pool;
+      session.saveOrUpdate(study);
+    }
+
+    // Find the Instance
+    query = session.createQuery("from SEREIS where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
+    query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+    Series series = (Series) query.uniqueResult();
+    if (series == null) {
+      series = new Series(tags);
+      series.study = study;
+      session.saveOrUpdate(series);
+    }
+
+    // Find the Instance
+    query = session.createQuery("from INSTANCE where SeriesKey = :serieskey and SOPInstanceUID = :uid").setInteger("serieskey", series.SeriesKey);
+    query.setString("suid", tags.getString(Tag.SOPInstanceUID));
+    Instance instance = (Instance) query.uniqueResult();
+    if (instance == null) {
+      instance = new Instance(tags, relativePath.getPath());
+      instance.series = series;
+      session.saveOrUpdate(instance);
+    }
+
     // Copy the file, remove later
     Files.copy(inFile, outFile);
     logger.debug("Moved file " + inFile + " to " + outFile);
-    // Put it in the database
-    // Create the Study if necessary
-    int studyKey = importHelper.insertStudy(tags, studyUIDs);
-    int seriesKey = importHelper.insertSeries(tags, studyKey, seriesUIDs);
-    int instanceKey = importHelper.insertInstance(tags, seriesKey, relativePath, instanceUIDs);
 
     // Delete the input file, it is not needed any more
     inFile.delete();
 
   }
-
 }

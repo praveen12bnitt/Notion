@@ -36,6 +36,7 @@ public class DICOMReceiver {
   private final Device device = new Device(null);
   private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
   private final NetworkConnection nc = new NetworkConnection();
+
   @Autowired
   StorageSCP storageSCP;
 
@@ -50,6 +51,21 @@ public class DICOMReceiver {
 
   /** Standard constructor */
   public DICOMReceiver() {
+  }
+
+  public synchronized void stop() {
+    device.stopListening();
+  }
+
+  /**
+   * Starts the receiver listening.
+   * 
+   * @throws Exception
+   *           if could not start database
+   */
+  @PostConstruct
+  public synchronized void start() throws Exception {
+    logger.info("Starting");
     nc.setPort(PACS.DICOMPort);
     device.setNetworkApplicationEntity(ae);
     device.setNetworkConnection(nc);
@@ -57,11 +73,6 @@ public class DICOMReceiver {
     ae.setAssociationAcceptor(true);
     ae.setPackPDV(true);
     nc.setTcpNoDelay(true);
-
-    ae.register(new VerificationService());
-    ae.register(storageSCP);
-    ae.register(findSCP);
-    ae.register(moveSCP);
 
     String[] NON_RETIRED_LE_TS = { UID.JPEGLSLossless, UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14, UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian, UID.RLELossless, UID.ExplicitVRLittleEndian, UID.ImplicitVRLittleEndian,
         UID.JPEGBaseline1, UID.JPEGExtended24, UID.JPEGLSLossyNearLossless, UID.JPEG2000, UID.MPEG2, };
@@ -85,21 +96,13 @@ public class DICOMReceiver {
       }
     }
     ae.setTransferCapability(tc.toArray(new TransferCapability[] {}));
-  }
+    ae.register(new VerificationService());
+    ae.register(storageSCP);
+    ae.register(findSCP);
+    ae.register(moveSCP);
 
-  public synchronized void stop() {
-    device.stopListening();
-  }
+    ae.addAssociationListener(storageSCP);
 
-  /**
-   * Starts the receiver listening.
-   * 
-   * @throws Exception
-   *           if could not start database
-   */
-  @PostConstruct
-  public synchronized void start() throws Exception {
-    logger.info("Starting");
     device.startListening(executor);
 
     // if (dcmrcv == null) {

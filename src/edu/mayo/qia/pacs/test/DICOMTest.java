@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class DICOMTest extends PACSTest {
+
   @Test
   public void CEcho() throws ConfigurationException, IOException, InterruptedException {
     NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
