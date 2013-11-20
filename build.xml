@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ResearchPACS" default="jar" xmlns:ivy="antlib:org.apache.ivy.ant" >
+  <property name="BuildProperties" value="BuildProperties.properties"/>
+  <property name="lib.dir" value="lib"/>
+	
+  <!-- By default, don't send in any JVM args,
+       On Ant's command line do this:
+  -Xdebug -Xrunjdwp:transport=dt_socket,address=8998,server=y,suspend=y-->
+  <property name="junit.jvmargs" value=""/>
+
+  <target name="test" depends="build">
+    <mkdir dir="test-reports/"/>
+    <!-- Set timeout to be 5 minutes to prevent hung jobs -->
+    <junit fork="yes" printsummary="yes" timeout="300000" maxmemory="1024m" showoutput="${junit.arg.output}" failureproperty="junit.status">
+      <classpath>
+        <pathelement location="${basedir}/bin"/>
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+        <fileset dir="${lib.dir}-testing" includes="**/*.jar"/>
+      </classpath>
+      <formatter type="xml"/>
+      <batchtest todir="test-reports/">
+        <fileset dir="bin">
+          <include name="**/*Test.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+    <fail if="junit.status" message="JUnit testing failed"/>
+   </target>
+
+  <target name="build" depends="resolve">
+    <echo message="Starting ResearchPACS build in ${basedir}"/>
+    <mkdir dir="bin"/>
+
+    <!-- Compile the main library, excluding tests -->
+    <javac srcdir="src" destdir="bin" classpathref="dewey.classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
+    </javac>
+
+    <copy todir="bin">
+      <fileset dir="src" excludes="**/*.java"/>
+    </copy>
+    <echo message="Finished ResearchPACS build in ${basedir}"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="bin"/>
+    <delete dir="bin-testing"/>
+    <delete dir="${lib.dir}"/>
+    <delete dir="${lib.dir}-testing"/>
+    <delete dir="${ivy.jar.dir}"/>
+  </target>
+
+  <!--  Build deployment jar file -->
+  <target name="jar" depends="build">
+    <loadproperties srcFile="${BuildProperties}"/>
+
+    <manifestclasspath property="dewey.jar.classpath" jarfile="DeweyServer.jar">
+      <classpath>
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+      </classpath>
+    </manifestclasspath>
+    <jar destfile="DeweyServer.jar" basedir="bin/"
+         excludes="**/*Test.class **/*TestSuite.class **/test/*.class">
+      <manifest>
+        <attribute name="Main-Class" value="edu.mayo.qia.dewey.server.Server"/>
+        <attribute name="Class-Path" value="${dewey.jar.classpath}"/>
+        <attribute name="Implementation-Title" value="Basic Server"/>
+        <attribute name="Implementation-Version" value="${build.major}.${build.minor}.${build.patch}"/>
+        <attribute name="Implementation-Vendor" value="Mayo Clinic"/>
+        <attribute name="Built-By" value="${user.name}"/>
+      </manifest>
+    </jar>
+
+    <jar destfile="DeweyReceiver.jar" basedir="bin/"
+         excludes="**/*Test.class **/*TestSuite.class">
+      <manifest>
+        <attribute name="Main-Class" value="org.dcm4che2.tool.dcmrcv.DcmRcv"/>
+        <attribute name="Class-Path" value="${dewey.jar.classpath}"/>
+        <attribute name="Implementation-Title" value="DEWEY DICOM Receiver"/>
+        <attribute name="Implementation-Version" value="${build.major}.${build.minor}.${build.patch}"/>
+        <attribute name="Implementation-Vendor" value="Mayo Clinic"/>
+        <attribute name="Built-By" value="${user.name}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- Build and install on the integration server -->
+  <target name="integration" depends="jar">
+    <!-- Copy to the integration server -->
+    <echo message="Copy to ${integration}"/>
+    <exec executable="rsync">
+      <arg value="--delete"/>
+      <arg value="--recursive"/>
+      <arg value="DeweyServer.jar"/>
+      <arg value="DeweyReceiver.jar"/>
+      <arg value="${lib.dir}"/>
+      <arg value="dewey@${integration}:/dewey/software/"/>
+    </exec>
+    <!-- Restart DEWEY -->
+    <exec executable="ssh">
+      <arg value="root@${integration}"/>
+      <arg value="for s in dewey dewey-receiver; do service $s restart; done"/>
+    </exec>
+  </target>
+
+  <!-- Build and install on the dewey-prod servers -->
+  <target name="dewey-prod" depends="jar">
+    <!-- Copy to the deweykvm shares (used by all hosts) -->
+    <echo message="Copy to deweykvm01 (dewey-prod)"/>
+    <exec executable="rsync">
+      <arg value="--delete"/>
+      <arg value="--recursive"/>
+      <arg value="DeweyServer.jar"/>
+      <arg value="DeweyReceiver.jar"/>
+      <arg value="${lib.dir}"/>
+      <arg value="dewey@deweykvm01:/dewey/software/"/>
+    </exec>
+    <!-- Restart DEWEY and DEWEY-RECEIVER on deweykvm01 -->
+    <exec executable="ssh">
+      <arg value="root@deweykvm01"/>
+      <arg value="for s in dewey dewey-receiver; do service $s restart; done"/>
+    </exec>
+  	<!-- Restart DEWEY (only) on dewey-prod-v and deweykvm02 -->
+    <exec executable="ssh">
+      <arg value="root@deweykvm02"/>
+      <arg value="service dewey restart"/>
+    </exec>
+    <exec executable="ssh">
+      <arg value="root@dewey-prod-v"/>
+      <arg value="service dewey restart"/>
+    </exec>
+  </target>
+
+  <path id="designer.classpath">
+    <fileset dir="DesignerPlugin/lib" includes="**/*.jar"/>
+  </path>
+  
+  <path id="dewey.classpath">
+    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    <pathelement path="bin"/>
+  </path>
+
+  <target name="javadoc" depends="resolve">
+    <mkdir dir="doc/api"/>
+    <javadoc destdir="doc/api" classpathref="dewey.javadoc.classpath" linksource="true" Overview="Source/edu/mayo/qia/dewey/DEWEYOverview.html">
+      <fileset dir="Source" defaultexcludes="yes">
+        <include name="edu/**/*.java"/>
+        <exclude name="edu/**/*Test.java"/>
+        <exclude name="edu/**/*Mock.java"/>
+        <exclude name="edu/**/DeweyTestSuite.java"/>
+      </fileset>
+      <packageset dir="Source" defaultexcludes="yes">
+        <include name="edu/mayo/qia/pacs/"/>
+      </packageset>
+      <group title="ResearchPACS Classes" packages="edu.mayo.qia.*"/>
+      <link href="http://docs.oracle.com/javase/7/docs/api/" />
+      <link href="http://logging.apache.org/log4j/1.2/apidocs/" />
+      <link href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/" />
+      <link href="http://commons.apache.org/proper/commons-exec/apidocs/"/>
+      <link href="http://www.dcm4che.org/docs/dcm4che2-apidocs/" />
+      <link href="http://shiro.apache.org/static/current/apidocs/"/>
+    </javadoc>
+  </target>
+
+  <uptodate property="ivy.uptodate" targetfile="${lib.dir}">
+    <srcfiles dir="." includes="ivy*.xml"/>
+  </uptodate>
+
+  <!-- Have Ivy get our dependancies -->
+  <target name="resolve" description="--> retrieve dependencies with ivy" unless="ivy.uptodate" depends="ivy">
+    <mkdir dir="${lib.dir}"/>
+    <antcall target="ivy.download"/>
+    <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision].[ext]" type="jar,bundle" sync="true" conf="default"/>
+    <ivy:report todir="doc"/>
+    <touch>
+      <fileset dir="${lib.dir}"/>
+    </touch>
+    <ivy:retrieve pattern="${lib.dir}-testing/[artifact]-[revision].[ext]" type="jar,bundle" sync="true" conf="testing"/>
+    <ivy:report todir="doc"/>
+    <touch>
+      <fileset dir="${lib.dir}"/>
+    </touch>
+  </target>
+
+
+
+    <!-- here is the version of ivy we will use. change this property to try a newer 
+       version if you want -->
+  <property name="ivy.install.version" value="2.3.0-rc2" />
+  <property name="ivy.jar.dir" value="${basedir}/ivy" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+
+  <target name="ivy.download" description="--> retrieve Ivy jar file">
+    <mkdir dir="${ivy.jar.dir}"/>
+    <!-- download Ivy from web site so that it can be used even without any special installation -->
+    <echo message="installing ivy..."/>
+    <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+    	 dest="${ivy.jar.file}" usetimestamp="true"/>
+  </target>
+  
+  <!-- ================================= 
+       target: ivy         
+       this target is not necessary if you put ivy.jar in your ant lib directory
+       if you already have ivy in your ant lib, you can simply remove this
+       target and the dependency the 'go' target has on it
+       ================================= -->
+  <target name="ivy" description="--> install ivy" depends="ivy.download">
+    <!-- try to load ivy here from local ivy dir, in case the user has not already dropped
+    	 it into ant's lib dir (note that the latter copy will always take precedence).
+    	 We will not fail as long as local lib dir exists (it may be empty) and
+    	 ivy is in at least one of ant's lib dir or the local lib dir. -->
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+    	     uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+  </target>    
+
+</project>

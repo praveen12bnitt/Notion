@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -28,11 +29,14 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MappingJacksonMessageConverter;
 import org.springframework.jms.support.converter.MessageType;
+import org.springframework.orm.hibernate4.HibernateTransactionManager;
+import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.googlecode.flyway.core.Flyway;
 import com.sun.jersey.api.container.ContainerFactory;
@@ -49,6 +53,34 @@ public class Beans {
 
   @Autowired
   Sorter sorter;
+
+  @Bean
+  @DependsOn("flyway")
+  public LocalSessionFactoryBean sessionFactory() throws SQLException {
+    Properties hibernateProperties = new Properties();
+    hibernateProperties.setProperty("hibernate.show_sql", "true");
+    // setProperty("hibernate.globally_quoted_identifiers", "true");
+    hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
+
+    // Using a thread session means that getCurrentSession() will return a
+    // thread-local
+    // Session for Hibernate, and allow the Jersey API to operate across
+    // multiple objects correctly.
+    hibernateProperties.setProperty("hibernate.current_session_context_class", "thread");
+    LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+    sessionFactory.setDataSource(dataSource());
+    sessionFactory.setPackagesToScan(new String[] { "edu.mayo.qia.pacs.components" });
+    sessionFactory.setHibernateProperties(hibernateProperties);
+
+    return sessionFactory;
+  }
+
+  @Bean
+  public HibernateTransactionManager txManager() throws SQLException {
+    HibernateTransactionManager tx = new HibernateTransactionManager();
+    tx.setSessionFactory(sessionFactory().getObject());
+    return tx;
+  }
 
   @Bean
   public DataSource dataSource() throws SQLException {
@@ -167,6 +199,58 @@ public class Beans {
     // http://jersey.576304.n2.nabble.com/Right-way-to-create-embedded-grizzly-with-already-instantiated-Application-tt1470802.html#a1484718
     ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
     rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
+
+    // rc.getSingletons().add(new
+    // SingletonTypeInjectableProvider<javax.ws.rs.core.Context,
+    // Integer>(Integer.class, new Integer(12)) {
+    // });
+    // // rc.getSingletons().add(new
+    // // SingletonTypeInjectableProvider<javax.ws.rs.core.Context,
+    // // Pool>(Pool.class, new Pool("Singleton", "Singleton")) {
+    // // });
+    //
+    // // ContextInjectableProvider c;
+    // ThreadLocalSingletonContextProvider p;
+    // rc.getSingletons().add(new
+    // ThreadLocalSingletonContextProvider<Session>(Session.class) {
+    //
+    // @Override
+    // protected Session getInstance() {
+    // return
+    // PACS.context.getBean(LocalSessionFactoryBean.class).getObject().openSession();
+    // }
+    //
+    // });
+    //
+    // rc.getClasses().add(ResourceConfig.class);
+    // rc.getProviderSingletons().add(new
+    // PerRequestTypeInjectableProvider<Context, Pool>(Pool.class) {
+
+    //
+    // final GenericEntity<ThreadLocal<Request>> requestThreadLocal =
+    // new GenericEntity<ThreadLocal<Request>>(
+    // requestInvoker.getImmutableThreadLocal()) {
+    // };
+    //
+    // resourceConfig.getSingletons().add(
+    // new ContextInjectableProvider<ThreadLocal<Request>>(
+    // requestThreadLocal.getType(), requestThreadLocal.getEntity()));
+    //
+    //
+    //
+    // @Override
+    // public Injectable<Pool> getInjectable(ComponentContext ic, Context a) {
+    // // TODO Auto-generated method stub
+    // return new Injectable<Pool>() {
+    // @Override
+    // public Pool getValue() {
+    // return new Pool("PerRequest", "Constructed");
+    // }
+    // };
+    // }
+    //
+    // });
+
     // HttpServer server =
     // GrizzlyServerFactory.createHttpServer(URI.create("http://" +
     // NetworkListener.DEFAULT_NETWORK_HOST + ":" + PACS.RESTPort + "/"), rc);

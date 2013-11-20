@@ -97,17 +97,20 @@ CREATE  INDEX study_created_timestamp_idx on STUDY (CreatedTimestamp ASC) ;
 CREATE  INDEX study_updated_timestamp_idx on STUDY (UpdatedTimestamp ASC) ;
 CREATE  INDEX study_status_idx on STUDY (StudyStatus ASC);
 
-CREATE TABLE POOL (
+CREATE TABLE Pool (
   PoolKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   Name VARCHAR(250) NOT NULL,
-  Path VARCHAR(250) NOT NULL
+  ApplicationEntityTitle VARCHAR(256),
+  Description VARCHAR(250) NOT NULL,
+  
+  CONSTRAINT Unique_AETitle UNIQUE(ApplicationEntityTitle)
 );
 
-CREATE TABLE ENTITY (
-  EntityKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
+CREATE TABLE DEVICE (
+  DeviceKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   PoolKey INT NOT NULL,
-  AETitle VARCHAR(250),
-  Hostname VARCHAR(250),
+  ApplicationEntityTitle VARCHAR(250),
+  HostName VARCHAR(250),
   Port INT
 );
 

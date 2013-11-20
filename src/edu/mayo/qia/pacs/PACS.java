@@ -6,6 +6,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class PACS {
@@ -15,6 +16,7 @@ public class PACS {
   public static int DICOMPort = -1;
   public static int RESTPort = -1;
   public static final String sorterQueue = "pacs.sorter";
+  static Logger logger = Logger.getLogger(PACS.class);
 
   /**
    * Start the research PACS in the current directory, or the one specified on
@@ -51,7 +53,9 @@ public class PACS {
 
     // Load our beans
     context = new AnnotationConfigApplicationContext();
-    context.scan("edu.mayo.qia.pacs");
+    context.scan("edu.mayo.qia.pacs", "edu.mayo.qia.pacs.dao");
     context.refresh();
+
+    logger.info("\n=====\n\nResearch PACS Started\n\tREST PORT: " + RESTPort + "\n\tDICOM Port: " + DICOMPort + "\n\tHome directory: " + directory.getAbsolutePath() + "\n\tURL: http://localhost:" + RESTPort + "\n\n=====\n");
   }
 }
