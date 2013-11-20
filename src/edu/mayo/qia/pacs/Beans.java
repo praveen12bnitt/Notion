@@ -156,7 +156,7 @@ public class Beans {
     adapter.setDelegate(poolManager);
     container.setMessageListener(adapter);
     container.setTaskExecutor(taskExecutor());
-    container.setMaxConcurrentConsumers(3);
+    container.setMaxConcurrentConsumers(1);
     container.setMaxMessagesPerTask(10);
     container.setDestinationName(PACS.sorterQueue);
     container.setConnectionFactory(connectionFactory());
