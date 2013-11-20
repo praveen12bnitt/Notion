@@ -4,7 +4,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -12,6 +15,9 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.AssociationAcceptEvent;
+import org.dcm4che2.net.AssociationCloseEvent;
+import org.dcm4che2.net.AssociationListener;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.PDVInputStream;
 import org.dcm4che2.net.Status;
@@ -21,16 +27,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
 @Component
-public class StorageSCP extends StorageService {
+public class StorageSCP extends StorageService implements AssociationListener {
   static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
+  ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
 
   @Autowired
   JdbcTemplate template;
+
+  @Autowired
+  JmsTemplate jmsTemplate;
 
   public static final String[] CUIDS = { UID.BasicStudyContentNotificationSOPClassRetired, UID.StoredPrintStorageSOPClassRetired, UID.HardcopyGrayscaleImageStorageSOPClassRetired, UID.HardcopyColorImageStorageSOPClassRetired,
       UID.ComputedRadiographyImageStorage, UID.DigitalXRayImageStorageForPresentation, UID.DigitalXRayImageStorageForProcessing, UID.DigitalMammographyXRayImageStorageForPresentation, UID.DigitalMammographyXRayImageStorageForProcessing,
@@ -55,18 +68,19 @@ public class StorageSCP extends StorageService {
   protected void onCStoreRQ(Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
     logger.info("Got request");
 
-    // Check to see if this is a valid Called AET
-    int count = template.queryForObject("select count(*) from ENTITY where Entity = ?", Integer.class, as.getCalledAET());
-    if (count != 1) {
+    AssociationInfo info = associationMap.get(as);
+    if (info == null) {
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
+
+    }
+    if (!info.canConnect) {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
     }
 
     String cuid = rq.getString(Tag.AffectedSOPClassUID);
     String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
 
-    File incoming = new File(PACS.directory, "incoming");
-    File root = new File(incoming, as.getCalledAET());
-    root.mkdirs();
+    File root = info.root;
     // Here we want to use a UUID so we don't have duplicates...
     UUID uuid = UUID.randomUUID();
 
@@ -92,7 +106,43 @@ public class StorageSCP extends StorageService {
     File rename = new File(root, uuid.toString());
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
-    // Tell someone else to process it
-    // TODO:
+    jmsTemplate.convertAndSend(PACS.sorterQueue, new ProcessIncomingInstance(as, rename));
+  }
+
+  @Override
+  public void associationAccepted(AssociationAcceptEvent event) {
+    // Check to see if this AE can connect
+    final AssociationInfo info = new AssociationInfo();
+    final Association association = event.getAssociation();
+    associationMap.put(association, info);
+    File incoming = new File(PACS.directory, "incoming");
+    info.root = new File(incoming, event.getAssociation().getCalledAET());
+    info.root.mkdirs();
+
+    final String remoteHostName = association.getSocket().getInetAddress().getHostName();
+    final String callingAET = association.getCallingAET();
+
+    template.query("select Device.ApplicationEntityTitle AS AET,  Device.HostName AS HN from Device, Pool where Device.PoolKey = Pool.PoolKey and Pool.ApplicationEntityTitle = ?", new Object[] { event.getAssociation().getCalledAET() },
+        new RowCallbackHandler() {
+
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            String AET = rs.getString("AET");
+            String HN = rs.getString("HN");
+            if (remoteHostName.matches(HN) && callingAET.matches(AET)) {
+              info.canConnect = true;
+            }
+          }
+        });
+  }
+
+  @Override
+  public void associationClosed(AssociationCloseEvent event) {
+    associationMap.remove(event.getAssociation());
+  }
+
+  static class AssociationInfo {
+    public boolean canConnect = false;
+    File root;
   }
 }
