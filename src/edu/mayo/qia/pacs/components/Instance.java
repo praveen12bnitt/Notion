@@ -32,6 +32,9 @@ public class Instance {
   public Date ContentTime;
   public String FilePath;
 
+  public Instance() {
+  }
+
   public Instance(DicomObject tags, String path) {
     SOPInstanceUID = tags.getString(Tag.SOPInstanceUID);
     SOPClassUID = tags.getString(Tag.SOPClassUID);

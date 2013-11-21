@@ -47,6 +47,9 @@ public class Study {
   String ReferringPhysicianName;
   String StudyDescription;
 
+  public Study() {
+  }
+
   public Study(DicomObject tags) {
     StudyInstanceUID = tags.getString(Tag.StudyInstanceUID);
     AccessionNumber = tags.getString(Tag.AccessionNumber);

@@ -42,6 +42,9 @@ public final class Series {
   public String PerformingPhysicianName;
   public int NumberOfSeriesRelatedInstances;
 
+  public Series() {
+  }
+
   public Series(DicomObject tags) {
     SeriesInstanceUID = tags.getString(Tag.SeriesInstanceUID);
     SeriesNumber = tags.getString(Tag.SeriesNumber);
