@@ -26,17 +26,19 @@ import org.dcm4che2.util.CloseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
 @Component
 public class StorageSCP extends StorageService implements AssociationListener {
-  static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
+  static Logger logger = LoggerFactory.getLogger(StorageSCP.class);
   ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
 
   @Autowired
@@ -44,6 +46,12 @@ public class StorageSCP extends StorageService implements AssociationListener {
 
   @Autowired
   JmsTemplate jmsTemplate;
+
+  @Autowired
+  PoolManager poolManager;
+
+  @Autowired
+  TaskExecutor taskExecutor;
 
   public static final String[] CUIDS = { UID.BasicStudyContentNotificationSOPClassRetired, UID.StoredPrintStorageSOPClassRetired, UID.HardcopyGrayscaleImageStorageSOPClassRetired, UID.HardcopyColorImageStorageSOPClassRetired,
       UID.ComputedRadiographyImageStorage, UID.DigitalXRayImageStorageForPresentation, UID.DigitalXRayImageStorageForProcessing, UID.DigitalMammographyXRayImageStorageForPresentation, UID.DigitalMammographyXRayImageStorageForProcessing,
@@ -65,7 +73,7 @@ public class StorageSCP extends StorageService implements AssociationListener {
   }
 
   @Override
-  protected void onCStoreRQ(Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
+  protected void onCStoreRQ(final Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
     logger.info("Got request");
 
     AssociationInfo info = associationMap.get(as);
@@ -103,10 +111,34 @@ public class StorageSCP extends StorageService implements AssociationListener {
 
     // Rename the file after it has been written. See DCM-279
     // XB3 File rename = new File(file.getParent(), iuid);
-    File rename = new File(root, uuid.toString());
+    final File rename = new File(root, uuid.toString());
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
-    jmsTemplate.convertAndSend(PACS.sorterQueue, new ProcessIncomingInstance(as, rename));
+
+    boolean singleThreaded = true;
+    if (singleThreaded) {
+      try {
+        poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
+      } catch (Exception e) {
+        logger.error("Error handling new instance", e);
+      }
+
+    } else {
+
+      taskExecutor.execute(new Runnable() {
+
+        @Override
+        public void run() {
+          try {
+            poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
+          } catch (Exception e) {
+            logger.error("Error handling new instance", e);
+          }
+        }
+      });
+      // jmsTemplate.convertAndSend(PACS.sorterQueue, );
+      logger.info("Done");
+    }
   }
 
   @Override
