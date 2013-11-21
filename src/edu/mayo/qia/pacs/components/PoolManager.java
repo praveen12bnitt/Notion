@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.io.Files;
 
-import edu.mayo.qia.pacs.db.ImportHelper;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
@@ -37,6 +36,8 @@ import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 @Component
 public class PoolManager {
   static Logger logger = Logger.getLogger(PoolManager.class);
+  public static final String SortedFilenameFormat = "AccessionNumber/StudyInstanceUID/SeriesInstanceUID/SOPInstanceUID";
+
   ConcurrentMap<String, Integer> instanceUIDs = new ConcurrentHashMap<String, Integer>();
   ConcurrentMap<String, Integer> seriesUIDs = new ConcurrentHashMap<String, Integer>();
   ConcurrentMap<String, Integer> studyUIDs = new ConcurrentHashMap<String, Integer>();
@@ -51,9 +52,6 @@ public class PoolManager {
 
   @Autowired
   SessionFactory sessionFactory;
-
-  @Autowired
-  ImportHelper importHelper;
 
   @SuppressWarnings("unchecked")
   @PostConstruct
@@ -110,7 +108,7 @@ public class PoolManager {
       // Now what?
     }
     File inFile = request.file;
-    File relativePath = importHelper.constructRelativeFileName(tags);
+    File relativePath = constructRelativeFileName(tags);
 
     File outFile = new File(container.poolDirectory, relativePath.getPath());
 
@@ -126,45 +124,66 @@ public class PoolManager {
     // Insert
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
-    Pool pool = (Pool) session.merge(container.pool);
 
-    Query query;
-    query = session.createQuery("from STUDY where PoolKey = :poolkey and StudyInstanceUID = :suid");
-    query.setInteger("poolkey", pool.poolKey);
-    query.setString("suid", tags.getString(Tag.StudyInstanceUID));
-    Study study = (Study) query.uniqueResult();
-    if (study == null) {
-      study = new Study(tags);
-      study.pool = pool;
-      session.saveOrUpdate(study);
+    try {
+      Pool pool = (Pool) session.merge(container.pool);
+
+      Query query;
+      query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
+      query.setInteger("poolkey", pool.poolKey);
+      query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+      Study study = (Study) query.uniqueResult();
+      if (study == null) {
+        study = new Study(tags);
+        study.pool = pool;
+        session.saveOrUpdate(study);
+      }
+
+      // Find the Instance
+      query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
+      query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+      Series series = (Series) query.uniqueResult();
+      if (series == null) {
+        series = new Series(tags);
+        series.study = study;
+        session.saveOrUpdate(series);
+      }
+
+      // Find the Instance
+      query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
+      query.setString("suid", tags.getString(Tag.SOPInstanceUID));
+      Instance instance = (Instance) query.uniqueResult();
+      if (instance == null) {
+        instance = new Instance(tags, relativePath.getPath());
+        instance.series = series;
+        session.saveOrUpdate(instance);
+      }
+
+      // Copy the file, remove later
+      Files.copy(inFile, outFile);
+      logger.debug("Moved file " + inFile + " to " + outFile);
+
+      // Delete the input file, it is not needed any more
+      inFile.delete();
+    } catch (Exception e) {
+      logger.error("Caught exception", e);
+    } finally {
+      session.getTransaction().commit();
     }
-
-    // Find the Instance
-    query = session.createQuery("from SEREIS where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
-    query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
-    Series series = (Series) query.uniqueResult();
-    if (series == null) {
-      series = new Series(tags);
-      series.study = study;
-      session.saveOrUpdate(series);
-    }
-
-    // Find the Instance
-    query = session.createQuery("from INSTANCE where SeriesKey = :serieskey and SOPInstanceUID = :uid").setInteger("serieskey", series.SeriesKey);
-    query.setString("suid", tags.getString(Tag.SOPInstanceUID));
-    Instance instance = (Instance) query.uniqueResult();
-    if (instance == null) {
-      instance = new Instance(tags, relativePath.getPath());
-      instance.series = series;
-      session.saveOrUpdate(instance);
-    }
-
-    // Copy the file, remove later
-    Files.copy(inFile, outFile);
-    logger.debug("Moved file " + inFile + " to " + outFile);
-
-    // Delete the input file, it is not needed any more
-    inFile.delete();
 
   }
+
+  static File constructRelativeFileName(DicomObject dataset) {
+    String[] pathFormat = SortedFilenameFormat.split("/");
+    File relativePath = new File("sorted");
+    for (String tag : pathFormat) {
+      String t = dataset.getString(Tag.forName(tag));
+      if (t == null) {
+        t = "UNKNOWN";
+      }
+      relativePath = new File(relativePath, t);
+    }
+    return relativePath;
+  }
+
 }
