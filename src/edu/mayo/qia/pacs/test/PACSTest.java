@@ -1,5 +1,6 @@
 package edu.mayo.qia.pacs.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -13,17 +14,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.Device;
+import edu.mayo.qia.pacs.components.Pool;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = { PACSTest.class })
@@ -36,6 +42,9 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
 
   static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).build();
   static final String JSON = MediaType.APPLICATION_JSON;
+
+  @Autowired
+  JdbcTemplate template;
 
   static {
     ClientConfig config = new DefaultClientConfig();
@@ -62,6 +71,29 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   @Test
   public void configuration() {
     assertTrue(PACS.context != null);
+  }
+
+  Pool createPool(Pool pool) {
+    ClientResponse response = null;
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
+    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, pool);
+    assertEquals("Got result", 200, response.getStatus());
+    pool = response.getEntity(Pool.class);
+    assertTrue("Assigned an id", pool.poolKey != 0);
+    return pool;
+
+  }
+
+  Device createDevice(Device device) {
+    // Create a device
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + device.getPool().poolKey + "/device").build();
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, device);
+    assertEquals("Got result", 200, response.getStatus());
+    device = response.getEntity(Device.class);
+    logger.info("Entity back: " + device);
+    assertTrue("Assigned a deviceKey", device.deviceKey != 0);
+    return device;
+
   }
 
 }
