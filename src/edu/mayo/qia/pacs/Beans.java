@@ -21,6 +21,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -206,64 +207,12 @@ public class Beans {
     ResourceConfig rc = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
     rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
 
-    // rc.getSingletons().add(new
-    // SingletonTypeInjectableProvider<javax.ws.rs.core.Context,
-    // Integer>(Integer.class, new Integer(12)) {
-    // });
-    // // rc.getSingletons().add(new
-    // // SingletonTypeInjectableProvider<javax.ws.rs.core.Context,
-    // // Pool>(Pool.class, new Pool("Singleton", "Singleton")) {
-    // // });
-    //
-    // // ContextInjectableProvider c;
-    // ThreadLocalSingletonContextProvider p;
-    // rc.getSingletons().add(new
-    // ThreadLocalSingletonContextProvider<Session>(Session.class) {
-    //
-    // @Override
-    // protected Session getInstance() {
-    // return
-    // PACS.context.getBean(LocalSessionFactoryBean.class).getObject().openSession();
-    // }
-    //
-    // });
-    //
-    // rc.getClasses().add(ResourceConfig.class);
-    // rc.getProviderSingletons().add(new
-    // PerRequestTypeInjectableProvider<Context, Pool>(Pool.class) {
-
-    //
-    // final GenericEntity<ThreadLocal<Request>> requestThreadLocal =
-    // new GenericEntity<ThreadLocal<Request>>(
-    // requestInvoker.getImmutableThreadLocal()) {
-    // };
-    //
-    // resourceConfig.getSingletons().add(
-    // new ContextInjectableProvider<ThreadLocal<Request>>(
-    // requestThreadLocal.getType(), requestThreadLocal.getEntity()));
-    //
-    //
-    //
-    // @Override
-    // public Injectable<Pool> getInjectable(ComponentContext ic, Context a) {
-    // // TODO Auto-generated method stub
-    // return new Injectable<Pool>() {
-    // @Override
-    // public Pool getValue() {
-    // return new Pool("PerRequest", "Constructed");
-    // }
-    // };
-    // }
-    //
-    // });
-
-    // HttpServer server =
-    // GrizzlyServerFactory.createHttpServer(URI.create("http://" +
-    // NetworkListener.DEFAULT_NETWORK_HOST + ":" + PACS.RESTPort + "/"), rc);
-
     SpringComponentProviderFactory handler = new SpringComponentProviderFactory(rc, PACS.context);
     HttpHandler processor = ContainerFactory.createContainer(HttpHandler.class, rc, handler);
-    server.getServerConfiguration().addHttpHandler(processor, "");
+    server.getServerConfiguration().addHttpHandler(processor, "/rest");
+    StaticHttpHandler staticHandler = new StaticHttpHandler(new File(PACS.directory, "html").getAbsolutePath());
+    staticHandler.setFileCacheEnabled(false);
+    server.getServerConfiguration().addHttpHandler(staticHandler, "/");
 
     server.start();
     return server;

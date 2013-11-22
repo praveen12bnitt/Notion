@@ -23,6 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.ImmutableBiMap.Builder;
 import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
@@ -53,13 +54,14 @@ public class PoolEndpoint {
   /** List all the pools */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Pool> listPools() {
+  public Response listPools() {
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     @SuppressWarnings("unchecked")
     List<Pool> result = session.createCriteria(Pool.class).list();
     session.getTransaction().commit();
-    return result;
+    SimpleResponse s = new SimpleResponse("pool", result);
+    return Response.ok(s).build();
   }
 
   /** Devices */

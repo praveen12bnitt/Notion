@@ -28,7 +28,8 @@ public class PoolContainer {
     logger.info("Starting up pool: " + pool);
 
     // See if the directory exists
-    poolDirectory = new File(PACS.directory, Integer.toString(pool.poolKey));
+    File poolBase = new File(PACS.directory, "ImageStorage");
+    poolDirectory = new File(poolBase, Integer.toString(pool.poolKey));
     if (!poolDirectory.exists()) {
       poolDirectory.mkdirs();
     }

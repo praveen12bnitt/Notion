@@ -46,7 +46,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static final int RESTPort = 12346;
   static Client client;
 
-  static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).build();
+  static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).path("rest").build();
   static final String JSON = MediaType.APPLICATION_JSON;
 
   @Autowired
