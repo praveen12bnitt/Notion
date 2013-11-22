@@ -56,10 +56,22 @@ import org.dcm4che2.net.service.CFindSCP;
 import org.dcm4che2.net.service.DicomService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
+import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
+
+@Component
 public class FindSCP extends DicomService implements CFindSCP {
   static Logger logger = LoggerFactory.getLogger(FindSCP.class);
   public static String[] PresentationContexts = new String[] { UID.PatientRootQueryRetrieveInformationModelFIND, UID.StudyRootQueryRetrieveInformationModelFIND };
+
+  @Autowired
+  JdbcTemplate template;
+
+  @Autowired
+  DICOMReceiver dicomReceiver;
 
   public FindSCP() {
     super(PresentationContexts);
@@ -74,6 +86,15 @@ public class FindSCP extends DicomService implements CFindSCP {
 
   @Override
   public void cfind(final Association as, final int pcid, DicomObject rq, final DicomObject data) throws DicomServiceException, IOException {
+
+    AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
+    if (info == null) {
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
+
+    }
+    if (!info.canConnect) {
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
+    }
 
     logger.info("Got request: \n" + rq);
     logger.info("Got data: \n" + data);

@@ -12,7 +12,9 @@ import org.dcm4che2.net.service.CMoveSCP;
 import org.dcm4che2.net.service.DicomService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MoveSCP extends DicomService implements CMoveSCP {
   static Logger logger = LoggerFactory.getLogger(MoveSCP.class);
 

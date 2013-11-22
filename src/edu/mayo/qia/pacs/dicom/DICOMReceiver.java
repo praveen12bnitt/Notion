@@ -1,12 +1,21 @@
 package edu.mayo.qia.pacs.dicom;
 
+import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
 import org.dcm4che2.data.UID;
+import org.dcm4che2.net.Association;
+import org.dcm4che2.net.AssociationAcceptEvent;
+import org.dcm4che2.net.AssociationCloseEvent;
+import org.dcm4che2.net.AssociationListener;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
@@ -16,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
@@ -28,10 +39,11 @@ import edu.mayo.qia.pacs.PACS;
  * @author Daniel Blezek
  * 
  */
-@Component
+@Component("dicomReceiver")
 @DependsOn("flyway")
-public class DICOMReceiver {
+public class DICOMReceiver implements AssociationListener {
   static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
+  private ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
 
   private final Device device = new Device(null);
   private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
@@ -40,8 +52,14 @@ public class DICOMReceiver {
   @Autowired
   StorageSCP storageSCP;
 
-  private final FindSCP findSCP = new FindSCP();
-  private final MoveSCP moveSCP = new MoveSCP();
+  @Autowired
+  JdbcTemplate template;
+
+  @Autowired
+  FindSCP findSCP;
+  @Autowired
+  MoveSCP moveSCP;
+
   private final Executor executor = Executors.newCachedThreadPool();
 
   private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
@@ -101,63 +119,51 @@ public class DICOMReceiver {
     ae.register(findSCP);
     ae.register(moveSCP);
 
-    ae.addAssociationListener(storageSCP);
+    ae.addAssociationListener(this);
 
     device.startListening(executor);
 
-    // if (dcmrcv == null) {
-    // dcmrcv = new DcmRcv(aeTitle);
-    // dcmrcv.setPort(port);
-    // dcmrcv.setDestination(destination);
-    // associationInfoCollector.setServer(getServer());
-    // associationInfoCollector.setBaseDirectory(destination);
-    // String hostName = DeweyUtilities.getHostname();
-    // if (hostName == null) {
-    // hostName = "unknown";
-    // }
-    // try {
-    // associationInfoCollector.startDB(aeTitle, hostName, port);
-    // } catch (Exception e) {
-    // logger.error("Error starting DB", e);
-    // throw e;
-    // }
-    // dcmrcv.setCollector(associationInfoCollector);
-    // dcmrcv.getNetworkApplicationEntity().addAssociationListener(associationInfoCollector);
-    // }
-    // dcmrcv.setPackPDV(true);
-    // dcmrcv.setTcpNoDelay(true);
-    // dcmrcv.initTransferCapability();
-    //
-    // // DJB Test
-    // final String[] NON_RETIRED_LE_TS = { UID.JPEGLSLossless,
-    // UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
-    // UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
-    // UID.RLELossless, UID.ExplicitVRLittleEndian, UID.ImplicitVRLittleEndian,
-    // UID.JPEGBaseline1, UID.JPEGExtended24, UID.JPEGLSLossyNearLossless,
-    // UID.JPEG2000, UID.MPEG2, };
-    //
-    // String[] tsuids = NON_RETIRED_LE_TS;
-    //
-    // NetworkApplicationEntity ae = dcmrcv.getNetworkApplicationEntity();
-    // ae.register(new CFindService());
-    // ae.register(new CMoveService());
-    // // Append the Transfer Capabilities for QUERY
-    // ArrayList<TransferCapability> tc = new
-    // ArrayList<TransferCapability>(Arrays.asList(ae.getTransferCapability()));
-    // tc.add(new
-    // TransferCapability(UID.PatientRootQueryRetrieveInformationModelFIND,
-    // tsuids, TransferCapability.SCP));
-    // tc.add(new
-    // TransferCapability(UID.StudyRootQueryRetrieveInformationModelFIND,
-    // tsuids, TransferCapability.SCP));
-    // tc.add(new
-    // TransferCapability(UID.PatientRootQueryRetrieveInformationModelMOVE,
-    // tsuids, TransferCapability.SCP));
-    // tc.add(new
-    // TransferCapability(UID.StudyRootQueryRetrieveInformationModelMOVE,
-    // tsuids, TransferCapability.SCP));
-    // ae.setTransferCapability(tc.toArray(ae.getTransferCapability()));
-    // dcmrcv.start();
+  }
+
+  @Override
+  public void associationAccepted(AssociationAcceptEvent event) {
+    // Check to see if this AE can connect
+    final AssociationInfo info = new AssociationInfo();
+    final Association association = event.getAssociation();
+    associationMap.put(association, info);
+    File incoming = new File(PACS.directory, "incoming");
+    info.root = new File(incoming, event.getAssociation().getCalledAET());
+    info.root.mkdirs();
+
+    final String remoteHostName = association.getSocket().getInetAddress().getHostName();
+    final String callingAET = association.getCallingAET();
+
+    template.query("select Device.ApplicationEntityTitle AS AET,  Device.HostName AS HN from Device, Pool where Device.PoolKey = Pool.PoolKey and Pool.ApplicationEntityTitle = ?", new Object[] { event.getAssociation().getCalledAET() },
+        new RowCallbackHandler() {
+
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            String AET = rs.getString("AET");
+            String HN = rs.getString("HN");
+            if (remoteHostName.matches(HN) && callingAET.matches(AET)) {
+              info.canConnect = true;
+            }
+          }
+        });
+  }
+
+  @Override
+  public void associationClosed(AssociationCloseEvent event) {
+    associationMap.remove(event.getAssociation());
+  }
+
+  static class AssociationInfo {
+    public boolean canConnect = false;
+    File root;
+  }
+
+  public Map<Association, AssociationInfo> getAssociationMap() {
+    return associationMap;
   }
 
 }

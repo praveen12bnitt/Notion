@@ -6,17 +6,22 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -30,6 +35,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.dicom.DcmSnd;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = { PACSTest.class })
@@ -94,6 +100,40 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     assertTrue("Assigned a deviceKey", device.deviceKey != 0);
     return device;
 
+  }
+
+  protected List<File> sendDICOM(String called, String calling, String series) throws IOException, ConfigurationException, InterruptedException {
+    // Send the files
+    DcmSnd sender = new DcmSnd();
+    // Startup the sender
+    sender.setRemoteHost("localhost");
+    sender.setRemotePort(DICOMPort);
+    sender.setCalledAET(called);
+    sender.setCalling(calling);
+    List<File> testSeries = getTestSeries(series);
+    for (File f : testSeries) {
+      if (f.isFile()) {
+        sender.addFile(f);
+      }
+    }
+    sender.configureTransferCapability();
+    sender.start();
+    sender.open();
+    sender.send();
+    sender.close();
+    sender.stop();
+    return testSeries;
+  }
+
+  protected List<File> getTestSeries(String resource_pattern) throws IOException {
+    // Load some files
+    PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    Resource[] resources = resolver.getResources("classpath:" + resource_pattern);
+    List<File> files = new ArrayList<File>();
+    for (Resource resource : resources) {
+      files.add(resource.getFile());
+    }
+    return files;
   }
 
 }
