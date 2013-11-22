@@ -24,7 +24,6 @@ import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
-import edu.mayo.qia.pacs.dao.DeviceDAO;
 
 // Create a new one every time
 /*
@@ -41,9 +40,6 @@ public class DeviceEndpoint {
 
   @Autowired
   JdbcTemplate template;
-
-  @Autowired
-  DeviceDAO deviceDAO;
 
   public int poolKey;
 

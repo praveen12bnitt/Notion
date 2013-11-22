@@ -22,6 +22,20 @@ public final class Device {
   @JoinColumn(name = "PoolKey")
   private Pool pool;
 
+  public Device() {
+  }
+
+  public Device(String applicationEntityTitle, String hostName, int port) {
+    this(applicationEntityTitle, hostName, port, null);
+  }
+
+  public Device(String applicationEntityTitle, String hostName, int port, Pool pool) {
+    this.applicationEntityTitle = applicationEntityTitle;
+    this.hostName = hostName;
+    this.port = port;
+    this.pool = pool;
+  }
+
   public Pool getPool() {
     return pool;
   }

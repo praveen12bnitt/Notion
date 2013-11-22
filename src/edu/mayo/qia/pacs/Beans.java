@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -45,6 +47,8 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.spi.spring.container.SpringComponentProviderFactory;
 
+import edu.mayo.qia.pacs.components.PoolManager;
+
 @Configuration
 @EnableScheduling
 @EnableAsync
@@ -52,7 +56,7 @@ public class Beans {
   static Logger logger = Logger.getLogger(Beans.class);
 
   @Autowired
-  Sorter sorter;
+  PoolManager poolManager;
 
   @Bean
   @DependsOn("flyway")
@@ -129,14 +133,30 @@ public class Beans {
   }
 
   @Bean
+  public TaskScheduler taskScheduler() {
+    ThreadPoolTaskScheduler s = new ThreadPoolTaskScheduler();
+    s.setPoolSize(2);
+    return s;
+  }
+
+  @Bean
+  @DependsOn("flyway")
+  public ThreadPoolTaskExecutor taskExecutor() {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+    taskExecutor.setCorePoolSize(2);
+    taskExecutor.setMaxPoolSize(10);
+    return taskExecutor;
+  }
+
+  @Bean
   @DependsOn("flyway")
   public DefaultMessageListenerContainer sorterContainer() throws Exception {
     DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
     MessageListenerAdapter adapter = new MessageListenerAdapter();
-    adapter.setDelegate(sorter);
+    adapter.setDelegate(poolManager);
     container.setMessageListener(adapter);
     container.setTaskExecutor(taskExecutor());
-    container.setMaxConcurrentConsumers(3);
+    container.setMaxConcurrentConsumers(1);
     container.setMaxMessagesPerTask(10);
     container.setDestinationName(PACS.sorterQueue);
     container.setConnectionFactory(connectionFactory());
@@ -168,20 +188,6 @@ public class Beans {
     jmsTemplate.setConnectionFactory(connectionFactory());
     jmsTemplate.setMessageConverter(messageConverter());
     return jmsTemplate;
-  }
-
-  @Bean
-  public TaskScheduler taskScheduler() {
-    return new ThreadPoolTaskScheduler();
-  }
-
-  @Bean
-  @DependsOn("flyway")
-  public ThreadPoolTaskExecutor taskExecutor() {
-    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-    taskExecutor.setCorePoolSize(2);
-    taskExecutor.setMaxPoolSize(100);
-    return taskExecutor;
   }
 
   @Bean

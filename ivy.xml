@@ -50,8 +50,10 @@ ResearchPACS dependancies.
     <dependency org="commons-cli" name="commons-cli" rev="1.2"/>
     <dependency org="org.apache.commons" name="commons-compress" rev="1.5"/>
 
-	<!-- Hibernate -->
-	<dependency org="org.hibernate" name="hibernate-core" rev="4.2.7.Final"/>
+    <dependency org="com.google.guava" name="guava" rev="13.0.1"/>
+
+    <!-- Hibernate -->
+    <dependency org="org.hibernate" name="hibernate-core" rev="4.2.7.Final"/>
 
     <!-- Spring -->
     <dependency org="org.springframework" name="spring-core" rev="&spring.version;" conf="default->master">

@@ -15,7 +15,7 @@ CREATE  TABLE SERIES (
   StationName VARCHAR(250)  ,
   InstitutionalDepartmentName VARCHAR(250)  ,
   PerformingPhysicianName VARCHAR(250)  ,
-  NumberOfSeriesRelatedInstances VARCHAR(250)  ,
+  NumberOfSeriesRelatedInstances INT  ,
   CreatedTime TIMESTAMP  ,
   UpdatedTime TIMESTAMP 
  );
@@ -47,8 +47,8 @@ CREATE  TABLE INSTANCE (
   SOPInstanceUID VARCHAR(250) NOT NULL ,
   SOPClassUID VARCHAR(250) NOT NULL ,
   InstanceNumber VARCHAR(250)  ,
-  ContentDate VARCHAR(250)  ,
-  ContentTime VARCHAR(250)  ,
+  ContentDate TIMESTAMP  ,
+  ContentTime TIMESTAMP  ,
   UpdatedTime TIMESTAMP  ,
   CreatedTime TIMESTAMP  ,
   FilePath VARCHAR(250) NOT NULL ,
@@ -71,17 +71,16 @@ CREATE  TABLE STUDY (
   StudyKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   PoolKey INT NOT NULL,
   PatientID VARCHAR(250)  ,
-  Patientname VARCHAR(250)  ,
-  PatientBirthDate VARCHAR(250)  ,
+  PatientName VARCHAR(250)  ,
+  PatientBirthDate TIMESTAMP  ,
   PatientSex VARCHAR(250)  ,
   StudyInstanceUID VARCHAR(250) NOT NULL ,
   StudyID VARCHAR(250)  ,
-  StudyDate VARCHAR(250)  ,
-  StudyTime VARCHAR(250)  ,
+  StudyDate TIMESTAMP  ,
+  StudyTime TIMESTAMP  ,
   AccessionNumber VARCHAR(250)  ,
   ReferringPhysicianName VARCHAR(250)  ,
   StudyDescription VARCHAR(250)  ,
-  StudyStatus VARCHAR(16) NOT NULL ,
   UpdatedTimestamp TIMESTAMP  ,
   CreatedTimestamp TIMESTAMP 
 );
@@ -95,7 +94,6 @@ CREATE  INDEX ReferringPhysicianName_idx on STUDY (ReferringPhysicianName ASC) ;
 CREATE  INDEX StudyDescription_idx on STUDY (StudyDescription ASC) ;
 CREATE  INDEX study_created_timestamp_idx on STUDY (CreatedTimestamp ASC) ;
 CREATE  INDEX study_updated_timestamp_idx on STUDY (UpdatedTimestamp ASC) ;
-CREATE  INDEX study_status_idx on STUDY (StudyStatus ASC);
 
 CREATE TABLE Pool (
   PoolKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,

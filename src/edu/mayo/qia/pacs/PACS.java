@@ -18,6 +18,8 @@ public class PACS {
   public static final String sorterQueue = "pacs.sorter";
   static Logger logger = Logger.getLogger(PACS.class);
 
+  public static String version = "1.0.0.0";
+
   /**
    * Start the research PACS in the current directory, or the one specified on
    * the command line.
@@ -53,7 +55,7 @@ public class PACS {
 
     // Load our beans
     context = new AnnotationConfigApplicationContext();
-    context.scan("edu.mayo.qia.pacs", "edu.mayo.qia.pacs.dao");
+    context.scan("edu.mayo.qia.pacs", "edu.mayo.qia.pacs.dicom");
     context.refresh();
 
     logger.info("\n=====\n\nResearch PACS Started\n\tREST PORT: " + RESTPort + "\n\tDICOM Port: " + DICOMPort + "\n\tHome directory: " + directory.getAbsolutePath() + "\n\tURL: http://localhost:" + RESTPort + "\n\n=====\n");
