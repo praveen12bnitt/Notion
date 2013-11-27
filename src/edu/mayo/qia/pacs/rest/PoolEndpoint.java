@@ -79,6 +79,10 @@ public class PoolEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createPool(Pool pool) {
 
+    if (pool.name == null || pool.description == null || pool.applicationEntityTitle == null) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle, Name and Description must not be empty")).build();
+    }
+
     // Does the name conform to what we expect?
     if (!pool.applicationEntityTitle.matches("[a-zA-Z_\\-0-9]+")) {
       return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle must consist of letters, numbers dashes, and underscores only")).build();

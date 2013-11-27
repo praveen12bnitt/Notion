@@ -10,3 +10,5 @@ lib-testing/
 lib/
 test-reports/
 LocalPACS
+node_modules
+ui/public

@@ -79,7 +79,7 @@ public class DICOMReceiver implements AssociationListener {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *           if could not start database
+   *         if could not start database
    */
   @PostConstruct
   public synchronized void start() throws Exception {
@@ -138,13 +138,14 @@ public class DICOMReceiver implements AssociationListener {
     final String remoteHostName = association.getSocket().getInetAddress().getHostName();
     final String callingAET = association.getCallingAET();
 
-    template.query("select Device.ApplicationEntityTitle AS AET,  Device.HostName AS HN from Device, Pool where Device.PoolKey = Pool.PoolKey and Pool.ApplicationEntityTitle = ?", new Object[] { event.getAssociation().getCalledAET() },
+    template.query("select Device.ApplicationEntityTitle AS AET,  Device.HostName AS HN, Pool.PoolKey as PK from Device, Pool where Device.PoolKey = Pool.PoolKey and Pool.ApplicationEntityTitle = ?", new Object[] { event.getAssociation().getCalledAET() },
         new RowCallbackHandler() {
 
           @Override
           public void processRow(ResultSet rs) throws SQLException {
             String AET = rs.getString("AET");
             String HN = rs.getString("HN");
+            info.poolKey = rs.getInt("PK");
             if (remoteHostName.matches(HN) && callingAET.matches(AET)) {
               info.canConnect = true;
             }
@@ -160,6 +161,7 @@ public class DICOMReceiver implements AssociationListener {
   static class AssociationInfo {
     public boolean canConnect = false;
     File root;
+    int poolKey;
   }
 
   public Map<Association, AssociationInfo> getAssociationMap() {

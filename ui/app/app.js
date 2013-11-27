@@ -1,12 +1,18 @@
-App = Ember.Application.create({})
+App = Ember.Application.create({
+	LOG_TRANSITIONS: true
+})
 
 
 // Routes go here
 App.Router.map(function() {
-	this.resource("pool", function() {
-		this.route("new", {path:"/new"})
-	});
-	this.resource('about');
+	// A 'resource' defines a group of routes that work together
+	this.resource("pools", function() {	
+		this.resource("pool", { path: ':pool_id'})
+		this.route("new")
+	})
+
+	this.route('about');
+	this.route("bill");
 })
 
 // Connecting to Slicer

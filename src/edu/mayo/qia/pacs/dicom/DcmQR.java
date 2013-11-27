@@ -402,7 +402,7 @@ public class DcmQR {
     return tc;
   }
 
-  private void open() throws IOException, ConfigurationException, InterruptedException {
+  public void open() throws IOException, ConfigurationException, InterruptedException {
     assoc = ae.connect(remoteAE, executor);
   }
 
