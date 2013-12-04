@@ -12,6 +12,6 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.mayo.qia.pacs.PACS"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${project_loc:ResearchPACS}/LocalPACS"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-db 8082 ${project_loc:ResearchPACS}/LocalPACS"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ResearchPACS"/>
 </launchConfiguration>
