@@ -1,7 +1,16 @@
+
+App.Device = DS.Model.extend({
+	hostName: DS.attr("string"),
+	applicationEntityTitle: DS.attr("string"),
+	port: DS.attr("int"),
+	pool: DS.belongsTo('pool')
+})
+
 App.Pool = DS.Model.extend({
 	name: DS.attr('string'),
 	description: DS.attr('string'),
-	applicationEntityTitle: DS.attr('string')
+	applicationEntityTitle: DS.attr('string'),
+	devices: DS.hasMany('device')
 });
 
 App.PoolSerializer = DS.RESTSerializer.extend({

@@ -1,5 +1,31 @@
 <div>
 
-	<b>{{name}}</b> this is the pool template
+	<b>Pool:</b> {{name}}<p/>
+	<b>Application Entity Title:</b> {{applicationEntityTitle}}<p/>
+	<b>Description:</b> {{description}}<p/>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>AE Title</th>
+				<th>Host</th>
+				<th>Port</th>
+			</tr>
+		</thead>
+		<tdata>
+			{{#each devices}}
+			<tr>
+				<th>{{this.applicationEntityTitle}}</th>
+				<th>{{this.hostName}}</th>
+				<th>{{this.port}}</th>
+			</th>
+			{{/each}}
+		</tdata>
+	</table>
+
+
+	{{outlet}}
+
+
 
 </div>

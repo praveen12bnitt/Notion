@@ -1,6 +1,8 @@
 package edu.mayo.qia.pacs.components;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -27,7 +29,6 @@ public final class Pool {
   public String description;
   public String applicationEntityTitle;
 
-  @JsonIgnore
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
   public Set<Device> devices = new HashSet<Device>();
@@ -39,6 +40,13 @@ public final class Pool {
   }
 
   public Pool() {
+  }
+
+  @JsonProperty("links")
+  public Map<String, String> getLinks() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("devices", "/pool/" + poolKey + "/device");
+    return map;
   }
 
   public String toString() {

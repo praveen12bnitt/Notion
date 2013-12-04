@@ -59,6 +59,9 @@ public class PoolEndpoint {
     session.beginTransaction();
     @SuppressWarnings("unchecked")
     List<Pool> result = session.createCriteria(Pool.class).list();
+    for (Pool pool : result) {
+      pool.getDevices().size();
+    }
     session.getTransaction().commit();
     SimpleResponse s = new SimpleResponse("pool", result);
     return Response.ok(s).build();

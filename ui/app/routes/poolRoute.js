@@ -20,6 +20,7 @@ App.PoolsPoolRoute = Ember.Route.extend({
 
 
 App.PoolRoute = Ember.Route.extend({
+
 	model: function(params) {
 		console.log ( "PoolRoute Model for ", params.pool_id)
 		var pool = this.store.getById ( 'pool', params.pool_id)

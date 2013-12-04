@@ -46,7 +46,7 @@ public class DeviceEndpoint {
   /** List all the pools */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Set<Device> listDevices() {
+  public Response listDevices() {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
@@ -54,7 +54,8 @@ public class DeviceEndpoint {
     // Force load
     pool.getDevices().size();
     session.getTransaction().commit();
-    return pool.getDevices();
+    SimpleResponse s = new SimpleResponse("device", pool.getDevices());
+    return Response.ok(s).build();
   }
 
   /** Create a Device. */

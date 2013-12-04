@@ -21,5 +21,9 @@ App.ApplicationAdapter = DS.RESTAdapter.extend({
   pathForType: function(type) {
   	console.log("pathForType: "+ type)
   	return type;
+  },
+  findHasMany: function ( store, record, url) {
+  	console.log ( "Calling to get " + record + " from " + url )
+  	return this._super ( store, record, url )
   }
 });
