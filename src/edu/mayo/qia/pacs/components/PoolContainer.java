@@ -35,7 +35,6 @@ public class PoolContainer {
     }
 
     // Would start CTP here as well
-
   }
 
   public void stop() {
@@ -43,7 +42,7 @@ public class PoolContainer {
     logger.info("Shutting down pool: " + pool);
   }
 
-  File getPoolDirectory() {
+  public File getPoolDirectory() {
     return poolDirectory;
   }
 }

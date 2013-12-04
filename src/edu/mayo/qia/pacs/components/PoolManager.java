@@ -42,7 +42,7 @@ public class PoolManager {
   ConcurrentMap<String, Integer> seriesUIDs = new ConcurrentHashMap<String, Integer>();
   ConcurrentMap<String, Integer> studyUIDs = new ConcurrentHashMap<String, Integer>();
   ScheduledFuture<?> future;
-  Map<String, PoolContainer> poolContainers = new HashMap<String, PoolContainer>();
+  ConcurrentMap<String, PoolContainer> poolContainers = new ConcurrentHashMap<String, PoolContainer>();
 
   @Autowired
   JdbcTemplate template;
@@ -90,6 +90,10 @@ public class PoolManager {
       poolContainer.stop();
     }
     future.cancel(true);
+  }
+
+  public PoolContainer getContainer(String aet) {
+    return poolContainers.get(aet);
   }
 
   /**
