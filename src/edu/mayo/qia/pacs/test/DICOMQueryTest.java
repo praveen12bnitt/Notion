@@ -17,11 +17,12 @@ import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.dicom.DcmMoveException;
 import edu.mayo.qia.pacs.dicom.DcmQR;
+import edu.mayo.qia.pacs.dicom.TagLoader;
 
 public class DICOMQueryTest extends PACSTest {
 
   @Test
-  public void test() throws Exception {
+  public void query() throws Exception {
 
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
@@ -32,15 +33,23 @@ public class DICOMQueryTest extends PACSTest {
     device = createDevice(device);
 
     List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
+    DicomObject tags = TagLoader.loadTags(testSeries.get(0));
 
     DcmQR dcmQR = new DcmQR();
     dcmQR.setRemoteHost("localhost");
     dcmQR.setRemotePort(DICOMPort);
     dcmQR.setCalledAET(aet);
     dcmQR.setCalling(aet);
-    // dcmQR.setMoveDest(cdServer.AETitle);
     dcmQR.open();
+
     DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    for (String tag : new String[] { "StudyInstanceUID", "StudyID", "AccessionNumber" }) {
+      assertEquals(tag, tags.getString(Tag.forName(tag)), response.getString(Tag.forName(tag)));
+    }
+    assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
   }
 }
