@@ -83,7 +83,7 @@ public class StorageSCP extends StorageService {
     String cuid = rq.getString(Tag.AffectedSOPClassUID);
     String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
 
-    File root = info.root;
+    File root = info.incomingRootDirectory;
     // Here we want to use a UUID so we don't have duplicates...
     UUID uuid = UUID.randomUUID();
 

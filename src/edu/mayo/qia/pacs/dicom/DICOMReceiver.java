@@ -31,6 +31,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.PoolManager;
 
 /**
  * Provides a stand-alone DICOM receiver rather than the heavyweight
@@ -56,7 +57,11 @@ public class DICOMReceiver implements AssociationListener {
   JdbcTemplate template;
 
   @Autowired
+  PoolManager poolManager;
+
+  @Autowired
   FindSCP findSCP;
+
   @Autowired
   MoveSCP moveSCP;
 
@@ -79,7 +84,7 @@ public class DICOMReceiver implements AssociationListener {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *         if could not start database
+   *           if could not start database
    */
   @PostConstruct
   public synchronized void start() throws Exception {
@@ -132,8 +137,9 @@ public class DICOMReceiver implements AssociationListener {
     final Association association = event.getAssociation();
     associationMap.put(association, info);
     File incoming = new File(PACS.directory, "incoming");
-    info.root = new File(incoming, event.getAssociation().getCalledAET());
-    info.root.mkdirs();
+    info.incomingRootDirectory = new File(incoming, event.getAssociation().getCalledAET());
+    info.incomingRootDirectory.mkdirs();
+    info.poolRootDirectory = poolManager.getContainer(association.getCalledAET()).getPoolDirectory();
 
     final String remoteHostName = association.getSocket().getInetAddress().getHostName();
     final String callingAET = association.getCallingAET();
@@ -160,7 +166,8 @@ public class DICOMReceiver implements AssociationListener {
 
   static class AssociationInfo {
     public boolean canConnect = false;
-    File root;
+    File incomingRootDirectory;
+    File poolRootDirectory;
     int poolKey;
   }
 

@@ -255,7 +255,7 @@ public class DcmQR {
     this.cancelAfter = limit;
   }
 
-  private void addMatchingKey(int[] tagPath, String value) {
+  public void addMatchingKey(int[] tagPath, String value) {
     keys.putString(tagPath, null, value);
   }
 
@@ -565,7 +565,7 @@ public class DcmQR {
     return null;
   }
 
-  private void close() throws InterruptedException {
+  public void close() throws InterruptedException {
     assoc.release(true);
   }
 

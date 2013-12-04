@@ -145,7 +145,58 @@ public class FindSCP extends DicomService implements CFindSCP {
         query.append(" STUDY.StudyDate as SeriesDate, STUDY.StudyTime as SeriesTime from SERIES, STUDY where STUDY.StudyInstanceUID = ? and STUDY.StudyKey = SERIES.StudyKey");
         logger.info("SERIES Query: " + query);
         logger.info("StudyUID: " + uid);
+        template.query(query.toString(), new Object[] { uid }, new RowCallbackHandler() {
 
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            logger.info("Found SERIES: " + rs.getString("SeriesInstanceUID"));
+            DicomObject response = new BasicDicomObject();
+
+            // Always send the Query/Retrieve level C.4.1.1.3.2
+            response.putString(Tag.QueryRetrieveLevel, VR.CS, retrieveLevel);
+
+            // RetrieveAETitle is also required C.4.1.1.3.2
+            response.putString(Tag.RetrieveAETitle, VR.AE, retrieveAETitle);
+
+            // Just return what was asked for, if we have it
+            Iterator<DicomElement> iterator = data.datasetIterator();
+            while (iterator.hasNext()) {
+              DicomElement element = iterator.next();
+              if (tagColumn.containsKey(element.tag())) {
+                String column = tagColumn.get(element.tag());
+                int columnNumber = rs.findColumn(column);
+                // Figure out what type it is (string or data)
+                int columnType = rs.getMetaData().getColumnType(columnNumber);
+                if (columnType == Types.VARCHAR || columnType == Types.INTEGER) {
+                  response.putString(element.tag(), element.vr(), rs.getString(columnNumber));
+                }
+                if (columnType == Types.DATE) {
+                  response.putDate(element.tag(), element.vr(), rs.getDate(columnNumber));
+                } else if (columnType == Types.TIME) {
+                  response.putDate(element.tag(), element.vr(), rs.getTime(columnNumber));
+                }
+              } else {
+                logger.error("No match for " + element);
+                if (!data.containsValue(element.tag())) {
+                  response.putString(element.tag(), element.vr(), "  ");
+                }
+              }
+            }
+            response.putString(Tag.StudyInstanceUID, VR.UI, uid);
+            if (data.containsValue(Tag.SpecificCharacterSet)) {
+              response.putString(Tag.SpecificCharacterSet, VR.CS, data.getString(Tag.SpecificCharacterSet));
+            }
+            // data.containsValue(Tag.);
+            // response.putString(data.get)
+
+            try {
+              logger.info("Sending \n" + response);
+              as.writeDimseRSP(pcid, pending, response);
+            } catch (IOException e) {
+              logger.error("Error writing response", e);
+            }
+          }
+        });
       }
     }
 
@@ -206,7 +257,8 @@ public class FindSCP extends DicomService implements CFindSCP {
         }
       }
       // Finally, add a group by clause to enable the image/series counting
-      query.append(" group by STUDY.StudyKey");
+      // NB: for Derby, all the non-aggregate columns must be listed
+      query.append(" group by STUDY.StudyKey, PatientID,  Patientname,  PatientBirthDate,  PatientSex,  StudyID,  StudyDate,  StudyTime,  AccessionNumber,  StudyInstanceUID,  StudyDescription");
 
       // Need to handle Dates and times
       try {
