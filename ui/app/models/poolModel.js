@@ -43,11 +43,25 @@ App.Serializable = Ember.Mixin.create({
 });
 
 
-App.Device = Ember.Object.extend({
+App.Device = Ember.Object.extend(App.Serializable, {
 	hostName: null,
 	applicationEntityTitle: null,
 	port: null,
-	deviceKey: null
+	deviceKey: -1,
+	poolKey: -1,
+	save: function ( ) {
+		console.log ( "Saving this device back to the server " )
+		console.log ( this.serialize() )
+		$.ajax ({
+			contentType : 'application/json',
+			type: "POST",
+			url: "/rest/pool/" + this.get('poolKey') + "/device" ,
+			data: JSON.stringify(this.serialize()),
+			success: function ( data ) {
+				console.log ( "saved!" )
+			}
+		})
+	}
 })
 
 App.Pool = Ember.Object.extend (App.Serializable, {
@@ -56,6 +70,9 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 	applicationEntityTitle: null,
 	description: null,
 	devices: function() {
+		return this.loadDevices()
+	}.property(),
+	loadDevices: function() {
 		console.log ( "getting devices from REST server")
 		var p = this
 		$.getJSON("/rest/pool/" + this.get("poolKey") + "/device", function(data){
@@ -69,7 +86,7 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 			p.set ( "devices", deviceList )
 		})
 		return [];
-	}.property(),
+	},
 	save: function () {
 		console.log ( "Saving this pool back to the server " )
 		console.log ( this.serialize() )

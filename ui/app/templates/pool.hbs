@@ -6,7 +6,7 @@
 
 	<div class="panel panel-default">
 		<div class="panel-heading">
-			<h3 class="panel-title">Devices</h3>
+			<h3 class="panel-title">Devices</h3><small class='muted'><button class="btn btn-small" {{action newDevice}}>New</button></small>
 		</div>
 		<div class="panel-body">
 			<table class="table">
@@ -29,6 +29,7 @@
 	</div>
 
 	{{outlet}}
+	{{outlet modal}}
 
 
 

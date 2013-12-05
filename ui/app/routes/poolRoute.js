@@ -27,7 +27,7 @@ App.PoolsRoute = Ember.Route.extend({
 		},
 		reload: function() {
 			console.log ( "reloading")
-			// Remember that find returns a promise, so do something when the promise is finished (.then)
+			// Remember that find returns a promise, so do something when the promise is finished ()
 			var c = this.controller
 			App.Pool.find().then ( function ( response ) {
 				c.set ( 'model', response )
@@ -36,16 +36,19 @@ App.PoolsRoute = Ember.Route.extend({
 	}
 });
 
-App.NewPoolController = Ember.ObjectController.extend({
+
+
+App.NewObjectController = Ember.ObjectController.extend({
 	actions: {
 		save: function() {
-			console.log ( 'saving our new pool ' + this.get('model').get('name'))
+			alert ( 'saving our new object ')
 			this.get('model').save()
 
 		}
 	}
 })
-App.NewPoolView = Ember.View.extend({
+
+App.NewObjectView = Ember.View.extend({
 	didInsertElement: function() {
     this.$('.modal, .modal-backdrop').addClass('in');
   },
@@ -66,14 +69,11 @@ App.NewPoolView = Ember.View.extend({
   }
 })
 
-App.PoolsPoolRoute = Ember.Route.extend({
-	model: function(params) {
-		console.log ( "PoolRoute Model for ", params.pool_id)
-		var pool = this.store.getById ( 'pool', params.pool_id)
-		console.log ( pool )
-		return pool
-	}
-})
+App.NewPoolController = App.NewObjectController.extend({})
+App.NewPoolView = App.NewObjectView.extend({})
+
+App.NewDeviceController = App.NewObjectController.extend({})
+App.NewDeviceView = App.NewObjectView.extend({})
 
 
 App.PoolRoute = Ember.Route.extend({
@@ -83,6 +83,31 @@ App.PoolRoute = Ember.Route.extend({
 		var pool = App.Pool.findById(params.poolKey);
 		console.log ( pool )
 		return pool
+	},
+	actions: {
+		newDevice: function() {
+			console.log ( 'PoolRoute -- newDevice')
+			var pool =  this.controller.get('model')
+			var device = App.Device.create({'hostName' : 'unknown', 'applicationEntityTitle': 'unknown', 'port': 0, 'poolKey' : pool.get('poolKey')});
+			this.controllerFor('newDevice').set ( 'model', device )
+			this.render ( 'newDevice', { into: 'pool', outlet: 'modal'});
+		},
+		close: function() {
+			console.log ( 'closing modal dialog ')
+			return this.disconnectOutlet ( {
+				outlet: 'modal',
+				parentView: 'pool'
+			})
+			// this.render ( 'empty', { into: 'pools', outlet: 'modal'})
+		},
+		reload: function() {
+			console.log ( "reloading")
+			// Remember that find returns a promise, so do something when the promise is finished ()
+			var c = this.controller
+			App.Pool.find().then ( function ( response ) {
+				c.set ( 'model', response )
+			})
+		}
 	}
 })
 
