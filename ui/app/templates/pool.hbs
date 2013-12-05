@@ -4,23 +4,29 @@
 	<b>Application Entity Title:</b> {{applicationEntityTitle}}<p/>
 	<b>Description:</b> {{description}}<p/>
 
-	<table class="table">
-		<thead>
-			<tr>
-				<th>AE Title</th>
-				<th>Host</th>
-				<th>Port</th>
-			</tr>
-		</thead>
-			{{#each devices}}
-			<tr>
-				<td>{{this.applicationEntityTitle}}</td>
-				<td>{{this.hostName}}</td>
-				<td>{{this.port}}</td>
-			</tr>
-			{{/each}}
-	</table>
-
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Devices</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>AE Title</th>
+						<th>Host</th>
+						<th>Port</th>
+					</tr>
+				</thead>
+				{{#each devices}}
+				<tr>
+					<td>{{this.applicationEntityTitle}}</td>
+					<td>{{this.hostName}}</td>
+					<td>{{this.port}}</td>
+				</tr>
+				{{/each}}
+			</table>
+		</div>
+	</div>
 
 	{{outlet}}
 
