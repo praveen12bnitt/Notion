@@ -20,7 +20,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 @Table
 public final class Pool {
 
-  @JsonProperty("id")
   @Id
   @GeneratedValue
   public int poolKey;
@@ -29,6 +28,7 @@ public final class Pool {
   public String description;
   public String applicationEntityTitle;
 
+  @JsonIgnore
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
   public Set<Device> devices = new HashSet<Device>();

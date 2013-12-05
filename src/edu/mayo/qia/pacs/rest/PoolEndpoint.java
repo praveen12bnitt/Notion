@@ -67,6 +67,20 @@ public class PoolEndpoint {
     return Response.ok(s).build();
   }
 
+  /** Get a pool. */
+  @GET
+  @Path("/{id: [1-9][0-9]*}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPool(@PathParam("id") int id) {
+    // Look up the pool and change it
+    Session session = sessionFactory.getCurrentSession();
+    session.beginTransaction();
+    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+    // Delete
+    session.getTransaction().commit();
+    return Response.ok(pool).build();
+  }
+
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/device")
   public DeviceEndpoint devices(@PathParam("id") int id) {

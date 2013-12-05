@@ -3,7 +3,7 @@
 			<div class="span2">
 				<table class='table'>
 					<thead>
-						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} <small class='muted'>{{#link-to 'pools.new'}}New{{/link-to}}</small></th></tr>
+						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} <small class='muted'><button class="btn btn-small" {{action open}}>New</button></small></th></tr>
 					</thead>
 					{{#each model}}
 					<tr><td>
@@ -17,4 +17,5 @@
 				{{outlet}}
 			</div>
 		</div>
+		{{outlet modal}}
 	</div>

@@ -7,7 +7,7 @@ App = Ember.Application.create({
 App.Router.map(function() {
 	// A 'resource' defines a group of routes that work together
 	this.resource("pools", function() {	
-		this.resource("pool", { path: ':pool_id'})
+		this.resource("pool", { path: ':poolKey'})
 		this.route("new")
 	})
 
