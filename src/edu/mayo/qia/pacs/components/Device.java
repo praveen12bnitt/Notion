@@ -9,9 +9,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @Entity
 @Table
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Device {
   @Id
   @GeneratedValue

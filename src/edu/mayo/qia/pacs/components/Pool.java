@@ -42,13 +42,6 @@ public final class Pool {
   public Pool() {
   }
 
-  @JsonProperty("links")
-  public Map<String, String> getLinks() {
-    Map<String, String> map = new HashMap<String, String>();
-    map.put("devices", "/pool/" + poolKey + "/device");
-    return map;
-  }
-
   public String toString() {
     return this.name + "(" + poolKey + ") " + "description: " + description + " AETitle: " + applicationEntityTitle;
   }

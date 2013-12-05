@@ -81,6 +81,17 @@ public class PoolEndpoint {
     return Response.ok(pool).build();
   }
 
+  @GET
+  @Path("/{id: [1-9][0-9]*}/statistics")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPoolStatistics(@PathParam("id") int id) {
+    SimpleResponse s = new SimpleResponse();
+    s.put("study", template.queryForObject("select count(STUDY.StudyKey) from STUDY where STUDY.PoolKey = ?", Integer.class, id));
+    s.put("series", template.queryForObject("select count(SERIES.SeriesKey) from SERIES, STUDY where STUDY.PoolKey = ? and SERIES.StudyKey = STUDY.StudyKey", Integer.class, id));
+    s.put("instance", template.queryForObject("select count(INSTANCE.InstanceKey) from INSTANCE, SERIES, STUDY where STUDY.PoolKey = ? and SERIES.StudyKey = STUDY.StudyKey and INSTANCE.SeriesKey = SERIES.SeriesKey", Integer.class, id));
+    return Response.ok(s).build();
+  }
+
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/device")
   public DeviceEndpoint devices(@PathParam("id") int id) {
