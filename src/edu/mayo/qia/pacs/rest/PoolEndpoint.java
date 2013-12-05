@@ -157,12 +157,17 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   public Response modifyPool(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
-    // Delete
-    session.delete(pool);
-    session.getTransaction().commit();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+      // Delete
+      session.delete(pool);
+      poolManager.deletePool(pool);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     return Response.ok().build();
   }
 }

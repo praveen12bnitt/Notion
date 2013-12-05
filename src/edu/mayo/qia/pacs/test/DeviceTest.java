@@ -22,8 +22,10 @@ public class DeviceTest extends PACSTest {
   @Test
   public void createDevice() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri;
     uri = UriBuilder.fromUri(baseUri).path("/pool").build();
@@ -45,7 +47,6 @@ public class DeviceTest extends PACSTest {
     assertEquals("Got result", 200, response.getStatus());
     device = response.getEntity(Device.class);
     logger.info("Entity back: " + device);
-    assertTrue("Assigned a poolKey", device.getPool().poolKey != 0);
     assertTrue("Assigned a deviceKey", device.deviceKey != 0);
 
   }
