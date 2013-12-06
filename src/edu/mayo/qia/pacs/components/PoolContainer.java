@@ -23,6 +23,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 /**
  * Manage a particular pool.
@@ -104,6 +105,7 @@ public class PoolContainer {
     element.setAttribute("script", script.getAbsolutePath());
     DicomAnonymizer anonymizer = new DicomAnonymizer(element);
     stages.add(anonymizer);
+    stages.add(new Anonymizer(element));
 
     // Start all the stages
     for (PipelineStage stage : stages) {

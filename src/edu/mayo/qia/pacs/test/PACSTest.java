@@ -72,7 +72,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
       List<String> args = new ArrayList<String>();
       if (System.getenv("bamboo.buildKey") == null) {
         args.add("-db");
-        args.add("8082");
+        args.add("8084");
       }
       args.add("-port");
       args.add("12345");

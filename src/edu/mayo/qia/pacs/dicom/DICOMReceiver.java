@@ -84,7 +84,7 @@ public class DICOMReceiver implements AssociationListener {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *           if could not start database
+   *         if could not start database
    */
   @PostConstruct
   public synchronized void start() throws Exception {
@@ -139,7 +139,6 @@ public class DICOMReceiver implements AssociationListener {
     File incoming = new File(PACS.directory, "incoming");
     info.incomingRootDirectory = new File(incoming, event.getAssociation().getCalledAET());
     info.incomingRootDirectory.mkdirs();
-    info.poolRootDirectory = poolManager.getContainer(association.getCalledAET()).getPoolDirectory();
 
     final String remoteHostName = association.getSocket().getInetAddress().getHostName();
     final String callingAET = association.getCallingAET();
@@ -157,6 +156,9 @@ public class DICOMReceiver implements AssociationListener {
             }
           }
         });
+    if (info.canConnect && poolManager.getContainer(association.getCalledAET()) != null) {
+      info.poolRootDirectory = poolManager.getContainer(association.getCalledAET()).getPoolDirectory();
+    }
   }
 
   @Override
