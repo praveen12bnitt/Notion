@@ -19,6 +19,7 @@ import org.rsna.ctp.pipeline.PipelineStage;
 import org.rsna.ctp.pipeline.Processor;
 import org.rsna.ctp.stdstages.DicomAnonymizer;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,16 +40,25 @@ public class PoolContainer {
   File scriptsDirectory;
 
   List<PipelineStage> stages = new ArrayList<PipelineStage>();
+  private JdbcTemplate template;
+  private String sequenceName;
 
   public PoolContainer(Pool pool) {
     this.pool = pool;
     if (this.pool.poolKey <= 0) {
       throw new RuntimeException("PoolKey must be set!");
     }
+    this.template = PACS.context.getBean("template", JdbcTemplate.class);
   }
 
   public void start() {
     logger.info("Starting up pool: " + pool);
+
+    // Do we have a sequence for this pool?
+    this.sequenceName = "uid" + pool.poolKey;
+    if (template.queryForObject("select count(*) from SYS.SYSSEQUENCES where SEQUENCENAME = ?", Integer.class, sequenceName) != 1) {
+      template.update("create sequence " + sequenceName + " AS INT START WITH 1");
+    }
 
     // See if the directory exists
     File poolBase = new File(PACS.directory, "ImageStorage");

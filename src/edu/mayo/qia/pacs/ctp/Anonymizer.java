@@ -16,13 +16,24 @@ import org.dcm4che2.io.DicomOutputStream;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.Processor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.w3c.dom.Element;
+
+import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.PoolContainer;
 
 public class Anonymizer extends AbstractPipelineStage implements Processor {
   static Logger logger = Logger.getLogger(Anonymizer.class);
+  private PoolContainer poolContainer;
+  private JdbcTemplate template;
 
   public Anonymizer(Element element) {
     super(element);
+    this.template = PACS.context.getBean("template", JdbcTemplate.class);
+  }
+
+  public void setPoolContainer(PoolContainer poolContainer) {
+    this.poolContainer = poolContainer;
   }
 
   @Override
