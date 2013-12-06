@@ -23,6 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.ImmutableBiMap.Builder;
 import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
@@ -53,13 +54,42 @@ public class PoolEndpoint {
   /** List all the pools */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Pool> listPools() {
+  public Response listPools() {
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
     @SuppressWarnings("unchecked")
     List<Pool> result = session.createCriteria(Pool.class).list();
+    for (Pool pool : result) {
+      pool.getDevices().size();
+    }
     session.getTransaction().commit();
-    return result;
+    SimpleResponse s = new SimpleResponse("pool", result);
+    return Response.ok(s).build();
+  }
+
+  /** Get a pool. */
+  @GET
+  @Path("/{id: [1-9][0-9]*}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPool(@PathParam("id") int id) {
+    // Look up the pool and change it
+    Session session = sessionFactory.getCurrentSession();
+    session.beginTransaction();
+    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+    // Delete
+    session.getTransaction().commit();
+    return Response.ok(pool).build();
+  }
+
+  @GET
+  @Path("/{id: [1-9][0-9]*}/statistics")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPoolStatistics(@PathParam("id") int id) {
+    SimpleResponse s = new SimpleResponse();
+    s.put("study", template.queryForObject("select count(STUDY.StudyKey) from STUDY where STUDY.PoolKey = ?", Integer.class, id));
+    s.put("series", template.queryForObject("select count(SERIES.SeriesKey) from SERIES, STUDY where STUDY.PoolKey = ? and SERIES.StudyKey = STUDY.StudyKey", Integer.class, id));
+    s.put("instance", template.queryForObject("select count(INSTANCE.InstanceKey) from INSTANCE, SERIES, STUDY where STUDY.PoolKey = ? and SERIES.StudyKey = STUDY.StudyKey and INSTANCE.SeriesKey = SERIES.SeriesKey", Integer.class, id));
+    return Response.ok(s).build();
   }
 
   /** Devices */
@@ -76,6 +106,10 @@ public class PoolEndpoint {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createPool(Pool pool) {
+
+    if (pool.name == null || pool.description == null || pool.applicationEntityTitle == null) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle, Name and Description must not be empty")).build();
+    }
 
     // Does the name conform to what we expect?
     if (!pool.applicationEntityTitle.matches("[a-zA-Z_\\-0-9]+")) {
@@ -123,12 +157,17 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   public Response modifyPool(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
-    // Delete
-    session.delete(pool);
-    session.getTransaction().commit();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+      // Delete
+      session.delete(pool);
+      poolManager.deletePool(pool);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     return Response.ok().build();
   }
 }

@@ -43,10 +43,10 @@ public class DeviceEndpoint {
 
   public int poolKey;
 
-  /** List all the pools */
+  /** List all the devices. */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Set<Device> listDevices() {
+  public Response listDevices() {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
@@ -54,7 +54,8 @@ public class DeviceEndpoint {
     // Force load
     pool.getDevices().size();
     session.getTransaction().commit();
-    return pool.getDevices();
+    SimpleResponse s = new SimpleResponse("device", pool.getDevices());
+    return Response.ok(s).build();
   }
 
   /** Create a Device. */
@@ -63,12 +64,20 @@ public class DeviceEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createDevice(Device device) {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(poolKey);
-    device.setPool(pool);
-    pool.getDevices().add(device);
-    session.getTransaction().commit();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      Pool pool = (Pool) session.byId(Pool.class).getReference(poolKey);
+      // Ensure the device does not think it already exists!
+      device.deviceKey = -1;
+      device.setPool(pool);
+      pool.getDevices().add(device);
+      session.getTransaction().commit();
+    } catch (Exception e) {
+      logger.error("Error creating device", e);
+    } finally {
+      session.close();
+    }
     return Response.ok(device).build();
   }
 

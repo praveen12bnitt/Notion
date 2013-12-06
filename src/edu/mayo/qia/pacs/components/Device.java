@@ -8,18 +8,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 @Entity
 @Table
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Device {
   @Id
   @GeneratedValue
-  public int deviceKey;
-  public String applicationEntityTitle;
-  public String hostName;
-  public int port;
+  public int deviceKey = -1;
+  public String applicationEntityTitle = null;
+  public String hostName = null;
+  public int port = 0;
 
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
   @JoinColumn(name = "PoolKey")
+  @JsonIgnore
   private Pool pool;
 
   public Device() {

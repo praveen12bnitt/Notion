@@ -39,15 +39,22 @@
 package edu.mayo.qia.pacs.dicom;
 
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DateRange;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DicomServiceException;
@@ -58,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
@@ -137,7 +145,58 @@ public class FindSCP extends DicomService implements CFindSCP {
         query.append(" STUDY.StudyDate as SeriesDate, STUDY.StudyTime as SeriesTime from SERIES, STUDY where STUDY.StudyInstanceUID = ? and STUDY.StudyKey = SERIES.StudyKey");
         logger.info("SERIES Query: " + query);
         logger.info("StudyUID: " + uid);
+        template.query(query.toString(), new Object[] { uid }, new RowCallbackHandler() {
 
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            logger.info("Found SERIES: " + rs.getString("SeriesInstanceUID"));
+            DicomObject response = new BasicDicomObject();
+
+            // Always send the Query/Retrieve level C.4.1.1.3.2
+            response.putString(Tag.QueryRetrieveLevel, VR.CS, retrieveLevel);
+
+            // RetrieveAETitle is also required C.4.1.1.3.2
+            response.putString(Tag.RetrieveAETitle, VR.AE, retrieveAETitle);
+
+            // Just return what was asked for, if we have it
+            Iterator<DicomElement> iterator = data.datasetIterator();
+            while (iterator.hasNext()) {
+              DicomElement element = iterator.next();
+              if (tagColumn.containsKey(element.tag())) {
+                String column = tagColumn.get(element.tag());
+                int columnNumber = rs.findColumn(column);
+                // Figure out what type it is (string or data)
+                int columnType = rs.getMetaData().getColumnType(columnNumber);
+                if (columnType == Types.VARCHAR || columnType == Types.INTEGER) {
+                  response.putString(element.tag(), element.vr(), rs.getString(columnNumber));
+                }
+                if (columnType == Types.DATE) {
+                  response.putDate(element.tag(), element.vr(), rs.getDate(columnNumber));
+                } else if (columnType == Types.TIME) {
+                  response.putDate(element.tag(), element.vr(), rs.getTime(columnNumber));
+                }
+              } else {
+                logger.error("No match for " + element);
+                if (!data.containsValue(element.tag())) {
+                  response.putString(element.tag(), element.vr(), "  ");
+                }
+              }
+            }
+            response.putString(Tag.StudyInstanceUID, VR.UI, uid);
+            if (data.containsValue(Tag.SpecificCharacterSet)) {
+              response.putString(Tag.SpecificCharacterSet, VR.CS, data.getString(Tag.SpecificCharacterSet));
+            }
+            // data.containsValue(Tag.);
+            // response.putString(data.get)
+
+            try {
+              logger.info("Sending \n" + response);
+              as.writeDimseRSP(pcid, pending, response);
+            } catch (IOException e) {
+              logger.error("Error writing response", e);
+            }
+          }
+        });
       }
     }
 
@@ -180,7 +239,8 @@ public class FindSCP extends DicomService implements CFindSCP {
       }
       // Add on the list of tables to query from
       query.append(tables);
-      query.append(" where 1=1 ");
+      query.append(" where STUDY.PoolKey = ? ");
+      args.add(info.poolKey);
       addWhere(Tag.PatientName, tagColumn.get(Tag.PatientName), data, args, query);
       addWhere(Tag.PatientID, tagColumn.get(Tag.PatientID), data, args, query);
       addWhere(Tag.AccessionNumber, tagColumn.get(Tag.AccessionNumber), data, args, query);
@@ -197,12 +257,62 @@ public class FindSCP extends DicomService implements CFindSCP {
         }
       }
       // Finally, add a group by clause to enable the image/series counting
-      query.append(" group by STUDY.StudyKey");
+      // NB: for Derby, all the non-aggregate columns must be listed
+      query.append(" group by STUDY.StudyKey, PatientID,  Patientname,  PatientBirthDate,  PatientSex,  StudyID,  StudyDate,  StudyTime,  AccessionNumber,  StudyInstanceUID,  StudyDescription");
 
       // Need to handle Dates and times
       try {
         logger.info("Ready to run qeury " + query);
         logger.info("Arguments: " + args);
+        template.query(query.toString(), args.toArray(), new RowCallbackHandler() {
+
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            DicomObject response = new BasicDicomObject();
+
+            // Just return what was asked for, if we have it
+            Iterator<DicomElement> iterator = data.datasetIterator();
+            while (iterator.hasNext()) {
+              DicomElement element = iterator.next();
+              if (tagColumn.containsKey(element.tag())) {
+                String column = tagColumn.get(element.tag());
+                int columnNumber = rs.findColumn(column);
+                logger.info(element.toString() + " maps to Column " + columnNumber + " " + column + " with type " + rs.getMetaData().getColumnTypeName(columnNumber));
+
+                // Figure out what type it is (string or data)
+                int colType = rs.getMetaData().getColumnType(columnNumber);
+                if (colType == Types.VARCHAR || colType == Types.INTEGER || colType == Types.BIGINT) {
+                  response.putString(element.tag(), element.vr(), rs.getString(columnNumber));
+                } else if (colType == Types.DATE) {
+                  java.sql.Date studyDateValue = rs.getDate(columnNumber);
+                  response.putDate(element.tag(), element.vr(), studyDateValue);
+                } else if (colType == Types.TIME) {
+                  java.sql.Time studyTimeValue = rs.getTime(columnNumber);
+                  response.putDate(element.tag(), element.vr(), studyTimeValue);
+                }
+              }
+            }
+            // Do we have Modalities?
+            if (data.contains(Tag.ModalitiesInStudy)) {
+              List<String> modalityList = template.queryForList("select distinct ( Modality ) from SERIES where StudyKey = ?", new Object[] { rs.getInt("StudyKey") }, String.class);
+              response.putStrings(Tag.ModalitiesInStudy, VR.CS, modalityList.toArray(new String[] {}));
+            }
+            if (data.containsValue(Tag.StudyInstanceUID)) {
+              response.putString(Tag.StudyInstanceUID, VR.UI, data.getString(Tag.StudyInstanceUID));
+            }
+            // Always send the Query/Retrieve level C.4.1.1.3.2
+            response.putString(Tag.QueryRetrieveLevel, VR.CS, retrieveLevel);
+
+            // RetrieveAETitle is also required C.4.1.1.3.2
+            response.putString(Tag.RetrieveAETitle, VR.AE, retrieveAETitle);
+            try {
+              logger.info("Sending \n" + response);
+              as.writeDimseRSP(pcid, pending, response);
+            } catch (IOException e) {
+              logger.error("Error writing response", e);
+            }
+          }
+        });
 
       } catch (Exception e) {
         logger.error("Error finding patients", e);

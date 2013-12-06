@@ -15,6 +15,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.net.ConfigurationException;
+import org.h2.tools.Server;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static final int RESTPort = 12346;
   static Client client;
 
-  static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).build();
+  static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).path("rest").build();
   static final String JSON = MediaType.APPLICATION_JSON;
 
   @Autowired
@@ -68,10 +69,20 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
       } catch (IOException e) {
         logger.error("Error cleaning up directory", e);
       }
-      String[] args = { "-port", "12345", "-rest", "12346", temp.getAbsolutePath() };
+      List<String> args = new ArrayList<String>();
+      if (System.getenv("bamboo.buildKey") == null) {
+        args.add("-db");
+        args.add("8084");
+      }
+      args.add("-port");
+      args.add("12345");
+      args.add("-rest");
+      args.add("12346");
+      args.add(temp.getAbsolutePath());
       pacs = new PACS(args);
     }
     applicationContext.setParent(PACS.context);
+
   }
 
   @Test
@@ -104,7 +115,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
 
   protected List<File> sendDICOM(String called, String calling, String series) throws IOException, ConfigurationException, InterruptedException {
     // Send the files
-    DcmSnd sender = new DcmSnd();
+    DcmSnd sender = new DcmSnd("test");
     // Startup the sender
     sender.setRemoteHost("localhost");
     sender.setRemotePort(DICOMPort);
@@ -117,11 +128,9 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
       }
     }
     sender.configureTransferCapability();
-    sender.start();
     sender.open();
-    sender.send();
+    sender.send(null);
     sender.close();
-    sender.stop();
     return testSeries;
   }
 
