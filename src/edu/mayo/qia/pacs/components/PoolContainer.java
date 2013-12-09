@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 /**
  * Manage a particular pool.
@@ -38,8 +39,8 @@ public class PoolContainer {
   File poolDirectory;
   File quarantinesDirectory;
   File scriptsDirectory;
+  PipelineStage ctpAnonymizer = null;
 
-  List<PipelineStage> stages = new ArrayList<PipelineStage>();
   private JdbcTemplate template;
   private String sequenceName;
 
@@ -76,17 +77,12 @@ public class PoolContainer {
 
   public FileObject executePipeline(FileObject fileObject) {
     // Execute all the stages
-    for (PipelineStage stage : stages) {
-      if (stage instanceof Processor) {
-        fileObject = ((Processor) stage).process(fileObject);
-      }
-    }
+    FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
+    fileObject = Anonymizer.process(this, stageOne, fileObject.getFile());
     return fileObject;
   }
 
   public void configureCTP() {
-    // Release prior stages
-    stages = new ArrayList<PipelineStage>();
 
     DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder docBuilder = null;
@@ -113,23 +109,14 @@ public class PoolContainer {
       logger.error("Error copying the anonymizer script", e);
     }
     element.setAttribute("script", script.getAbsolutePath());
-    DicomAnonymizer anonymizer = new DicomAnonymizer(element);
-    stages.add(anonymizer);
-    stages.add(new Anonymizer(element));
-
-    // Start all the stages
-    for (PipelineStage stage : stages) {
-      stage.start();
-    }
-
+    ctpAnonymizer = new DicomAnonymizer(element);
+    ctpAnonymizer.start();
   }
 
   public void stop() {
     logger.info("Shutting down pool: " + pool);
     // Stop all the stages
-    for (PipelineStage stage : stages) {
-      stage.shutdown();
-    }
+    ctpAnonymizer.shutdown();
   }
 
   public File getPoolDirectory() {
@@ -144,5 +131,9 @@ public class PoolContainer {
       logger.error("Failed to delete directory", e);
     }
 
+  }
+
+  public Pool getPool() {
+    return pool;
   }
 }
