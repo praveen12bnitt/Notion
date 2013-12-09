@@ -45,11 +45,13 @@ public class DICOMQueryTest extends PACSTest {
     DicomObject response = dcmQR.query();
     dcmQR.close();
 
+    logger.info("Got response: " + response);
     for (String tag : new String[] { "AccessionNumber", "PatientName", "PatientID" }) {
       assertEquals(tag, tags.getString(Tag.forName(tag)), response.getString(Tag.forName(tag)));
     }
-    for (String tag : new String[] { "StudyInstanceUID", "StudyID", "AccessionNumber", "PatientName", "PatientID" }) {
-      assertEquals(tag, tags.getString(Tag.forName(tag)), response.getString(Tag.forName(tag)));
+
+    for (String tag : new String[] { "StudyInstanceUID" }) {
+      assertFalse(tag, tags.getString(Tag.forName(tag)).equals(response.getString(Tag.forName(tag))));
     }
     assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
