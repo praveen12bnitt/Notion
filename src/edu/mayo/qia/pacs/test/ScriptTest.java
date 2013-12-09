@@ -1,7 +1,6 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -9,6 +8,9 @@ import javax.script.ScriptEngineManager;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.ScriptableObject;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,5 +43,28 @@ public class ScriptTest extends PACSTest {
       fail("Did not get a string back");
     }
 
+  }
+
+  @Test
+  public void rhino() {
+    Context context = Context.enter();
+    try {
+      ScriptableObject scope = context.initStandardObjects();
+      NativeObject obj = new NativeObject();
+      obj.defineProperty("test", "value", NativeObject.READONLY);
+      ScriptableObject.putProperty(scope, "obj", obj);
+      Object result = context.evaluateString(scope, "obj.test", "inline", 1, null);
+      logger.info("\n=====\n" + result + "\n======");
+      assertTrue("String back", result instanceof String);
+      assertTrue("String value", result.toString().equals("value"));
+
+      result = context.evaluateString(scope, "'garf'", "inline", 1, null);
+      logger.info("\n=====\n" + result + "\n======");
+      assertTrue("String back", result instanceof String);
+      assertTrue("String value", result.toString().equals("garf"));
+
+    } finally {
+      Context.exit();
+    }
   }
 }
