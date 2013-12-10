@@ -40,7 +40,7 @@ public class AnonymizerTest extends PACSTest {
     script = "'" + patientName + "'";
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
 
-    String patientID = "MI3C-0068-MI3C-0068";
+    String patientID = "MRA-0068-MRA-0068";
     script = "tags.PatientID + '-' + tags.PatientsName";
     // + '-' +
     // tags.PatientName";
