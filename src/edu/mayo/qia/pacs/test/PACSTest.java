@@ -5,9 +5,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -41,10 +43,10 @@ import edu.mayo.qia.pacs.dicom.DcmSnd;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
-  Logger logger = Logger.getLogger(PACSTest.class);
+  static Logger logger = Logger.getLogger(PACSTest.class);
   static PACS pacs = null;
-  static final int DICOMPort = 12345;
-  static final int RESTPort = 12346;
+  static int DICOMPort = findFreePort();
+  static int RESTPort = findFreePort();
   static Client client;
 
   static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).path("rest").build();
@@ -57,6 +59,31 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     ClientConfig config = new DefaultClientConfig();
     config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
     client = Client.create(config);
+  }
+
+  protected static int findFreePort() {
+    // Find a random number between 49152 and 65535
+    Random random = new Random();
+    boolean found = false;
+    int testPort = 0;
+    while (!found) {
+      testPort = 49152 + random.nextInt(65535 - 49152);
+      Socket socket = null;
+      try {
+        socket = new Socket("localhost", testPort);
+      } catch (IOException e) {
+        found = true;
+      } finally {
+        if (socket != null) {
+          try {
+            socket.close();
+          } catch (IOException e) {
+            logger.error("Failed to find free port!", e);
+          }
+        }
+      }
+    }
+    return testPort;
   }
 
   @Override
@@ -75,9 +102,11 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
         args.add("8084");
       }
       args.add("-port");
-      args.add("12345");
+      args.add(Integer.toString(DICOMPort));
       args.add("-rest");
-      args.add("12346");
+      args.add(Integer.toString(RESTPort));
+      // Specify an in memory DB for testing
+      args.add("-m");
       args.add(temp.getAbsolutePath());
       pacs = new PACS(args);
     }
