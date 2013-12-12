@@ -3,10 +3,14 @@ package edu.mayo.qia.pacs.ctp;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,24 +35,41 @@ import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.util.DigestUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
+@Component
+@Scope("prototype")
 /** Helper class containing some functions to use for the Anonymizer */
 public class Anonymizer {
   static Logger logger = Logger.getLogger(Anonymizer.class);
   private Pool pool;
+
+  @Autowired
   JdbcTemplate template;
 
-  public Anonymizer(Pool pool) {
+  @Autowired
+  TransactionTemplate transactionTemplate;
+
+  public void setPool(Pool pool) {
     this.pool = pool;
-    template = PACS.context.getBean("template", JdbcTemplate.class);
   }
 
   public ScriptableObject setBindings(ScriptableObject scope, DicomObject tags) {
@@ -74,15 +95,93 @@ public class Anonymizer {
   }
 
   public String lookup(String type, String name) {
-    final String[] out = new String[] { null };
-    template.query("select Value from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
+    Object[] v = lookupValueAndKey(type, name);
+    return (String) v[0];
+  }
+
+  public Object[] lookupValueAndKey(String type, String name) {
+    final Object[] out = new Object[] { null, null };
+    template.query("select Value, LookupKey from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {
         out[0] = rs.getString("Value");
+        out[1] = rs.getInt("LookupKey");
       }
     });
-    return out[0];
+    return out;
+  }
+
+  public Integer setValue(final String type, final String name, final String value) {
+    return transactionTemplate.execute(new TransactionCallback<Integer>() {
+
+      @Override
+      public Integer doInTransaction(TransactionStatus status) {
+        Object[] k = lookupValueAndKey(type, name);
+        if (k.length == 1) {
+          // Update it
+          template.update("update LOOKUP set Value = ? where LookupKey = ?", value, k[1]);
+          return (Integer) k[1];
+        } else {
+          KeyHolder keyHolder = new GeneratedKeyHolder();
+          template.update(new PreparedStatementCreator() {
+
+            @Override
+            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value ) VALUES ( ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+              statement.setInt(1, pool.poolKey);
+              statement.setString(2, type);
+              statement.setString(3, name);
+              statement.setString(4, value);
+              return statement;
+            }
+          }, keyHolder);
+          return keyHolder.getKey().intValue();
+        }
+
+      }
+    });
+  }
+
+  String getSequence(final String type) {
+    final String internalType = "Sequence." + type;
+    return transactionTemplate.execute(new TransactionCallback<String>() {
+
+      @Override
+      public String doInTransaction(TransactionStatus status) {
+        Object[] k = lookupValueAndKey("Pool", internalType);
+        String sequenceName = null;
+        if (k[0] == null) {
+          // Create an empty, grab a sequence from the POOL UID
+          Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
+          sequenceName = "poolsequence" + i;
+          template.update("create sequence " + sequenceName + " AS INT START WITH 1");
+          setValue("Pool", internalType, sequenceName);
+        } else {
+          sequenceName = (String) k[0];
+        }
+        return sequenceName;
+      }
+    });
+  }
+
+  public int sequenceNumber(final String type, final String name) {
+    return transactionTemplate.execute(new TransactionCallback<Integer>() {
+
+      @Override
+      public Integer doInTransaction(TransactionStatus status) {
+        String internalType = "Sequence." + type;
+        String v = lookup(internalType, name);
+        if (v != null) {
+          return Integer.decode(v);
+        } else {
+          String sequence = getSequence(internalType);
+          Integer i = template.queryForObject("VALUES( NEXT VALUE FOR " + sequence + ")", Integer.class);
+          setValue(internalType, name, i.toString());
+          return i;
+        }
+      }
+    });
   }
 
   public String hash(String value, int length) {
@@ -105,7 +204,8 @@ public class Anonymizer {
       dis.close();
       DicomObject originalTags = TagLoader.loadTags(original);
 
-      Anonymizer function = new Anonymizer(poolContainer.getPool());
+      Anonymizer function = PACS.context.getBean("anonymizer", Anonymizer.class);
+      function.setPool(poolContainer.getPool());
 
       final Context context = Context.enter();
       try {

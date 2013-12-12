@@ -12,15 +12,20 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class AnonymizerTest extends PACSTest {
+
+  @Autowired
+  Anonymizer anonymizer;
 
   @Test
   public void anonymizeBasics() throws Exception {
@@ -66,6 +71,23 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
+  }
+
+  @Test
+  public void sequences() throws Exception {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet);
+    pool = createPool(pool);
+
+    anonymizer.setPool(pool);
+
+    assertEquals("Unset value", null, anonymizer.lookup("PatientID", "Jones"));
+    anonymizer.setValue("PatientID", "Jones", "1234");
+    assertEquals("Set value", "1234", anonymizer.lookup("PatientID", "Jones"));
+    assertEquals("Sequence", 1, anonymizer.sequenceNumber("PatientID", "Jones"));
+    assertEquals("Asked for same sequence number", 1, anonymizer.sequenceNumber("PatientID", "Jones"));
+    assertEquals("Should increment sequence number", 2, anonymizer.sequenceNumber("PatientID", "Smith"));
   }
 
 }
