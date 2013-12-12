@@ -21,3 +21,5 @@ CREATE TABLE SCRIPT (
 
 CREATE INDEX Script_idx1 on SCRIPT ( PoolKey, Tag );
 CREATE INDEX Script_idx2 on SCRIPT ( PoolKey );
+
+
