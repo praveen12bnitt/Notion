@@ -20,6 +20,7 @@ public class PACS {
   public static AnnotationConfigApplicationContext context;
   public static int DICOMPort = -1;
   public static int RESTPort = -1;
+  public static boolean isDBInMemory = false;
   public static final String sorterQueue = "pacs.sorter";
   static Logger logger = Logger.getLogger(PACS.class);
 
@@ -43,6 +44,7 @@ public class PACS {
     Options options = new Options();
     options.addOption("p", "port", true, "Port to listen for DICOM traffic, default is 11117");
     options.addOption("r", "rest", true, "Port to listen for REST traffic, default is 11118");
+    options.addOption("m", "memoryDB", false, "Start services in memory (DB only)");
     options.addOption("d", "db", true, "Start the embedded DB Web server on the given port (normally 8082), will not start without this option");
     CommandLine commandLine = null;
     try {
@@ -62,6 +64,8 @@ public class PACS {
 
     DICOMPort = Integer.parseInt(commandLine.getOptionValue("port", "11117"));
     RESTPort = Integer.parseInt(commandLine.getOptionValue("rest", "11118"));
+
+    isDBInMemory = commandLine.hasOption("m");
 
     // Load our beans
     context = new AnnotationConfigApplicationContext();
