@@ -3,6 +3,34 @@
 	<b>Pool:</b> {{name}}<p/>
 	<b>Application Entity Title:</b> {{applicationEntityTitle}}<p/>
 	<b>Description:</b> {{description}}<p/>
+	<b>Anonymize</b> {{anonymize}}<p/>
+	<small class='muted'><button class="btn btn-small" {{action edit}}>Edit</button></small>
+	{{#if anonymize}}
+	We Do anonymize
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Devices</h3><small class='muted'><button class="btn btn-small" {{action newDevice}}>New</button></small>
+		</div>
+		<div class="panel-body">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>AE Title</th>
+						<th>Host</th>
+						<th>Port</th>
+					</tr>
+				</thead>
+				{{#each devices}}
+				<tr>
+					<td>{{this.applicationEntityTitle}}</td>
+					<td>{{this.hostName}}</td>
+					<td>{{this.port}}</td>
+				</tr>
+				{{/each}}
+			</table>
+		</div>
+	</div>
+	{{/if}}
 
 	<div class="panel panel-default">
 		<div class="panel-heading">

@@ -11,7 +11,7 @@ App.PoolsRoute = Ember.Route.extend({
 	actions: {
 		open: function() {
 			console.log ( 'PoolsRoute -- open')
-			var pool = App.Pool.create({'name' : 'new'});
+			var pool = App.Pool.create();
 			console.log ( "pool name: " + pool.get('name'))
 			this.controllerFor('newPool').set ( 'model', pool )
 			console.log ( this.controllerFor('newPool').get( 'model' ).get('name') )
@@ -41,9 +41,7 @@ App.PoolsRoute = Ember.Route.extend({
 App.NewObjectController = Ember.ObjectController.extend({
 	actions: {
 		save: function() {
-			alert ( 'saving our new object ')
 			this.get('model').save()
-
 		}
 	}
 })
@@ -77,14 +75,22 @@ App.NewDeviceView = App.NewObjectView.extend({})
 
 
 App.PoolRoute = Ember.Route.extend({
-
+	pool: null,
 	model: function(params) {
 		console.log ( "PoolRoute Model for ", params.poolKey)
 		var pool = App.Pool.findById(params.poolKey);
 		console.log ( pool )
+		this.set("pool", pool)
 		return pool
 	},
 	actions: {
+		edit: function() {
+			var pool =  this.controller.get('model')
+			console.log ( "Editing", pool )
+			this.controllerFor('newPool').set ( 'model', pool )
+			this.render ( 'newPool', { into: 'pool', outlet: 'modal'});
+		},
+
 		newDevice: function() {
 			console.log ( 'PoolRoute -- newDevice')
 			var pool =  this.controller.get('model')
