@@ -41,7 +41,7 @@ public class HibernateTest extends PACSTest {
     Session session;
     session = sessionFactory.openSession();
     session.beginTransaction();
-    session.save(new Pool("One", "One", "one"));
+    session.save(new Pool("One", "One", "one", false));
     session.getTransaction().commit();
     session.close();
 
@@ -78,7 +78,7 @@ public class HibernateTest extends PACSTest {
     Session session;
     session = sessionFactory.openSession();
     session.beginTransaction();
-    pool = new Pool("One", "One", "bar");
+    pool = new Pool("One", "One", "bar", false);
     session.save(pool);
     session.getTransaction().commit();
     int poolKey = pool.poolKey;

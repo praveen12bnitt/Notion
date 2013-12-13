@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -23,6 +24,7 @@ public final class Pool {
   public String name;
   public String description;
   public String applicationEntityTitle;
+  @Column(columnDefinition = "INTEGER")
   public boolean anonymize;
 
   @JsonIgnore
@@ -35,10 +37,11 @@ public final class Pool {
   // @JoinColumn(name = "PoolKey")
   public Set<Script> scripts = new HashSet<Script>();
 
-  public Pool(String name, String path, String applicationEntityTitle) {
+  public Pool(String name, String path, String applicationEntityTitle, boolean anonymize) {
     this.name = name;
     this.description = path;
     this.applicationEntityTitle = applicationEntityTitle;
+    this.anonymize = anonymize;
   }
 
   public Pool() {

@@ -32,7 +32,7 @@ public class AnonymizerTest extends PACSTest {
 
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
-    Pool pool = new Pool(aet, aet, aet);
+    Pool pool = new Pool(aet, aet, aet, true);
     pool = createPool(pool);
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
@@ -74,10 +74,43 @@ public class AnonymizerTest extends PACSTest {
   }
 
   @Test
+  public void noAnonymizer() throws Exception {
+
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, false);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
+    DicomObject dcm = TagLoader.loadTags(testSeries.get(0));
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("AccessionNumber", dcm.getString(Tag.AccessionNumber), response.getString(Tag.AccessionNumber));
+    assertEquals("PatientName", dcm.getString(Tag.PatientName), response.getString(Tag.PatientName));
+    assertEquals("PatientID", dcm.getString(Tag.PatientID), response.getString(Tag.PatientID));
+    assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+
+  }
+
+  @Test
   public void sequences() throws Exception {
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
-    Pool pool = new Pool(aet, aet, aet);
+    Pool pool = new Pool(aet, aet, aet, false);
     pool = createPool(pool);
 
     anonymizer.setPool(pool);

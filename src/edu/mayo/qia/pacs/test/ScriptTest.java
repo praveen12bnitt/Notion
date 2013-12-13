@@ -91,7 +91,7 @@ public class ScriptTest extends PACSTest {
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
 
-    Pool pool = createPool(new Pool(aet, aet, aet));
+    Pool pool = createPool(new Pool(aet, aet, aet, false));
     Script script = createScript(new Script(pool, "PatientName", "foo"));
 
     // Query it back
