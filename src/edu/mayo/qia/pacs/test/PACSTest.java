@@ -38,6 +38,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -140,6 +141,17 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     assertTrue("Assigned a deviceKey", device.deviceKey != 0);
     return device;
 
+  }
+
+  Script createScript(Script script) {
+    // Create a device
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + script.getPool().poolKey + "/script").build();
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, script);
+    assertEquals("Got result", 200, response.getStatus());
+    script = response.getEntity(Script.class);
+    logger.info("Entity back: " + script);
+    assertTrue("Assigned a scriptKey", script.scriptKey != 0);
+    return script;
   }
 
   protected List<File> sendDICOM(String called, String calling, String series) throws IOException, ConfigurationException, InterruptedException {
