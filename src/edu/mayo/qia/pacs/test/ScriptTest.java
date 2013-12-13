@@ -1,10 +1,17 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.net.URI;
+import java.util.UUID;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +19,11 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.sun.jersey.api.client.ClientResponse;
+
+import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.Script;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ScriptTest extends PACSTest {
@@ -67,4 +79,38 @@ public class ScriptTest extends PACSTest {
       Context.exit();
     }
   }
+
+  @Test
+  public void createScript() {
+    // CURL Code
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
+    ClientResponse response = null;
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+
+    Pool pool = createPool(new Pool(aet, aet, aet));
+    Script script = createScript(new Script(pool, "PatientName", "foo"));
+
+    // Query it back
+
+    URI uri;
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/" + script.scriptKey).build();
+    response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+    assertEquals("Got result", 200, response.getStatus());
+    Script serverScript = response.getEntity(Script.class);
+    logger.info("Entity back: " + serverScript);
+    assertEquals("Tag is the same", script.tag, serverScript.tag);
+    assertEquals("Script is the same", script.script, serverScript.script);
+
+    // Catch if we modify the tag
+    script.tag = "PatientID";
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/" + script.scriptKey).build();
+    response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).put(ClientResponse.class, script);
+    assertEquals("Got result", 405, response.getStatus());
+
+  }
+
 }

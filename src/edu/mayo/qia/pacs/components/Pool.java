@@ -33,6 +33,11 @@ public final class Pool {
   // @JoinColumn(name = "PoolKey")
   public Set<Device> devices = new HashSet<Device>();
 
+  @JsonIgnore
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "script")
+  // @JoinColumn(name = "PoolKey")
+  public Set<Script> scripts = new HashSet<Script>();
+
   public Pool(String name, String path, String applicationEntityTitle) {
     this.name = name;
     this.description = path;
@@ -49,6 +54,11 @@ public final class Pool {
   @JsonIgnore
   public Set<Device> getDevices() {
     return devices;
+  }
+
+  @JsonIgnore
+  public Set<Script> getScripts() {
+    return scripts;
   }
 
   // Set my values from somewhere else, but not the key!
