@@ -1,11 +1,8 @@
 package edu.mayo.qia.pacs.components;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,7 +21,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import edu.mayo.qia.pacs.PACS;
-import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 /**
@@ -76,9 +72,11 @@ public class PoolContainer {
   }
 
   public FileObject executePipeline(FileObject fileObject) {
-    // Execute all the stages
-    FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
-    fileObject = Anonymizer.process(this, stageOne, fileObject.getFile());
+    if (pool.anonymize) {
+      // Execute all the stages
+      FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
+      fileObject = Anonymizer.process(this, stageOne, fileObject.getFile());
+    }
     return fileObject;
   }
 

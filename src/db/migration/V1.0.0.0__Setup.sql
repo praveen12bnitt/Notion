@@ -100,7 +100,7 @@ CREATE TABLE Pool (
   Name VARCHAR(250) NOT NULL,
   ApplicationEntityTitle VARCHAR(256),
   Description VARCHAR(250) NOT NULL,
-  
+  Anonymize INTEGER NOT NULL WITH DEFAULT 0,
   CONSTRAINT Unique_AETitle UNIQUE(ApplicationEntityTitle)
 );
 

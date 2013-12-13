@@ -1,20 +1,16 @@
 package edu.mayo.qia.pacs.components;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 @Entity
 @Table
@@ -27,6 +23,7 @@ public final class Pool {
   public String name;
   public String description;
   public String applicationEntityTitle;
+  public boolean anonymize;
 
   @JsonIgnore
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
