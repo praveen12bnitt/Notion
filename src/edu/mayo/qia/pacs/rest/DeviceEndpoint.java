@@ -2,7 +2,6 @@ package edu.mayo.qia.pacs.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -20,6 +19,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.components.Device;
@@ -48,12 +48,20 @@ public class DeviceEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response listDevices() {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(poolKey);
-    // Force load
-    pool.getDevices().size();
-    session.getTransaction().commit();
+    Pool pool = null;
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      pool = (Pool) session.byId(Pool.class).load(poolKey);
+      if (pool == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
+      }
+      // Force load
+      pool.getDevices().size();
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     SimpleResponse s = new SimpleResponse("device", pool.getDevices());
     return Response.ok(s).build();
   }
@@ -75,6 +83,7 @@ public class DeviceEndpoint {
       session.getTransaction().commit();
     } catch (Exception e) {
       logger.error("Error creating device", e);
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Error creating pool")).build();
     } finally {
       session.close();
     }
@@ -87,11 +96,15 @@ public class DeviceEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteDevice(Device device) {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    device = (Device) session.byId(Device.class).getReference(device.deviceKey);
-    session.delete(device);
-    session.getTransaction().commit();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      device = (Device) session.byId(Device.class).getReference(device.deviceKey);
+      session.delete(device);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     Map<String, String> response = new HashMap<String, String>();
     response.put("status", "success");
     response.put("message", "Delete device " + device.deviceKey);
