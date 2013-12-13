@@ -23,7 +23,6 @@ public class DICOMQueryTest extends PACSTest {
 
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
-    aet = "test";
     Pool pool = new Pool(aet, aet, aet);
     pool = createPool(pool);
     Device device = new Device(".*", ".*", 1234, pool);
