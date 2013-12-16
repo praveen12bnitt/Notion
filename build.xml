@@ -11,7 +11,7 @@
   <target name="test" depends="build">
     <mkdir dir="test-reports/"/>
     <!-- Set timeout to be 5 minutes to prevent hung jobs -->
-    <junit fork="yes" printsummary="yes" timeout="300000" maxmemory="1024m" showoutput="${junit.arg.output}" failureproperty="junit.status">
+    <junit forkmode="perBatch" fork="yes" printsummary="yes" timeout="300000" maxmemory="1024m" showoutput="${junit.arg.output}" failureproperty="junit.status">
       <classpath>
         <pathelement location="${basedir}/bin"/>
         <pathelement location="${basedir}/DICOMTestData"/>
@@ -20,8 +20,8 @@
       </classpath>
       <formatter type="xml"/>
       <batchtest todir="test-reports/">
-        <fileset dir="bin">
-          <include name="**/*Test.class"/>
+        <fileset dir="src">
+          <include name="edu/**/*Test*"/>
         </fileset>
       </batchtest>
     </junit>

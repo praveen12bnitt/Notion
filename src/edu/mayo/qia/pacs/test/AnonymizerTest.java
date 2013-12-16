@@ -46,7 +46,7 @@ public class AnonymizerTest extends PACSTest {
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
 
     String patientID = "MRA-0068-MRA-0068";
-    script = "tags.PatientID + '-' + tags.PatientsName";
+    script = "tags.PatientID + '-' + tags.PatientName";
     // + '-' +
     // tags.PatientName";
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientID", script);
@@ -123,4 +123,72 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("Should increment sequence number", 2, anonymizer.sequenceNumber("PatientID", "Smith"));
   }
 
+  @Test
+  public void simpleLookup() throws Exception {
+    String script;
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    List<DicomObject> tagList = getTags("TOF/IMAGE001.dcm");
+    DicomObject tags = tagList.get(0);
+    anonymizer.setPool(pool);
+    String patientName = "Noone";
+    String patientID = "10";
+    anonymizer.setValue("PatientID", tags.getString(Tag.PatientID), patientID);
+    anonymizer.setValue("PatientName", tags.getString(Tag.PatientName), patientName);
+
+    // @formatter:off
+    script = "anonymizer.info ( 'starting to anonymize' )\n"
+        + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
+        + "if ( ! pn ) { \n"
+        + "  anonymizer.info ( 'did not find an entry' )\n"
+        + "  // Generate a new name using a sequence\n"
+        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n"
+        + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n"
+        + "}\n"
+        + "// Be sure the last thing is our return value\n"
+        + "anonymizer.info ( 'returning: ' + pn )\n"
+        + "pn"
+        ;
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+
+    script = "anonymizer.info ( 'starting to anonymize PatientID' )\n"
+        + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
+        + "if ( ! pn ) { \n"
+        + "  anonymizer.info ( 'did not find an entry' )\n"
+        + "  // Generate a new name using a sequence\n"
+        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n"
+        + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n"
+        + "}\n"
+        + "// Be sure the last thing is our return value\n"
+        + "anonymizer.info ( 'returning: ' + pn )\n"
+        + "pn"
+        ;
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+
+    // @formatter:on
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
+    testSeries.addAll(sendDICOM(aet, aet, "TOF/MIP00001.dcm"));
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("PatientName", patientName, response.getString(Tag.PatientName));
+    assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+
+  }
 }

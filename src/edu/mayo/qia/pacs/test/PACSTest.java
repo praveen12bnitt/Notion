@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.ConfigurationException;
 import org.h2.tools.Server;
 import org.junit.Test;
@@ -40,6 +41,7 @@ import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
+import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = { PACSTest.class })
@@ -173,6 +175,18 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     sender.send(null);
     sender.close();
     return testSeries;
+  }
+
+  List<DicomObject> getTags(String pattern) throws Exception {
+    return getTags(getTestSeries(pattern));
+  }
+
+  protected List<DicomObject> getTags(List<File> files) throws Exception {
+    List<DicomObject> list = new ArrayList<DicomObject>();
+    for (File file : files) {
+      list.add(TagLoader.loadTags(file));
+    }
+    return list;
   }
 
   protected List<File> getTestSeries(String resource_pattern) throws IOException {

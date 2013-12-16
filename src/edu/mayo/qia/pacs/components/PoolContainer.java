@@ -71,7 +71,7 @@ public class PoolContainer {
     configureCTP();
   }
 
-  public FileObject executePipeline(FileObject fileObject) {
+  public FileObject executePipeline(FileObject fileObject) throws Exception {
     if (pool.anonymize) {
       // Execute all the stages
       FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
@@ -87,7 +87,6 @@ public class PoolContainer {
     try {
       docBuilder = docFactory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      // TODO Auto-generated catch block
       logger.error("Failed to construct an XML builder", e);
       return;
     }

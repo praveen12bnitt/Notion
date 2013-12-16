@@ -109,31 +109,12 @@ public class StorageSCP extends StorageService {
     final File rename = new File(root, uuid.toString());
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
-
-    boolean singleThreaded = true;
-    if (singleThreaded) {
-      try {
-        poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
-      } catch (Exception e) {
-        logger.error("Error handling new instance", e);
-      }
-
-    } else {
-
-      taskExecutor.execute(new Runnable() {
-
-        @Override
-        public void run() {
-          try {
-            poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
-          } catch (Exception e) {
-            logger.error("Error handling new instance", e);
-          }
-        }
-      });
-      // jmsTemplate.convertAndSend(PACS.sorterQueue, );
-      logger.info("Done");
+    try {
+      poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
+    } catch (Exception e) {
+      logger.error("Error handling new instance", e);
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "Failed to process image");
     }
+    logger.info("Done");
   }
-
 }

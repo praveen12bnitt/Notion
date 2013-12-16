@@ -3,6 +3,8 @@ package edu.mayo.qia.pacs.ctp;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,6 +33,7 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.util.TagUtils;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.rsna.ctp.objects.FileObject;
@@ -68,6 +71,21 @@ public class Anonymizer {
   @Autowired
   TransactionTemplate transactionTemplate;
 
+  static Map<Integer, String> fieldMap = new HashMap<Integer, String>();
+  static {
+    Field[] fields = Tags.class.getDeclaredFields();
+    for (Field field : fields) {
+      if (field.getType() == int.class) {
+        try {
+          fieldMap.put(field.getInt(Tag.class), field.getName());
+        } catch (Exception e) {
+          logger.error("Error extracting field: " + field, e);
+        }
+      }
+    }
+
+  }
+
   public void setPool(Pool pool) {
     this.pool = pool;
   }
@@ -77,17 +95,40 @@ public class Anonymizer {
     ScriptableObject.putProperty(scope, "anon", this);
     ScriptableObject.putProperty(scope, "anonymizer", this);
     NativeObject tagObject = new NativeObject();
+
     Iterator<DicomElement> iterator = tags.datasetIterator();
     while (iterator.hasNext()) {
       DicomElement element = iterator.next();
-      String tagName = ElementDictionary.getDictionary().nameOf(element.tag());
-      tagName = tagName.replaceAll("[ ']+", "");
+      // String tagName =
+      // ElementDictionary.getDictionary().nameOf(element.tag());
+      // tagName = tagName.replaceAll("[ ']+", "");
+      String tagName = fieldMap.get(element.tag());
       tagObject.defineProperty(tagName, tags.getString(element.tag()), NativeObject.READONLY);
       // logger.info("Setting: " + tagName + ": " +
       // tags.getString(element.tag()));
     }
     ScriptableObject.putProperty(scope, "tags", tagObject);
     return scope;
+  }
+
+  public void debug(String msg) {
+    logger.debug("Script: " + msg);
+  }
+
+  public void info(String msg) {
+    logger.info("Script: " + msg);
+  }
+
+  public void warn(String msg) {
+    logger.warn("Script: " + msg);
+  }
+
+  public void error(String msg) {
+    logger.error("Script: " + msg);
+  }
+
+  public void exception(String msg) throws Exception {
+    throw new Exception(msg);
   }
 
   public String hash(String value) {
@@ -154,7 +195,7 @@ public class Anonymizer {
         if (k[0] == null) {
           // Create an empty, grab a sequence from the POOL UID
           Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
-          sequenceName = "poolsequence" + i;
+          sequenceName = "pool_sequence_" + pool.poolKey + "_" + i;
           template.update("create sequence " + sequenceName + " AS INT START WITH 1");
           setValue("Pool", internalType, sequenceName);
         } else {
@@ -194,62 +235,65 @@ public class Anonymizer {
     return result.substring(0, length);
   }
 
-  public static FileObject process(PoolContainer poolContainer, FileObject fileObject, File original) {
+  public static FileObject process(PoolContainer poolContainer, FileObject fileObject, File original) throws Exception {
     JdbcTemplate template = PACS.context.getBean("template", JdbcTemplate.class);
 
-    try {
-      // Load the tags, replace PatientName, PatientID and AccessionNumber
-      DicomInputStream dis = new DicomInputStream(fileObject.getFile());
-      final DicomObject dcm = dis.readDicomObject();
-      dis.close();
-      DicomObject originalTags = TagLoader.loadTags(original);
+    // Load the tags, replace PatientName, PatientID and AccessionNumber
+    DicomInputStream dis = new DicomInputStream(fileObject.getFile());
+    final DicomObject dcm = dis.readDicomObject();
+    dis.close();
+    DicomObject originalTags = TagLoader.loadTags(original);
 
-      Anonymizer function = PACS.context.getBean("anonymizer", Anonymizer.class);
-      function.setPool(poolContainer.getPool());
+    Anonymizer function = PACS.context.getBean("anonymizer", Anonymizer.class);
+    function.setPool(poolContainer.getPool());
 
-      final Context context = Context.enter();
-      try {
-        final ScriptableObject scope = function.setBindings(context.initStandardObjects(), originalTags);
+    final Context context = Context.enter();
+    final Map<String, String> scripts = new HashMap<String, String>();
+    // Run through all the stored bindings
+    template.query("select Tag, Script from SCRIPT where PoolKey = ?", new Object[] { poolContainer.getPool().poolKey }, new RowCallbackHandler() {
 
-        // Run through all the stored bindings
-        template.query("select Tag, Script from SCRIPT where PoolKey = ?", new Object[] { poolContainer.getPool().poolKey }, new RowCallbackHandler() {
-
-          @Override
-          public void processRow(ResultSet rs) throws SQLException {
-            String tag = rs.getString("Tag");
-            int tagValue = Tag.toTag(tag);
-            String script = rs.getString("Script");
-            logger.info("Processing tag: " + tag + " with script: " + script);
-            Object result = dcm.getString(tagValue);
-            try {
-              result = context.evaluateString(scope, script, "inline", 1, null);
-            } catch (Exception e) {
-              logger.error("Failed to process the script correctly: " + script, e);
-            }
-            if (result instanceof String) {
-              dcm.putString(tagValue, dcm.get(tagValue).vr(), (String) result);
-            } else {
-              logger.error("Expected a string back from script, but instead got: " + result.toString());
-            }
-
-          }
-        });
-
-      } finally {
-        Context.exit();
+      @Override
+      public void processRow(ResultSet rs) throws SQLException {
+        String tag = rs.getString("Tag");
+        String script = rs.getString("Script");
+        scripts.put(tag, script);
       }
-      File output = new File(fileObject.getFile().getParentFile(), UUID.randomUUID().toString());
-      FileOutputStream fos = new FileOutputStream(output);
-      BufferedOutputStream bos = new BufferedOutputStream(fos);
-      DicomOutputStream dos = new DicomOutputStream(bos);
-      dos.writeDicomFile(dcm);
-      dos.close();
-
-      fileObject.getFile().delete();
-      FileUtils.moveFile(output, fileObject.getFile());
-    } catch (Exception e) {
-      logger.error("Error changing patient info", e);
+    });
+    final ScriptableObject scope = function.setBindings(context.initStandardObjects(), originalTags);
+    try {
+      for (String tag : scripts.keySet()) {
+        String script = scripts.get(tag);
+        int tagValue = Tag.toTag(tag);
+        logger.info("Processing tag: " + tag + " with script: " + script);
+        Object result = dcm.getString(tagValue);
+        try {
+          result = context.evaluateString(scope, script, "inline", 1, null);
+        } catch (Exception e) {
+          logger.error("Failed to process the script correctly: " + script, e);
+          throw e;
+        }
+        try {
+          result = Context.jsToJava(result, String.class);
+          dcm.putString(tagValue, dcm.get(tagValue).vr(), (String) result);
+        } catch (Exception e) {
+          logger.error("Expected a string back from script, but instead got: " + result.toString());
+          throw new Exception("Expected a string back from script, but instead got: " + result.toString());
+        }
+      }
+    } finally {
+      Context.exit();
     }
+
+    File output = new File(fileObject.getFile().getParentFile(), UUID.randomUUID().toString());
+    FileOutputStream fos = new FileOutputStream(output);
+    BufferedOutputStream bos = new BufferedOutputStream(fos);
+    DicomOutputStream dos = new DicomOutputStream(bos);
+    dos.writeDicomFile(dcm);
+    dos.close();
+
+    fileObject.getFile().delete();
+    FileUtils.moveFile(output, fileObject.getFile());
+
     return fileObject;
   }
 }
