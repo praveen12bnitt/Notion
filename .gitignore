@@ -2,7 +2,6 @@ bin
 derby.log
 PACS.log
 Documentation/_build
-DB
 MQ
 doc/
 ivy/

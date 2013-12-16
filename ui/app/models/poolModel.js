@@ -69,6 +69,7 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 	name: null,
 	applicationEntityTitle: null,
 	description: null,
+	anonymize: false,
 	devices: function() {
 		return this.loadDevices()
 	}.property(),

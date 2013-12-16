@@ -127,6 +127,9 @@ ResearchPACS dependancies.
     <dependency org="org.apache.shiro" name="shiro-web" rev="1.2.2" conf="default->default" transitive="false"/>
     <dependency org="commons-beanutils" name="commons-beanutils-core" rev="1.8.3" />
 
+    <!-- Javascript, embedded -->
+    <dependency org="rhino" name="js" rev="1.7R2"/>
+    
     <!-- REST Services -->
      <!-- REST Services -->
     <dependency org="com.sun.jersey" name="jersey-core" rev="1.17"/>

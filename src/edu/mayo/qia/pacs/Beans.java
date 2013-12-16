@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
@@ -39,7 +40,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.googlecode.flyway.core.Flyway;
 import com.sun.jersey.api.container.ContainerFactory;
@@ -91,14 +95,32 @@ public class Beans {
   public DataSource dataSource() throws SQLException {
     String path = new File(PACS.directory, "DB").getPath();
     String driverClass = "org.apache.derby.jdbc.EmbeddedDriver";
-    String url = "jdbc:derby:directory:" + path + ";create=true";
+
+    String url;
+    if (PACS.isDBInMemory) {
+      url = "jdbc:derby:memory:PACS;create=true";
+    } else {
+      url = "jdbc:derby:directory:" + path + ";create=true";
+    }
     // Emulate our Connection pooling setup
     BasicDataSource dbcp = new BasicDataSource();
     dbcp.setDriverClassName(driverClass);
     dbcp.setUrl(url);
     dbcp.setDefaultAutoCommit(true);
     return dbcp;
+  }
 
+  @Bean
+  public PlatformTransactionManager transactionManager() throws SQLException {
+    return new DataSourceTransactionManager(dataSource());
+  }
+
+  @Bean
+  public TransactionTemplate transactionTemplate() throws SQLException {
+    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager());
+    // The design demands
+    transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    return transactionTemplate;
   }
 
   @Bean

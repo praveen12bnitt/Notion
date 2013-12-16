@@ -1,5 +1,6 @@
 package edu.mayo.qia.pacs.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableBiMap.Builder;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
@@ -52,17 +54,19 @@ public class PoolEndpoint {
   ResourceContext resourceContext;
 
   /** List all the pools */
+  @SuppressWarnings("unchecked")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response listPools() {
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    @SuppressWarnings("unchecked")
-    List<Pool> result = session.createCriteria(Pool.class).list();
-    for (Pool pool : result) {
-      pool.getDevices().size();
+    List<Pool> result = new ArrayList<Pool>();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      result = session.createCriteria(Pool.class).list();
+      session.getTransaction().commit();
+    } finally {
+      session.close();
     }
-    session.getTransaction().commit();
     SimpleResponse s = new SimpleResponse("pool", result);
     return Response.ok(s).build();
   }
@@ -73,11 +77,15 @@ public class PoolEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPool(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
-    // Delete
-    session.getTransaction().commit();
+    Pool pool = null;
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      pool = (Pool) session.byId(Pool.class).load(id);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     return Response.ok(pool).build();
   }
 
@@ -101,6 +109,15 @@ public class PoolEndpoint {
     return deviceEndpoint;
   }
 
+  /** Devices */
+  @Path("/{id: [1-9][0-9]*}/script")
+  public ScriptEndpoint scripts(@PathParam("id") int id) {
+    ScriptEndpoint scriptEndpoint;
+    scriptEndpoint = resourceContext.getResource(ScriptEndpoint.class);
+    scriptEndpoint.poolKey = id;
+    return scriptEndpoint;
+  }
+
   /** Create a pool. */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -121,10 +138,14 @@ public class PoolEndpoint {
           .build();
     }
 
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    session.save(pool);
-    session.getTransaction().commit();
+    Session session = sessionFactory.openSession();
+    try {
+      session.beginTransaction();
+      session.save(pool);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
+    }
     poolManager.newPool(pool);
     return Response.ok(pool).build();
   }
@@ -136,19 +157,28 @@ public class PoolEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response modifyPool(@PathParam("id") int id, Pool update) {
     // Look up the pool and change it
+    Pool pool = null;
     Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-    Pool pool = (Pool) session.byId(Pool.class).getReference(id);
-    session.getTransaction().commit();
-    if (!pool.applicationEntityTitle.equals(update.applicationEntityTitle)) {
-      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle can not be changed existing: " + pool.applicationEntityTitle + " attepted change: " + update.applicationEntityTitle)).build();
+    try {
+      session.beginTransaction();
+      pool = (Pool) session.byId(Pool.class).load(id);
+      if (pool == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
+      }
+      session.getTransaction().commit();
+      if (!pool.applicationEntityTitle.equals(update.applicationEntityTitle)) {
+        return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle can not be changed existing: " + pool.applicationEntityTitle + " attepted change: " + update.applicationEntityTitle)).build();
 
+      }
+      // Update the pool
+      session.beginTransaction();
+      pool.update(update);
+      session.update(pool);
+      session.getTransaction().commit();
+    } finally {
+      session.close();
     }
-    // Update the pool
-    session.beginTransaction();
-    pool.update(update);
-    session.update(pool);
-    session.getTransaction().commit();
+
     return Response.ok(pool).build();
   }
 
@@ -160,7 +190,10 @@ public class PoolEndpoint {
     Session session = sessionFactory.openSession();
     try {
       session.beginTransaction();
-      Pool pool = (Pool) session.byId(Pool.class).getReference(id);
+      Pool pool = (Pool) session.byId(Pool.class).load(id);
+      if (pool == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
+      }
       // Delete
       session.delete(pool);
       poolManager.deletePool(pool);

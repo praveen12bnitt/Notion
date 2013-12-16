@@ -49,7 +49,7 @@ public class RESTTest extends PACSTest {
      */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
-    Pool pool = new Pool("empty", "empty", "empty");
+    Pool pool = new Pool("empty", "empty", "empty", false);
     response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, pool);
     assertEquals("Got result", 200, response.getStatus());
     pool = response.getEntity(Pool.class);
@@ -62,7 +62,7 @@ public class RESTTest extends PACSTest {
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     for (String name : new String[] { "no spaces", "no !", "{", "#", "thisiswaytoolongofaname_you_think" }) {
-      Pool pool = new Pool("garf", "empty", name);
+      Pool pool = new Pool("garf", "empty", name, false);
       response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, pool);
       assertEquals("Got result", Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
     }

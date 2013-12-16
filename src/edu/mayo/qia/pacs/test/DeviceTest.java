@@ -29,7 +29,7 @@ public class DeviceTest extends PACSTest {
     ClientResponse response = null;
     URI uri;
     uri = UriBuilder.fromUri(baseUri).path("/pool").build();
-    Pool pool = new Pool("deviceTest", "Test out device creation", "foo");
+    Pool pool = new Pool("deviceTest", "Test out device creation", "foo", false);
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, pool);
     assertEquals("Got result", 200, response.getStatus());
     pool = response.getEntity(Pool.class);

@@ -1,11 +1,8 @@
 package edu.mayo.qia.pacs.components;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,8 +35,8 @@ public class PoolContainer {
   File poolDirectory;
   File quarantinesDirectory;
   File scriptsDirectory;
+  PipelineStage ctpAnonymizer = null;
 
-  List<PipelineStage> stages = new ArrayList<PipelineStage>();
   private JdbcTemplate template;
   private String sequenceName;
 
@@ -74,26 +71,22 @@ public class PoolContainer {
     configureCTP();
   }
 
-  public FileObject executePipeline(FileObject fileObject) {
-    // Execute all the stages
-    for (PipelineStage stage : stages) {
-      if (stage instanceof Processor) {
-        fileObject = ((Processor) stage).process(fileObject);
-      }
+  public FileObject executePipeline(FileObject fileObject) throws Exception {
+    if (pool.anonymize) {
+      // Execute all the stages
+      FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
+      fileObject = Anonymizer.process(this, stageOne, fileObject.getFile());
     }
     return fileObject;
   }
 
   public void configureCTP() {
-    // Release prior stages
-    stages = new ArrayList<PipelineStage>();
 
     DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder docBuilder = null;
     try {
       docBuilder = docFactory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
-      // TODO Auto-generated catch block
       logger.error("Failed to construct an XML builder", e);
       return;
     }
@@ -113,23 +106,14 @@ public class PoolContainer {
       logger.error("Error copying the anonymizer script", e);
     }
     element.setAttribute("script", script.getAbsolutePath());
-    DicomAnonymizer anonymizer = new DicomAnonymizer(element);
-    stages.add(anonymizer);
-    stages.add(new Anonymizer(element));
-
-    // Start all the stages
-    for (PipelineStage stage : stages) {
-      stage.start();
-    }
-
+    ctpAnonymizer = new DicomAnonymizer(element);
+    ctpAnonymizer.start();
   }
 
   public void stop() {
     logger.info("Shutting down pool: " + pool);
     // Stop all the stages
-    for (PipelineStage stage : stages) {
-      stage.shutdown();
-    }
+    ctpAnonymizer.shutdown();
   }
 
   public File getPoolDirectory() {
@@ -144,5 +128,9 @@ public class PoolContainer {
       logger.error("Failed to delete directory", e);
     }
 
+  }
+
+  public Pool getPool() {
+    return pool;
   }
 }

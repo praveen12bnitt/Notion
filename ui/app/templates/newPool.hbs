@@ -7,19 +7,25 @@
     <div class="control-group">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
-        {{view Ember.TextField valueBinding="name"}}
+        {{view Ember.TextField valueBinding="name" placeholder="Descriptive name"}}
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="applicationEntityTitle">AET</label>
       <div class="controls">
-        {{view Ember.TextField valueBinding="applicationEntityTitle"}}
+        {{view Ember.TextField valueBinding="applicationEntityTitle" placeholder="title"}}
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="accuracy">Description</label>
       <div class="controls">
-        {{textarea valueBinding="description"}}
+        {{textarea valueBinding="description" placeholder="Brief description"}}
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="accuracy">Use Anonymizer</label>
+      <div class="controls">
+        {{input type="checkbox" name="anonymizer" valueBinding="anonymize"}}
       </div>
     </div>
   </form>
