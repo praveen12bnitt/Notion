@@ -33,7 +33,7 @@ public final class Pool {
   public Set<Device> devices = new HashSet<Device>();
 
   @JsonIgnore
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "script")
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
   public Set<Script> scripts = new HashSet<Script>();
 
@@ -65,5 +65,6 @@ public final class Pool {
   public void update(Pool update) {
     this.name = update.name;
     this.description = update.description;
+    this.anonymize = update.anonymize;
   }
 }
