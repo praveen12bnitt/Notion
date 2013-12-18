@@ -52,9 +52,20 @@ public class PoolContainer {
     logger.info("Starting up pool: " + pool);
 
     // Do we have a sequence for this pool?
-    this.sequenceName = "uid" + pool.poolKey;
-    if (template.queryForObject("select count(*) from SYS.SYSSEQUENCES where SEQUENCENAME = ?", Integer.class, sequenceName) != 1) {
-      template.update("create sequence " + sequenceName + " AS INT START WITH 1");
+    this.sequenceName = "UID" + pool.poolKey;
+    boolean sequenceExists = false;
+    try {
+      template.queryForObject("VALUES SYSCS_UTIL.SYSCS_PEEK_AT_SEQUENCE('APP', ?)", Integer.class, this.sequenceName);
+      sequenceExists = true;
+    } catch (Exception e) {
+      logger.error("Did not find sequence: " + this.sequenceName);
+    }
+    try {
+      if (!sequenceExists) {
+        template.update("create sequence " + sequenceName + " AS INT START WITH 1");
+      }
+    } catch (Exception e) {
+      logger.error("Error creating sequence", e);
     }
 
     // See if the directory exists
