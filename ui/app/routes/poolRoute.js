@@ -73,6 +73,9 @@ App.NewPoolView = App.NewObjectView.extend({})
 App.NewDeviceController = App.NewObjectController.extend({})
 App.NewDeviceView = App.NewObjectView.extend({})
 
+App.NewScriptController = App.NewObjectController.extend({})
+App.NewScriptView = App.NewObjectView.extend({})
+
 
 App.PoolRoute = Ember.Route.extend({
 	pool: null,
@@ -90,13 +93,19 @@ App.PoolRoute = Ember.Route.extend({
 			this.controllerFor('newPool').set ( 'model', pool )
 			this.render ( 'newPool', { into: 'pool', outlet: 'modal'});
 		},
-
 		newDevice: function() {
 			console.log ( 'PoolRoute -- newDevice')
 			var pool =  this.controller.get('model')
 			var device = App.Device.create({'hostName' : 'unknown', 'applicationEntityTitle': 'unknown', 'port': 0, 'poolKey' : pool.get('poolKey')});
 			this.controllerFor('newDevice').set ( 'model', device )
 			this.render ( 'newDevice', { into: 'pool', outlet: 'modal'});
+		},
+		newScript: function() {
+			console.log ( 'PoolRoute -- newScript')
+			var pool =  this.controller.get('model')
+			var script = App.Script.create({'tag': 'empty', 'script' : 'tags.PatientName', 'poolKey' : pool.get('poolKey')});
+			this.controllerFor('newScript').set ( 'model', script )
+			this.render ( 'newScript', { into: 'pool', outlet: 'modal'});
 		},
 		close: function() {
 			console.log ( 'closing modal dialog ')
@@ -107,14 +116,31 @@ App.PoolRoute = Ember.Route.extend({
 			// this.render ( 'empty', { into: 'pools', outlet: 'modal'})
 		},
 		reload: function() {
-			console.log ( "reloading")
+			var pool =  this.controller.get('model')
+			var poolKey = pool.poolKey
+			console.log ( "reloading by key " + poolKey)
 			// Remember that find returns a promise, so do something when the promise is finished ()
 			var c = this.controller
-			App.Pool.find().then ( function ( response ) {
+			App.Pool.findById(poolKey).then ( function ( response ) {
 				c.set ( 'model', response )
 			})
+		},
+		toggleDisplay: function(that) {
+			that.toggleProperty('display')
+		},
+		saveScript: function(script) {
+			console.log("Would be saving script right now")
+			script.save();
+		},
+		tryScript: function(script) {
+			console.log("Would be trying the script right now", script)
+			script.tryScript()
 		}
 	}
+})
+
+App.PoolView = Ember.View.extend({
+	layoutName: 'pool'
 })
 
 

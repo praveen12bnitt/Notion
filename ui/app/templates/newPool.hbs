@@ -1,6 +1,10 @@
  <div class="modal-header">
   <button type="button" class="close" {{action close target="view"}}>&times;</button>
-  <h3>New Pool</h3>
+  {{#if poolKey}}
+    <h3>Edit Pool</h3>
+  {{else}}
+    <h3>New Pool</h3>
+  {{/if}}  
 </div>
 <div class="modal-body">
   <form class="form-horizontal">
@@ -11,10 +15,14 @@
       </div>
     </div>
     <div class="control-group">
+        {{#if poolKey}}
+        Application Entity Title: <b>{{applicationEntityTitle}}</b>
+        {{else}}
       <label class="control-label" for="applicationEntityTitle">AET</label>
       <div class="controls">
         {{view Ember.TextField valueBinding="applicationEntityTitle" placeholder="title"}}
       </div>
+        {{/if}}
     </div>
     <div class="control-group">
       <label class="control-label" for="accuracy">Description</label>
@@ -25,7 +33,7 @@
     <div class="control-group">
       <label class="control-label" for="accuracy">Use Anonymizer</label>
       <div class="controls">
-        {{input type="checkbox" name="anonymizer" valueBinding="anonymize"}}
+        {{input type="checkbox" valueBinding="anonymize" checked=anonymize}}
       </div>
     </div>
   </form>

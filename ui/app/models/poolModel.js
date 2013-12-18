@@ -64,6 +64,52 @@ App.Device = Ember.Object.extend(App.Serializable, {
 	}
 })
 
+App.Script = Ember.Object.extend(App.Serializable, {
+	tag: null,
+	poolKey: -1,
+	script: null,
+	scriptKey: null,
+	display: false,
+	scriptEditorId: function() {
+		return "editor-" + this.get("scriptKey")
+	}.property('scriptKey'),
+	tryScript: function() {
+		console.log ( "Trying script: " + this.script + " on the server")
+		var self = this
+		var url = "/rest/pool/" + this.get('poolKey') + '/script/try'
+		$.ajax ({
+			contentType: 'application/json',
+			type: 'PUT',
+			url: url,
+			data: JSON.stringify(this.serialize()),
+			success: function ( data ) {
+				console.log("Tried script, got back ", data)
+				self.set('tryResult', data.result)
+			}
+		})
+	},
+	save: function() {
+		console.log ( "Saving script for " + this.tag + " back to server", this.serialize())
+		var url = "/rest/pool/" + this.get('poolKey') + "/script"
+		var action = "POST"
+		// If we are editing
+		if ( this.scriptKey ) {
+			url = url + "/" + this.get('scriptKey')
+			action = "PUT"
+		}
+		$.ajax ({
+			contentType : 'application/json',
+			type: action,
+			url: url,
+			data: JSON.stringify(this.serialize()),
+			success: function ( data ) {
+				console.log ( "saved!" )
+			}
+		})		
+	}
+})
+
+
 App.Pool = Ember.Object.extend (App.Serializable, {
 	poolKey: null,
 	name: null,
@@ -73,14 +119,19 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 	devices: function() {
 		return this.loadDevices()
 	}.property(),
+	scripts: function() {
+		return this.loadScripts();
+	}.property(),
 	loadDevices: function() {
 		console.log ( "getting devices from REST server")
 		var p = this
+		var poolKey = this.get('poolKey')
 		$.getJSON("/rest/pool/" + this.get("poolKey") + "/device", function(data){
 			var deviceList = Ember.A();
 			$.each ( data.device, function ( i, p ) {
-				var pool = App.Device.create ( p );
-				deviceList.addObject ( pool )
+				var device = App.Device.create ( p );
+				device.set('poolKey', poolKey)
+				deviceList.addObject ( device )
 			})
 			console.log ( "DeviceList from server on " )
 			console.log ( p)
@@ -88,18 +139,46 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 		})
 		return [];
 	},
+	loadScripts: function() {
+		console.log ( "Fetching scripts")
+		var that = this
+		var poolKey = this.get('poolKey')
+		$.getJSON("/rest/pool/" + this.get("poolKey") + "/script", function(data){
+			var scriptList = Ember.A();
+			$.each ( data.script, function(i,p) {
+				var script = App.Script.create(p)
+				script.set('poolKey', poolKey)
+				scriptList.addObject(script)
+			})
+			that.set ( "scripts", scriptList )
+		})
+		return [];
+	},
 	save: function () {
 		console.log ( "Saving this pool back to the server " )
 		console.log ( this.serialize() )
-		$.ajax ({
-			contentType : 'application/json',
-			type: "POST",
-			url: "/rest/pool",
-			data: JSON.stringify(this.serialize()),
-			success: function ( data ) {
-				console.log ( "saved!" )
-			}
-		})
+		if ( this.poolKey ) {
+			// We want to update
+			$.ajax({
+				contentType : 'application/json',
+				type: "PUT",
+				url: "/rest/pool/" + this.poolKey,
+				data: JSON.stringify(this.serialize()),
+				success: function ( data ) {
+					console.log ( "saved!" )
+				}
+			})
+		} else {
+			$.ajax ({
+				contentType : 'application/json',
+				type: "POST",
+				url: "/rest/pool",
+				data: JSON.stringify(this.serialize()),
+				success: function ( data ) {
+					console.log ( "saved!" )
+				}
+			})
+		}
 	}
 })
 
@@ -119,9 +198,12 @@ App.Pool.reopenClass({
 		})
 	},
 	findById: function(poolKey) {
+		console.log("Fetching pool by key " + poolKey)
 		return Ember.RSVP.Promise ( function ( resolve ) {
 			$.getJSON("/rest/pool/" + poolKey, function(data){
+				console.log("Fetched pool data", data)
 				var pool = App.Pool.create ( data );
+				console.log("Constructed a pool object", pool)
 				resolve ( pool )
 			})
 		})		

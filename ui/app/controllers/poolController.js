@@ -8,7 +8,7 @@ App.PoolsNewController = Ember.ObjectController.extend({
 		},
 		cancel: function(pool) {
 			pool.deleteRecord();
-			pool.saze();
+			pool.save();
 			this.transitionToRoute ( 'pools')
 		}
 	}
