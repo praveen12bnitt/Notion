@@ -158,7 +158,7 @@ public class PoolEndpoint {
   public Response modifyPool(@PathParam("id") int id, Pool update) {
     // Look up the pool and change it
     Pool pool = null;
-    Session session = sessionFactory.getCurrentSession();
+    Session session = sessionFactory.openSession();
     try {
       session.beginTransaction();
       pool = (Pool) session.byId(Pool.class).load(id);

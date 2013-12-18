@@ -25,8 +25,11 @@ import org.springframework.stereotype.Component;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.resource.PerRequest;
 
+import edu.mayo.qia.pacs.components.PoolContainer;
+import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 @Scope("prototype")
 @Component
@@ -41,6 +44,9 @@ public class ScriptEndpoint {
   @Autowired
   JdbcTemplate template;
 
+  @Autowired
+  PoolManager poolManager;
+
   public int poolKey;
 
   /** List all the Scripts. */
@@ -54,7 +60,7 @@ public class ScriptEndpoint {
     // Force load
     pool.getScripts().size();
     session.getTransaction().commit();
-    SimpleResponse s = new SimpleResponse("Script", pool.getScripts());
+    SimpleResponse s = new SimpleResponse("script", pool.getScripts());
     return Response.ok(s).build();
   }
 
@@ -73,6 +79,16 @@ public class ScriptEndpoint {
       session.close();
     }
     return Response.ok(script).build();
+  }
+
+  /** Try a Script. */
+  @PUT
+  @Path("/try")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response tryScript(Script script) {
+    PoolContainer container = poolManager.getContainer(poolKey);
+    return Response.ok(new SimpleResponse("result", Anonymizer.tryScript(container, script))).build();
   }
 
   /** Create a Script. */
@@ -105,15 +121,16 @@ public class ScriptEndpoint {
 
   /** Update a Script. */
   @PUT
+  @Path("/{id: [1-9][0-9]*}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response modifyScript(Script inScript) {
+  public Response modifyScript(@PathParam("id") int id, Script inScript) {
     // Look up the pool and change it
     Session session = sessionFactory.openSession();
     Script script = inScript;
     try {
       session.beginTransaction();
-      script = (Script) session.byId(Script.class).getReference(script.scriptKey);
+      script = (Script) session.byId(Script.class).load(id);
       script.update(inScript);
       session.getTransaction().commit();
     } catch (Exception e) {

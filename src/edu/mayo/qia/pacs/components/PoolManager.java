@@ -100,6 +100,15 @@ public class PoolManager {
     return poolContainers.get(aet);
   }
 
+  public PoolContainer getContainer(int poolKey) {
+    for (PoolContainer container : poolContainers.values()) {
+      if (container.pool.poolKey == poolKey) {
+        return container;
+      }
+    }
+    return null;
+  }
+
   public void deletePool(Pool pool) {
     PoolContainer container = getContainer(pool.applicationEntityTitle);
     container.stop();

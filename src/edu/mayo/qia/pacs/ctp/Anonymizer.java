@@ -3,7 +3,6 @@ package edu.mayo.qia.pacs.ctp;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,28 +11,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.script.Bindings;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.ElementDictionary;
-import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
-import org.dcm4che2.util.TagUtils;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.rsna.ctp.objects.FileObject;
@@ -42,20 +31,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
+import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @Component
@@ -63,7 +50,7 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 /** Helper class containing some functions to use for the Anonymizer */
 public class Anonymizer {
   static Logger logger = Logger.getLogger(Anonymizer.class);
-  private Pool pool;
+  protected Pool pool;
 
   @Autowired
   JdbcTemplate template;
@@ -233,6 +220,31 @@ public class Anonymizer {
       logger.error("Failed to compute MD5 hash", e);
     }
     return result.substring(0, length);
+  }
+
+  public static String tryScript(PoolContainer poolContainer, Script script) {
+    Anonymizer function = new MockAnonymizer();
+    function.setPool(poolContainer.getPool());
+    final Context context = Context.enter();
+    final ScriptableObject scope = function.setBindings(context.initStandardObjects(), null);
+    Object result = script.tag;
+    try {
+      try {
+        result = context.evaluateString(scope, script.script, "inline", 1, null);
+      } catch (Exception e) {
+        logger.error("Failed to process the script correctly: " + script, e);
+        return "Failed to process the script correctly: " + e.getMessage();
+      }
+      try {
+        result = Context.jsToJava(result, String.class);
+      } catch (Exception e) {
+        logger.error("Expected a string back from script, but instead got: " + result.toString());
+        return "Expected a string from the script but got: " + result.toString() + "\nError was: " + e.getMessage();
+      }
+    } finally {
+      Context.exit();
+    }
+    return (String) result;
   }
 
   public static FileObject process(PoolContainer poolContainer, FileObject fileObject, File original) throws Exception {
