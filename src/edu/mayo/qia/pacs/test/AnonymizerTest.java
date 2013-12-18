@@ -152,10 +152,10 @@ public class AnonymizerTest extends PACSTest {
         + "}\n"
         + "// Be sure the last thing is our return value\n"
         + "anonymizer.info ( 'returning: ' + pn )\n"
-        + "pn"
+        + "pn\n"
         ;
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
-
+    
     script = "anonymizer.info ( 'starting to anonymize PatientID' )\n"
         + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
         + "if ( ! pn ) { \n"
@@ -166,7 +166,7 @@ public class AnonymizerTest extends PACSTest {
         + "}\n"
         + "// Be sure the last thing is our return value\n"
         + "anonymizer.info ( 'returning: ' + pn )\n"
-        + "pn"
+        + "pn\n"
         ;
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
 
