@@ -131,6 +131,9 @@ public class ScriptEndpoint {
     try {
       session.beginTransaction();
       script = (Script) session.byId(Script.class).load(id);
+      if (!inScript.tag.equals(script.tag)) {
+        throw new Exception("Script tags must not change");
+      }
       script.update(inScript);
       session.getTransaction().commit();
     } catch (Exception e) {

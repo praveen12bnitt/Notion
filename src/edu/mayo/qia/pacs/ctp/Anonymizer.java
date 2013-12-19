@@ -90,7 +90,11 @@ public class Anonymizer {
       // ElementDictionary.getDictionary().nameOf(element.tag());
       // tagName = tagName.replaceAll("[ ']+", "");
       String tagName = fieldMap.get(element.tag());
-      tagObject.defineProperty(tagName, tags.getString(element.tag()), NativeObject.READONLY);
+      try {
+        tagObject.defineProperty(tagName, tags.getString(element.tag()), NativeObject.READONLY);
+      } catch (UnsupportedOperationException e) {
+        logger.error("Could not process tag: " + tagName + " unable to convert to a string", e);
+      }
       // logger.info("Setting: " + tagName + ": " +
       // tags.getString(element.tag()));
     }
@@ -247,17 +251,14 @@ public class Anonymizer {
     return (String) result;
   }
 
-  public static FileObject process(PoolContainer poolContainer, FileObject fileObject, File original) throws Exception {
+  public static FileObject process(PoolContainer poolContainer, FileObject fileObject, DicomObject originalTags) throws Exception {
     JdbcTemplate template = PACS.context.getBean("template", JdbcTemplate.class);
-
-    // Load the tags, replace PatientName, PatientID and AccessionNumber
-    DicomInputStream dis = new DicomInputStream(fileObject.getFile());
-    final DicomObject dcm = dis.readDicomObject();
-    dis.close();
-    DicomObject originalTags = TagLoader.loadTags(original);
 
     Anonymizer function = PACS.context.getBean("anonymizer", Anonymizer.class);
     function.setPool(poolContainer.getPool());
+    DicomInputStream dis = new DicomInputStream(fileObject.getFile());
+    final DicomObject dcm = dis.readDicomObject();
+    dis.close();
 
     final Context context = Context.enter();
     final Map<String, String> scripts = new HashMap<String, String>();

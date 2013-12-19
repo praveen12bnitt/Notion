@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonNode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 
 import org.springframework.transaction.annotation.Propagation;
@@ -109,6 +111,15 @@ public class PoolEndpoint {
     return deviceEndpoint;
   }
 
+  /** Series */
+  @Path("/{id: [1-9][0-9]*}/series")
+  public SeriesEndpoint series(@PathParam("id") int id) {
+    SeriesEndpoint seriesEndpoint;
+    seriesEndpoint = resourceContext.getResource(SeriesEndpoint.class);
+    seriesEndpoint.poolKey = id;
+    return seriesEndpoint;
+  }
+
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/script")
   public ScriptEndpoint scripts(@PathParam("id") int id) {
@@ -116,6 +127,43 @@ public class PoolEndpoint {
     scriptEndpoint = resourceContext.getResource(ScriptEndpoint.class);
     scriptEndpoint.poolKey = id;
     return scriptEndpoint;
+  }
+
+  /** CTP */
+  @GET
+  @Path("/{id: [1-9][0-9]*}/ctp")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getCTPConfig(@PathParam("id") int id) {
+    PoolContainer poolContainer = poolManager.getContainer(id);
+    if (poolContainer == null) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "Unknown pool")).build();
+    }
+    try {
+      String config = poolContainer.getCTPConfig();
+      return Response.ok(new SimpleResponse("script", config)).build();
+    } catch (Exception e) {
+      logger.error("Failed to read config file for pool", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Failed to read CTP config file for pool")).build();
+    }
+  }
+
+  /** CTP */
+  @PUT
+  @Path("/{id: [1-9][0-9]*}/ctp")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response saveCTPConfig(@PathParam("id") int id, JsonNode json) {
+    PoolContainer poolContainer = poolManager.getContainer(id);
+    if (poolContainer == null || !json.has("script")) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "Unknown pool")).build();
+    }
+    try {
+      poolContainer.putCTPConfig(json.get("script").asText());
+      return Response.ok(new SimpleResponse("script", json.get("script").asText())).build();
+    } catch (Exception e) {
+      logger.error("Failed to save config file for pool", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Failed to save CTP config file for pool")).build();
+    }
   }
 
   /** Create a pool. */
