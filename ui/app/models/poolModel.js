@@ -116,6 +116,7 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 	applicationEntityTitle: null,
 	description: null,
 	anonymize: false,
+	editCTP: false,
 	devices: function() {
 		return this.loadDevices()
 	}.property(),
@@ -153,6 +154,25 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 			that.set ( "scripts", scriptList )
 		})
 		return [];
+	},
+	ctpConfig: function () {
+		console.log ( "Fetching CTP Config")
+		var that = this
+		var poolKey = this.get('poolKey')
+		$.getJSON("/rest/pool/" + this.get("poolKey") + "/ctp", function(data){
+			that.set ( 'ctpConfig', data.script )
+		})
+		return null;
+	}.property(),
+	saveCTP: function() {
+		console.log ("Saving CTP config")
+		var self = this
+		$.ajax({
+			url: "/rest/pool/" + this.get("poolKey") + "/ctp",
+			contentType : 'application/json',
+			type: "PUT",
+			data: JSON.stringify ( { 'script': self.get('ctpConfig')} )
+		})
 	},
 	save: function () {
 		console.log ( "Saving this pool back to the server " )

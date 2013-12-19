@@ -17,6 +17,18 @@
 	{{#if anonymize}}
 	<div class="panel panel-default">
 		<div class="panel-heading">
+			<h3 class="panel-title"><i {{bind-attr class="display:fa fa-chevron-up:fa fa-chevron-down" }} {{action toggle "editCTP"}}></i> CTP Configuration</h3>
+			{{#if editCTP}}
+			<div>
+				Edit the CTP Anonymizer configuration, <a href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">documented here</a>.<p/>
+				{{ace-editor content=ctpConfig saveScript="saveCTP" mode="ace/mode/xml"}}
+				<button class="btn" {{action saveCTP}}>Save</button>
+			</div>
+			{{/if}}
+		</div>
+
+	</div>		
+		<div class="panel-heading">
 			<h3 class="panel-title">Anonymization Rules <i class="fa fa-plus-circle"{{action newScript}}></i></h3>
 			Use 'Ctrl-S' or 'Command-S' to save, 'Ctrl-Return' or 'Command-Return' to try the anonymizer.  Trial execution returns 'LOOKUP' for any <code>anonymizer.lookup()</code> calls, 42 for any <code>anonymizer.sequenceNumber()</code> requests and the '#TagName#' when accessing <code>tags.TagName</code>, e.g. tags.PatientId is '#PatientId#'.<p/>
 		</div>

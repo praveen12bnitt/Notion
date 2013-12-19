@@ -125,12 +125,21 @@ App.PoolRoute = Ember.Route.extend({
 				c.set ( 'model', response )
 			})
 		},
+		toggle: function(field) {
+			var pool = this.controller.get('model')
+			// Ensure it exists
+			pool.toggleProperty( field )
+			console.log ( "Toggled " + field + " to " + pool.get(field))
+		},
 		toggleDisplay: function(that) {
 			that.toggleProperty('display')
 		},
 		saveScript: function(script) {
 			console.log("Would be saving script right now")
 			script.save();
+		},
+		saveCTP: function() {
+			this.controller.get('model').saveCTP();
 		},
 		tryScript: function(script) {
 			console.log("Would be trying the script right now", script)
