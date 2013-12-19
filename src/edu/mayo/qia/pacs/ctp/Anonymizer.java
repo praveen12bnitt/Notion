@@ -70,7 +70,6 @@ public class Anonymizer {
         }
       }
     }
-
   }
 
   public void setPool(Pool pool) {
@@ -86,6 +85,7 @@ public class Anonymizer {
     Iterator<DicomElement> iterator = tags.datasetIterator();
     while (iterator.hasNext()) {
       DicomElement element = iterator.next();
+
       // String tagName =
       // ElementDictionary.getDictionary().nameOf(element.tag());
       // tagName = tagName.replaceAll("[ ']+", "");
