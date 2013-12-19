@@ -23,7 +23,7 @@ public class DICOMQueryTest extends PACSTest {
 
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
-    Pool pool = new Pool(aet, aet, aet, true);
+    Pool pool = new Pool(aet, aet, aet, false);
     pool = createPool(pool);
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
@@ -42,13 +42,10 @@ public class DICOMQueryTest extends PACSTest {
     dcmQR.close();
 
     logger.info("Got response: " + response);
-    for (String tag : new String[] { "AccessionNumber", "PatientName", "PatientID" }) {
+    for (String tag : new String[] { "AccessionNumber", "PatientName", "PatientID", "StudyInstanceUID" }) {
       assertEquals(tag, tags.getString(Tag.forName(tag)), response.getString(Tag.forName(tag)));
     }
 
-    for (String tag : new String[] { "StudyInstanceUID" }) {
-      assertFalse(tag, tags.getString(Tag.forName(tag)).equals(response.getString(Tag.forName(tag))));
-    }
     assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 

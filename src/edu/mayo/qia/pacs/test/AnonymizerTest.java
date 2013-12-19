@@ -67,7 +67,6 @@ public class AnonymizerTest extends PACSTest {
     assertTrue("Response was null", response != null);
     assertEquals("AccessionNumber", accessionNumber, response.getString(Tag.AccessionNumber));
     assertEquals("PatientName", patientName, response.getString(Tag.PatientName));
-    assertEquals("PatientID", patientID, response.getString(Tag.PatientID));
     assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
