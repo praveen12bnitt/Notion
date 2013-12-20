@@ -1,6 +1,7 @@
 package edu.mayo.qia.pacs.components;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -11,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.dcm4che2.data.DicomObject;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.PipelineStage;
 import org.rsna.ctp.pipeline.Processor;
@@ -22,6 +24,7 @@ import org.w3c.dom.Element;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
+import edu.mayo.qia.pacs.dicom.TagLoader;
 
 /**
  * Manage a particular pool.
@@ -31,7 +34,7 @@ import edu.mayo.qia.pacs.ctp.Anonymizer;
  */
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
-  Pool pool;
+  volatile Pool pool;
   File poolDirectory;
   File quarantinesDirectory;
   File scriptsDirectory;
@@ -85,8 +88,15 @@ public class PoolContainer {
   public FileObject executePipeline(FileObject fileObject) throws Exception {
     if (pool.anonymize) {
       // Execute all the stages
+      // 1. Prepare the Javascript anonymizer
+      // 2. Execute the CTP anonymizer
+      // 3. Execute the Javascript anonymizer
+
+      // Load the tags, replace PatientName, PatientID and AccessionNumber
+      DicomObject originalTags = TagLoader.loadTags(fileObject.getFile());
+
       FileObject stageOne = ((Processor) ctpAnonymizer).process(fileObject);
-      fileObject = Anonymizer.process(this, stageOne, fileObject.getFile());
+      fileObject = Anonymizer.process(this, stageOne, originalTags);
     }
     return fileObject;
   }
@@ -121,6 +131,21 @@ public class PoolContainer {
     ctpAnonymizer.start();
   }
 
+  public String getCTPConfig() throws Exception {
+    File script = new File(scriptsDirectory, "anonymizer.script");
+    return IOUtils.toString(new FileInputStream(script));
+  }
+
+  public void putCTPConfig(String text) throws Exception {
+    File script = new File(scriptsDirectory, "anonymizer.script");
+    FileOutputStream fos = new FileOutputStream(script);
+    try {
+      IOUtils.write(text, fos);
+    } finally {
+      IOUtils.closeQuietly(fos);
+    }
+  }
+
   public void stop() {
     logger.info("Shutting down pool: " + pool);
     // Stop all the stages
@@ -144,4 +169,9 @@ public class PoolContainer {
   public Pool getPool() {
     return pool;
   }
+
+  public void update(Pool pool) {
+    this.pool = pool;
+  }
+
 }

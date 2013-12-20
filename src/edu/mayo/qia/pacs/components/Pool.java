@@ -12,9 +12,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @Entity
 @Table
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Pool {
 
   @Id

@@ -3,15 +3,16 @@
 			<div class="span2">
 				<table class='table'>
 					<thead>
-						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} <small class='muted'><button class="btn btn-small" {{action open}}>New</button></small></th></tr>
+						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} 
+							<i class="fa fa-plus-circle" {{action open}}></i>
+						</th></tr>
 					</thead>
 					{{#each model}}
 					<tr><td>
-						{{#link-to 'pool' this}}{{name}}{{/link-to}}: <small class='muted'>{{this.applicationEntityTitle}}</small>
+						{{#link-to 'pool' this}}{{name}}{{/link-to}}: <small class='muted'>{{this.applicationEntityTitle}}</small> {{#link-to 'studies' this}}Data{{/link-to}}
 					</td></tr>						
 					{{/each}}
 				</table>
-				{{!-- {{#link-to 'pool.new'}}New Pool{{/link-to}} --}}
 			</div>
 			<div class="span9">
 				{{outlet}}

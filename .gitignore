@@ -11,3 +11,6 @@ test-reports/
 LocalPACS
 node_modules
 ui/public
+Screencasts
+dcm4che-2.0.28
+ui/generators
