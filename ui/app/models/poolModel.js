@@ -85,11 +85,16 @@ App.Script = Ember.Object.extend(App.Serializable, {
 			success: function ( data ) {
 				console.log("Tried script, got back ", data)
 				self.set('tryResult', data.result)
+				$.pnotify({
+					title: 'Test script ' + self.tag,
+					text: '<b>Script:</b><p><code>' + self.script + '</code></p><b>Result:</b><p><code>' + data.result + "</code></p>"
+				})
 			}
 		})
 	},
 	save: function() {
 		console.log ( "Saving script for " + this.tag + " back to server", this.serialize())
+		var self = this
 		var url = "/rest/pool/" + this.get('poolKey') + "/script"
 		var action = "POST"
 		// If we are editing
@@ -104,6 +109,10 @@ App.Script = Ember.Object.extend(App.Serializable, {
 			data: JSON.stringify(this.serialize()),
 			success: function ( data ) {
 				console.log ( "saved!" )
+				$.pnotify ({
+					title: 'Saved script ' + self.tag,
+					text: '<code>' + self.script + "</code>"
+				})
 			}
 		})		
 	}
@@ -171,7 +180,14 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 			url: "/rest/pool/" + this.get("poolKey") + "/ctp",
 			contentType : 'application/json',
 			type: "PUT",
-			data: JSON.stringify ( { 'script': self.get('ctpConfig')} )
+			data: JSON.stringify ( { 'script': self.get('ctpConfig')} ),
+			success: function () {
+				$.pnotify({
+					title: 'Saved CTP script',
+					text: 'Save successful',
+					type: 'success'
+				})
+			}
 		})
 	},
 	save: function () {
@@ -186,6 +202,11 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 				data: JSON.stringify(this.serialize()),
 				success: function ( data ) {
 					console.log ( "saved!" )
+					$.pnotify({
+						title: 'Updated Pool ' + data.applicationEntityTitle,
+						text: 'Update successful',
+						type: 'success'
+					})
 				}
 			})
 		} else {
@@ -196,6 +217,11 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 				data: JSON.stringify(this.serialize()),
 				success: function ( data ) {
 					console.log ( "saved!" )
+					$.pnotify({
+						title: 'Created Pool ' + data.applicationEntityTitle,
+						text: 'Save successful',
+						type: 'success'
+					})
 				}
 			})
 		}
