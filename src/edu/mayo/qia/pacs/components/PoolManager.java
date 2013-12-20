@@ -223,4 +223,9 @@ public class PoolManager {
     return relativePath;
   }
 
+  /** Update the PoolContainer, because the pool may have changed */
+  public void update(Pool pool) {
+    getContainer(pool.poolKey).update(pool);
+  }
+
 }

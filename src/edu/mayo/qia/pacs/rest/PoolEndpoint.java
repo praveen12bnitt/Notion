@@ -223,6 +223,7 @@ public class PoolEndpoint {
       pool.update(update);
       session.update(pool);
       session.getTransaction().commit();
+      poolManager.update(pool);
     } finally {
       session.close();
     }

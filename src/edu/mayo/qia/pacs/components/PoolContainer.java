@@ -2,7 +2,6 @@ package edu.mayo.qia.pacs.components;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -14,7 +13,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.io.DicomInputStream;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.PipelineStage;
 import org.rsna.ctp.pipeline.Processor;
@@ -36,7 +34,7 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
  */
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
-  Pool pool;
+  volatile Pool pool;
   File poolDirectory;
   File quarantinesDirectory;
   File scriptsDirectory;
@@ -170,6 +168,10 @@ public class PoolContainer {
 
   public Pool getPool() {
     return pool;
+  }
+
+  public void update(Pool pool) {
+    this.pool = pool;
   }
 
 }
