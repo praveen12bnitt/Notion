@@ -52,11 +52,22 @@ App.AceEditorComponent = Ember.Component.extend({
       this.preset = null;
     }
 
+    // On longer files, this causes unacceptable bugs
+    // this.editor.on('change', function(){
+    //     Ember.run.once(self, self.notifyPropertyChange, 'content');
+    // });
+    if ( !this.get('longText') ) {
+      this.editor.on('change', function(){
+        Ember.run.debounce(self, self.notifyPropertyChange, 'content', 250 );
+      });
+    }
+
     this.editor.commands.addCommand({
       name: 'save',
       bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
       exec: function(editor) {
         console.log("saveScript")
+        self.notifyPropertyChange ( 'content')
         self.sendAction ( 'saveScript', self.script )
       }
     })
@@ -66,7 +77,8 @@ App.AceEditorComponent = Ember.Component.extend({
       name: 'exec',
       bindKey: {win: 'Ctrl-Return', mac: 'Command-Return'},
       exec: function(editor) {
-        console.log ( "tryScript from componont", self.script)
+        console.log ( "tryScript from component", self.script)
+        self.notifyPropertyChange ( 'content')
         self.sendAction ( 'tryScript', self.script )
       }
     })
@@ -78,6 +90,7 @@ App.AceEditorComponent = Ember.Component.extend({
       return val;
     }
     if (arguments.length == 1) {
+      console.log ( "getting value")
       return this.editor.getSession().getValue();
     } else {
       this.editor.getSession().setValue(val);

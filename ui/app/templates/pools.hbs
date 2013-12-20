@@ -3,7 +3,9 @@
 			<div class="span2">
 				<table class='table'>
 					<thead>
-						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} <small class='muted'><button class="btn btn-small" {{action open}}>New</button></small></th></tr>
+						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} 
+							<i class="fa fa-plus-circle" {{action open}}></i>
+						</th></tr>
 					</thead>
 					{{#each model}}
 					<tr><td>
