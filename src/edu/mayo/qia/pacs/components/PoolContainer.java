@@ -4,6 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -12,19 +21,35 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.PipelineStage;
 import org.rsna.ctp.pipeline.Processor;
 import org.rsna.ctp.stdstages.DicomAnonymizer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.google.common.io.Files;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.TagLoader;
+import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
 /**
  * Manage a particular pool.
@@ -32,26 +57,44 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
  * @author Daniel Blezek
  * 
  */
+@Component
+@Scope("prototype")
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
+
+  public static final int[] SortedFilename = { Tags.AccessionNumber, Tags.StudyInstanceUID, Tags.SeriesInstanceUID, Tags.SOPInstanceUID };
+
   volatile Pool pool;
   File poolDirectory;
   File quarantinesDirectory;
   File scriptsDirectory;
+  File incomingDirectory;
+  File imageDirectory;
   PipelineStage ctpAnonymizer = null;
 
+  ConcurrentMap<String, Integer> instanceUIDs = new ConcurrentHashMap<String, Integer>();
+  ConcurrentMap<String, Integer> seriesUIDs = new ConcurrentHashMap<String, Integer>();
+  ConcurrentMap<String, Integer> studyUIDs = new ConcurrentHashMap<String, Integer>();
+
+  @Autowired
   private JdbcTemplate template;
+
+  @Autowired
+  TransactionTemplate transactionTemplate;
+
+  @Autowired
+  SessionFactory sessionFactory;
+
   private String sequenceName;
 
-  public PoolContainer(Pool pool) {
+  public PoolContainer() {
+  }
+
+  public void start(Pool pool) {
     this.pool = pool;
     if (this.pool.poolKey <= 0) {
       throw new RuntimeException("PoolKey must be set!");
     }
-    this.template = PACS.context.getBean("template", JdbcTemplate.class);
-  }
-
-  public void start() {
     logger.info("Starting up pool: " + pool);
 
     // Do we have a sequence for this pool?
@@ -79,6 +122,10 @@ public class PoolContainer {
     }
     quarantinesDirectory = new File(poolDirectory, "quarantines");
     quarantinesDirectory.mkdirs();
+    incomingDirectory = new File(poolDirectory, "incoming");
+    incomingDirectory.mkdirs();
+    incomingDirectory = new File(poolDirectory, "incoming");
+    incomingDirectory.mkdirs();
     scriptsDirectory = new File(poolDirectory, "scripts");
     scriptsDirectory.mkdirs();
     // Would start CTP here as well
@@ -146,6 +193,137 @@ public class PoolContainer {
     }
   }
 
+  public void deleteStudy(final int studyKey) {
+    // Delete the study, series and instances
+    synchronized (this) {
+      final File deleteDirectory = new File(poolDirectory, "deleted");
+      deleteDirectory.mkdirs();
+      final Set<File> directories = new HashSet<File>();
+      transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+
+        @Override
+        protected void doInTransactionWithoutResult(TransactionStatus status) {
+          // Collect all the files to delete
+          List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? and STUDY.StudyKey = ?", new Object[] {
+              pool.poolKey, studyKey }, String.class);
+          // Delete, should cascade!
+          template.update("delete from STUDY where PoolKey = ? and StudyKey = ?", pool.poolKey, studyKey);
+          for (String filePath : filePaths) {
+            File file = new File(poolDirectory, filePath);
+            directories.add(file.getParentFile());
+            try {
+              FileUtils.moveFile(file, new File(deleteDirectory, UUID.randomUUID().toString()));
+            } catch (IOException e) {
+              logger.error("Failed to move file", e);
+            }
+          }
+        }
+      });
+
+      // Delete the deleted directory
+      for (File file : deleteDirectory.listFiles()) {
+        if (file.isFile()) {
+          file.delete();
+        }
+      }
+      for (File dir : directories) {
+        dir.delete();
+      }
+
+    }
+  }
+
+  /**
+   * Move a file from a different pool
+   * 
+   * @throws Exception
+   */
+  public void importFromPool(File incoming) throws Exception {
+    File importFile = new File(incomingDirectory, UUID.randomUUID().toString());
+    FileUtils.copyFile(incoming, importFile);
+    process(importFile);
+  }
+
+  public synchronized void process(File incoming) throws Exception, IOException {
+    // Handle one per container
+    // Have the container process!
+    org.rsna.ctp.objects.DicomObject fileObject = new org.rsna.ctp.objects.DicomObject(incoming);
+    FileObject outObject = this.executePipeline(fileObject);
+    File inFile = outObject.getFile();
+    File originalFile = incoming;
+
+    // Index the file
+    DicomObject tags = TagLoader.loadTags(inFile);
+    logger.info("Saving file for " + tags.getString(Tag.PatientName));
+
+    File relativePath = constructRelativeFileName(tags);
+
+    File outFile = new File(this.poolDirectory, relativePath.getPath());
+
+    if (!inFile.exists()) {
+      logger.error("Input file " + inFile + " does not exist");
+      throw new Exception("Input file " + inFile + " does not exist");
+    }
+
+    logger.debug("Final path: " + outFile);
+    outFile.getParentFile().mkdirs();
+
+    // Insert
+    Session session = sessionFactory.getCurrentSession();
+    session.beginTransaction();
+
+    try {
+
+      Query query;
+      query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
+      query.setInteger("poolkey", pool.poolKey);
+      query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+      Study study = (Study) query.uniqueResult();
+      if (study == null) {
+        study = new Study(tags);
+        study.pool = pool;
+        session.saveOrUpdate(study);
+      }
+
+      // Find the Instance
+      query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
+      query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+      Series series = (Series) query.uniqueResult();
+      if (series == null) {
+        series = new Series(tags);
+        series.study = study;
+        session.saveOrUpdate(series);
+      }
+
+      // Find the Instance
+      query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
+      query.setString("suid", tags.getString(Tag.SOPInstanceUID));
+      Instance instance = (Instance) query.uniqueResult();
+      if (instance == null) {
+        instance = new Instance(tags, relativePath.getPath());
+        instance.series = series;
+        session.saveOrUpdate(instance);
+      }
+
+      // Copy the file, remove later
+      Files.copy(inFile, outFile);
+      logger.debug("Moved file " + inFile + " to " + outFile);
+
+      // Delete the input file, it is not needed any more
+      if (inFile.exists()) {
+        inFile.delete();
+      }
+      if (originalFile.exists()) {
+        originalFile.delete();
+      }
+
+    } catch (Exception e) {
+      logger.error("Caught exception", e);
+    } finally {
+      session.getTransaction().commit();
+    }
+  }
+
   public void stop() {
     logger.info("Shutting down pool: " + pool);
     // Stop all the stages
@@ -172,6 +350,24 @@ public class PoolContainer {
 
   public void update(Pool pool) {
     this.pool = pool;
+  }
+
+  static File constructRelativeFileName(DicomObject dataset) {
+    File relativePath = new File("sorted");
+    for (int tag : SortedFilename) {
+      String t = dataset.getString(tag);
+      if (t == null) {
+        t = "UNKNOWN";
+      }
+      relativePath = new File(relativePath, t);
+    }
+    return relativePath;
+  }
+
+  public void clearMaps() {
+    instanceUIDs.clear();
+    seriesUIDs.clear();
+    studyUIDs.clear();
   }
 
 }

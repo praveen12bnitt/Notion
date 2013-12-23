@@ -1,5 +1,6 @@
 package edu.mayo.qia.pacs.rest;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +15,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.StatusType;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +35,7 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
@@ -102,6 +108,40 @@ public class PoolEndpoint {
     return Response.ok(s).build();
   }
 
+  @PUT
+  @Path("/{id: [1-9][0-9]*}/move")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response moveStudies(@PathParam("id") int id, MoveRequest request) throws JSONException {
+    JSONObject json = new JSONObject();
+    // Build the query
+    final JSONArray records = new JSONArray();
+    PoolContainer destinationContainer = poolManager.getContainer(request.destinationPoolKey);
+    PoolContainer container = poolManager.getContainer(id);
+    if (destinationContainer == null || container == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("Message", "Could not find pool")).build();
+    }
+    // Find all the files and import
+    for (int studyKey : request.studyKeys) {
+      JSONObject studyResult = new JSONObject();
+      try {
+        List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? and STUDY.StudyKey = ?", new Object[] { id,
+            studyKey }, String.class);
+        for (String file : filePaths) {
+          destinationContainer.importFromPool(new File(container.getPoolDirectory(), file));
+        }
+        studyResult.put("Status", "success");
+        studyResult.put("Message", "success");
+      } catch (Exception e) {
+        studyResult.put("Status", "failed");
+        studyResult.put("Message", e.getLocalizedMessage());
+      }
+      records.put(studyResult);
+    }
+    json.put("Status", records);
+    json.put("Result", "OK");
+    return Response.ok().build();
+  }
+
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/device")
   public DeviceEndpoint devices(@PathParam("id") int id) {
@@ -113,9 +153,9 @@ public class PoolEndpoint {
 
   /** Series */
   @Path("/{id: [1-9][0-9]*}/series")
-  public SeriesEndpoint series(@PathParam("id") int id) {
-    SeriesEndpoint seriesEndpoint;
-    seriesEndpoint = resourceContext.getResource(SeriesEndpoint.class);
+  public StudiesEndpoint series(@PathParam("id") int id) {
+    StudiesEndpoint seriesEndpoint;
+    seriesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
     seriesEndpoint.poolKey = id;
     return seriesEndpoint;
   }

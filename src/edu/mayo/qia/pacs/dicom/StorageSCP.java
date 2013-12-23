@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.components.PoolManager;
@@ -35,9 +34,6 @@ public class StorageSCP extends StorageService {
 
   @Autowired
   JdbcTemplate template;
-
-  @Autowired
-  JmsTemplate jmsTemplate;
 
   @Autowired
   PoolManager poolManager;
@@ -110,7 +106,7 @@ public class StorageSCP extends StorageService {
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
     try {
-      poolManager.handleMessage(new ProcessIncomingInstance(as, rename));
+      poolManager.processIncomingFile(as, rename);
     } catch (Exception e) {
       logger.error("Error handling new instance", e);
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Failed to process image");

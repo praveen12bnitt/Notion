@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
@@ -82,6 +83,7 @@ public class Anonymizer {
     ScriptableObject.putProperty(scope, "anonymizer", this);
     NativeObject tagObject = new NativeObject();
 
+    SpecificCharacterSet cs = tags.getSpecificCharacterSet();
     Iterator<DicomElement> iterator = tags.datasetIterator();
     while (iterator.hasNext()) {
       DicomElement element = iterator.next();
@@ -91,9 +93,11 @@ public class Anonymizer {
       // tagName = tagName.replaceAll("[ ']+", "");
       String tagName = fieldMap.get(element.tag());
       try {
-        tagObject.defineProperty(tagName, tags.getString(element.tag()), NativeObject.READONLY);
+        if (!element.hasItems()) {
+          tagObject.defineProperty(tagName, element.getString(cs, false), NativeObject.READONLY);
+        }
       } catch (UnsupportedOperationException e) {
-        logger.error("Could not process tag: " + tagName + " unable to convert to a string", e);
+        logger.warn("Could not process tag: " + tagName + " unable to convert to a string: " + e.getMessage());
       }
       // logger.info("Setting: " + tagName + ": " +
       // tags.getString(element.tag()));

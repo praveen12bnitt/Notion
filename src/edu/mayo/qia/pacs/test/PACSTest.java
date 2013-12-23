@@ -43,7 +43,6 @@ import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
   static Logger logger = Logger.getLogger(PACSTest.class);
@@ -115,11 +114,6 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     }
     applicationContext.setParent(PACS.context);
 
-  }
-
-  @Test
-  public void configuration() {
-    assertTrue(PACS.context != null);
   }
 
   Pool createPool(Pool pool) {

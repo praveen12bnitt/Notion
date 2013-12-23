@@ -1,10 +1,42 @@
 -- -----------------------------------------------------
+-- Table STUDY
+-- -----------------------------------------------------
+
+CREATE  TABLE STUDY (
+  StudyKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
+  PoolKey INT NOT NULL,
+  PatientID VARCHAR(250)  ,
+  PatientName VARCHAR(250)  ,
+  PatientBirthDate TIMESTAMP  ,
+  PatientSex VARCHAR(250)  ,
+  StudyInstanceUID VARCHAR(250) NOT NULL ,
+  StudyID VARCHAR(250)  ,
+  StudyDate TIMESTAMP  ,
+  StudyTime TIMESTAMP  ,
+  AccessionNumber VARCHAR(250)  ,
+  ReferringPhysicianName VARCHAR(250)  ,
+  StudyDescription VARCHAR(250)  ,
+  UpdatedTimestamp TIMESTAMP  ,
+  CreatedTimestamp TIMESTAMP 
+);
+
+CREATE  INDEX StudyInstanceUID_UNIQUE on STUDY (StudyInstanceUID ASC) ;
+CREATE  INDEX study_patient_idx on STUDY (StudyInstanceUID ASC, PatientID ASC, AccessionNumber ASC) ;
+CREATE  INDEX StudyID_idx on STUDY (StudyID ASC) ;
+CREATE  INDEX StudyDate_idx on STUDY (StudyDate ASC) ;
+CREATE  INDEX AccessionNumber_idx on STUDY (AccessionNumber ASC) ;
+CREATE  INDEX ReferringPhysicianName_idx on STUDY (ReferringPhysicianName ASC) ;
+CREATE  INDEX StudyDescription_idx on STUDY (StudyDescription ASC) ;
+CREATE  INDEX study_created_timestamp_idx on STUDY (CreatedTimestamp ASC) ;
+CREATE  INDEX study_updated_timestamp_idx on STUDY (UpdatedTimestamp ASC) ;
+
+-- -----------------------------------------------------
 -- Table SERIES
 -- -----------------------------------------------------
 
 CREATE  TABLE SERIES (
   SeriesKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
-  StudyKey INT NOT NULL ,
+  StudyKey INT NOT NULL REFERENCES STUDY(StudyKey) ON DELETE CASCADE,
   SeriesInstanceUID VARCHAR(250) NOT NULL ,
   SeriesNumber VARCHAR(250)  ,
   Modality VARCHAR(250)  ,
@@ -43,7 +75,7 @@ CREATE  INDEX series_updated_idx on SERIES (UpdatedTime ASC);
 
 CREATE  TABLE INSTANCE (
   InstanceKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
-  SeriesKey INT NOT NULL ,
+  SeriesKey INT NOT NULL REFERENCES SERIES(SeriesKey) ON DELETE CASCADE,
   SOPInstanceUID VARCHAR(250) NOT NULL ,
   SOPClassUID VARCHAR(250) NOT NULL ,
   InstanceNumber VARCHAR(250)  ,
@@ -54,7 +86,7 @@ CREATE  TABLE INSTANCE (
   FilePath VARCHAR(250) NOT NULL ,
   CONSTRAINT INSTANCE_ibfk_1
     FOREIGN KEY (SeriesKey )
-    REFERENCES SERIES (SeriesKey ));
+    REFERENCES SERIES (SeriesKey ) ON DELETE CASCADE );
 
 CREATE  INDEX SOPInstanceUID_idx on INSTANCE (SOPInstanceUID ASC) ;
 CREATE  INDEX series_fk_idx on INSTANCE (SeriesKey ASC) ;
@@ -63,37 +95,6 @@ CREATE  INDEX InstanceNumber_idx on INSTANCE (InstanceNumber ASC) ;
 CREATE  INDEX ContentDate_idx on INSTANCE (ContentDate ASC) ;
 
 
--- -----------------------------------------------------
--- Table STUDY
--- -----------------------------------------------------
-
-CREATE  TABLE STUDY (
-  StudyKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
-  PoolKey INT NOT NULL,
-  PatientID VARCHAR(250)  ,
-  PatientName VARCHAR(250)  ,
-  PatientBirthDate TIMESTAMP  ,
-  PatientSex VARCHAR(250)  ,
-  StudyInstanceUID VARCHAR(250) NOT NULL ,
-  StudyID VARCHAR(250)  ,
-  StudyDate TIMESTAMP  ,
-  StudyTime TIMESTAMP  ,
-  AccessionNumber VARCHAR(250)  ,
-  ReferringPhysicianName VARCHAR(250)  ,
-  StudyDescription VARCHAR(250)  ,
-  UpdatedTimestamp TIMESTAMP  ,
-  CreatedTimestamp TIMESTAMP 
-);
-
-CREATE  INDEX StudyInstanceUID_UNIQUE on STUDY (StudyInstanceUID ASC) ;
-CREATE  INDEX study_patient_idx on STUDY (StudyInstanceUID ASC, PatientID ASC, AccessionNumber ASC) ;
-CREATE  INDEX StudyID_idx on STUDY (StudyID ASC) ;
-CREATE  INDEX StudyDate_idx on STUDY (StudyDate ASC) ;
-CREATE  INDEX AccessionNumber_idx on STUDY (AccessionNumber ASC) ;
-CREATE  INDEX ReferringPhysicianName_idx on STUDY (ReferringPhysicianName ASC) ;
-CREATE  INDEX StudyDescription_idx on STUDY (StudyDescription ASC) ;
-CREATE  INDEX study_created_timestamp_idx on STUDY (CreatedTimestamp ASC) ;
-CREATE  INDEX study_updated_timestamp_idx on STUDY (UpdatedTimestamp ASC) ;
 
 CREATE TABLE Pool (
   PoolKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,

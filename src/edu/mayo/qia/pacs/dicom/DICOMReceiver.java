@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.PACS;
@@ -69,9 +68,6 @@ public class DICOMReceiver implements AssociationListener {
 
   private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
-  @Autowired
-  JmsTemplate jmsTemplate;
-
   /** Standard constructor */
   public DICOMReceiver() {
   }
@@ -84,7 +80,7 @@ public class DICOMReceiver implements AssociationListener {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *         if could not start database
+   *           if could not start database
    */
   @PostConstruct
   public synchronized void start() throws Exception {
