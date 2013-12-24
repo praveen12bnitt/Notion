@@ -160,6 +160,15 @@ public class PoolEndpoint {
     return seriesEndpoint;
   }
 
+  /** Lookup */
+  @Path("/{id: [1-9][0-9]*}/lookup")
+  public LookupEndpoint lookup(@PathParam("id") int id) {
+    LookupEndpoint endpoint;
+    endpoint = resourceContext.getResource(LookupEndpoint.class);
+    endpoint.poolKey = id;
+    return endpoint;
+  }
+
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/script")
   public ScriptEndpoint scripts(@PathParam("id") int id) {

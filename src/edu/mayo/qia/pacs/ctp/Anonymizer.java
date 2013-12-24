@@ -44,7 +44,6 @@ import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.Script;
-import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @Component
 @Scope("prototype")
@@ -149,6 +148,10 @@ public class Anonymizer {
   }
 
   public Integer setValue(final String type, final String name, final String value) {
+    return setValue(type, name, value, true);
+  }
+
+  Integer setValue(final String type, final String name, final String value, final Boolean visible) {
     return transactionTemplate.execute(new TransactionCallback<Integer>() {
 
       @Override
@@ -164,11 +167,12 @@ public class Anonymizer {
 
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value ) VALUES ( ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value, Visible ) VALUES ( ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
               statement.setInt(1, pool.poolKey);
               statement.setString(2, type);
               statement.setString(3, name);
               statement.setString(4, value);
+              statement.setBoolean(5, visible);
               return statement;
             }
           }, keyHolder);
@@ -192,7 +196,7 @@ public class Anonymizer {
           Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
           sequenceName = "pool_sequence_" + pool.poolKey + "_" + i;
           template.update("create sequence " + sequenceName + " AS INT START WITH 1");
-          setValue("Pool", internalType, sequenceName);
+          setValue("Pool", internalType, sequenceName, false);
         } else {
           sequenceName = (String) k[0];
         }
@@ -213,7 +217,7 @@ public class Anonymizer {
         } else {
           String sequence = getSequence(internalType);
           Integer i = template.queryForObject("VALUES( NEXT VALUE FOR " + sequence + ")", Integer.class);
-          setValue(internalType, name, i.toString());
+          setValue(internalType, name, i.toString(), false);
           return i;
         }
       }

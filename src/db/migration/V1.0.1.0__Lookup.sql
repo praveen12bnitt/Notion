@@ -5,10 +5,12 @@ CREATE TABLE LOOKUP (
 	PoolKey INT NOT NULL,
 	Type VARCHAR(32),
 	Name VARCHAR(250),
-	Value VARCHAR(250)
+	Value VARCHAR(250),
+	Visible BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE INDEX Lookup_idx1 on LOOKUP ( PoolKey, Type );
+CREATE INDEX Lookup_idx3 on LOOKUP ( PoolKey, Visible );
 CREATE INDEX Lookup_idx2 on LOOKUP ( PoolKey, Type, Name );
 
 
