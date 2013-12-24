@@ -150,12 +150,13 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
                 // Make our binding
         this.controller.addObserver('model', this, function() {
             Ember.run.once(this, function() {
-                var pool = this.controller.get('model')
+                console.log("Studies callback", this)
                 var table = this.get('table')
-                table.jtable('destroy')
+                if ( table ) {
+                    table.jtable('destroy')
+                }
                 // Create the new one...
                 this.createStudiesTable()
-                console.log("JTable info ", table)
                 this.get('table').jtable ( 'load')
             })
         })
