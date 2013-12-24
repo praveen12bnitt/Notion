@@ -54,38 +54,13 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
             })
         }
     },
-	didInsertElement: function(){
-		console.log("didInsertElement", this.$())
-		var pool = this.controller.get('model')
-		/**
-		this.$().find('.series-table').dataTable({
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "/rest/pool/" + pool.get('poolKey') + "/series"
-		})
-     	*/
-        var self = this
-        var input = this.$('.move-destination')
-        console.log("move destination", input)
-        $.getJSON("/rest/pool", function(data) {
-            console.log ( "Got back ", data)
-            var options = d3.select(input[0]).selectAll("option").data(data.pool)
+    createStudiesTable: function() {
+        console.log ( "==== Starting up jtable ====")
+        var pool = this.controller.get('model')
 
-            options.enter().append ( "option" ).attr ( 'value', function(d) {
-                console.log("option: ", d)
-                return d.poolKey
-            }).text(function(d){
-                return d.name
-            })
-            console.log("Got options: ", options)
-            options.exit().remove()
-            input.chosen()
-        })
-
-     	console.log ( "==== Starting up jtable ====")
         // $('#PersonTableContainer').jtable({
         var table = this.$('.study-table').jtable({
-            title: 'Studies',
+            title: 'Studies for ' + pool.get('name'),
             multiselect: true,
             selecting: true,
             paging: true,
@@ -112,8 +87,8 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
                 deleteAction: '/rest/pool/' + pool.get('poolKey') + "/series/delete"
             },
             ajaxSettings: {
-            	type: 'POST',
-            	dataType: 'json'
+                type: 'POST',
+                dataType: 'json'
             },
             fields: {
                 StudyKey: {
@@ -129,17 +104,63 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
                     width: '10%'
                 },
                 AccessionNumber: {
-                	title: "Accession Number",
-                	width: '20%'
+                    title: "Accession Number",
+                    width: '20%'
                 },
                 StudyDescription: {
-                	title: 'Description',
-                	width: '30%'
+                    title: 'Description',
+                    width: '30%'
                 }
             }
         });
         this.set('table', table)
         this.get('table').jtable ( 'load')
+    },
+	didInsertElement: function(){
+		console.log("didInsertElement", this.$())
+		var pool = this.controller.get('model')
+        this.createStudiesTable()
+
+		/**
+		this.$().find('.series-table').dataTable({
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "/rest/pool/" + pool.get('poolKey') + "/series"
+		})
+     	*/
+        var self = this
+        var input = this.$('.move-destination')
+        console.log("move destination", input)
+        $.getJSON("/rest/pool", function(data) {
+            console.log ( "Got back ", data)
+            var options = d3.select(input[0]).selectAll("option").data(data.pool)
+
+            options.enter().append ( "option" ).attr ( 'value', function(d) {
+                console.log("option: ", d)
+                return d.poolKey
+            }).text(function(d){
+                return d.name
+            })
+            console.log("Got options: ", options)
+            options.exit().remove()
+            input.chosen()
+        })
+
+
+                // Make our binding
+        this.controller.addObserver('model', this, function() {
+            Ember.run.once(this, function() {
+                var pool = this.controller.get('model')
+                var table = this.get('table')
+                table.jtable('destroy')
+                // Create the new one...
+                this.createStudiesTable()
+                console.log("JTable info ", table)
+                this.get('table').jtable ( 'load')
+            })
+        })
+
+
 	}
 })
 
