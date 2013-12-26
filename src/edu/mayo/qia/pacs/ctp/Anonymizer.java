@@ -38,6 +38,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import edu.mayo.qia.pacs.PACS;
@@ -134,16 +135,23 @@ public class Anonymizer {
     return (String) v[0];
   }
 
-  public Object[] lookupValueAndKey(String type, String name) {
+  public Object[] lookupValueAndKey(final String type, final String name) {
     final Object[] out = new Object[] { null, null };
-    template.query("select Value, LookupKey from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
+    transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 
       @Override
-      public void processRow(ResultSet rs) throws SQLException {
-        out[0] = rs.getString("Value");
-        out[1] = rs.getInt("LookupKey");
+      protected void doInTransactionWithoutResult(TransactionStatus status) {
+        template.query("select Value, LookupKey from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
+
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            out[0] = rs.getString("Value");
+            out[1] = rs.getInt("LookupKey");
+          }
+        });
       }
     });
+
     return out;
   }
 
@@ -157,7 +165,7 @@ public class Anonymizer {
       @Override
       public Integer doInTransaction(TransactionStatus status) {
         Object[] k = lookupValueAndKey(type, name);
-        if (k.length == 1) {
+        if (k[1] != null) {
           // Update it
           template.update("update LOOKUP set Value = ? where LookupKey = ?", value, k[1]);
           return (Integer) k[1];
