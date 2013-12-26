@@ -1,0 +1,15 @@
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span2">
+				<table class='table'>
+					<tr><td><a href="#" {{action render 'index'}}>Overview</a></td></tr>
+					<tr><td><a href="#" {{action render 'pools'}}>Pools</a></td></tr>
+					<tr><td><a href="#" {{action render 'devices'}}>Devices</a></td></tr>
+					<tr><td><a href="#" {{action render 'server'}}>Server configuration</a></td></tr>
+				</table>
+			</div>
+			<div class="span9">
+				{{markdown topic}}
+			</div>
+		</div>
+	</div>
