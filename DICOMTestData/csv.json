@@ -1,0 +1,45 @@
+{
+  "headers": [
+    "Type",
+    "Key",
+    "Value"
+  ],
+  "rows": [
+    [
+      "PatientName",
+      "MRA-0068",
+      "PN-68"
+    ],
+    [
+      "PatientID",
+      "MRA-0068",
+      "PID-68"
+    ],
+    [
+      "AccessionNumber",
+      "8863218-1",
+      12345
+    ]
+  ],
+  "headerIndex": {
+    "0": "Type",
+    "1": "Key",
+    "2": "Value"
+  },
+  "typeColumn": {
+    "index": 0,
+    "name": "Type"
+  },
+  "keyColumn": {
+    "index": 1,
+    "name": "Key"
+  },
+  "valueColumn": {
+    "index": 2,
+    "name": "Value"
+  },
+  "valid": {
+    "index": 0,
+    "name": "Type"
+  }
+}
