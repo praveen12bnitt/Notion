@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
@@ -28,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MappingJacksonMessageConverter;
@@ -42,7 +39,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.googlecode.flyway.core.Flyway;
@@ -124,20 +120,6 @@ public class Beans {
   }
 
   @Bean
-  public ConnectionFactory connectionFactory() throws Exception {
-    BrokerService broker = new BrokerService();
-    broker.setPersistent(true);
-    broker.setDataDirectoryFile(new File(PACS.directory, "MQ"));
-    broker.setEnableStatistics(true);
-    broker.setUseShutdownHook(false);
-    StatisticsBrokerPlugin statsPlugin = new StatisticsBrokerPlugin();
-    broker.setPlugins(new BrokerPlugin[] { statsPlugin });
-    broker.start();
-    ConnectionFactory f = new ActiveMQConnectionFactory("vm://localhost");
-    return f;
-  }
-
-  @Bean
   @DependsOn("flyway")
   public JdbcTemplate template() throws SQLException {
     JdbcTemplate template = new JdbcTemplate();
@@ -172,23 +154,6 @@ public class Beans {
   }
 
   @Bean
-  @DependsOn("flyway")
-  public DefaultMessageListenerContainer sorterContainer() throws Exception {
-    DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
-    MessageListenerAdapter adapter = new MessageListenerAdapter();
-    adapter.setDelegate(poolManager);
-    container.setMessageListener(adapter);
-    container.setTaskExecutor(taskExecutor());
-    container.setMaxConcurrentConsumers(1);
-    container.setMaxMessagesPerTask(10);
-    container.setDestinationName(PACS.sorterQueue);
-    container.setConnectionFactory(connectionFactory());
-    container.setSessionTransacted(true);
-    container.setAutoStartup(true);
-    return container;
-  }
-
-  @Bean
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
@@ -202,15 +167,6 @@ public class Beans {
     messageConverter.setTypeIdPropertyName("JavaClass");
     messageConverter.setObjectMapper(objectMapper());
     return messageConverter;
-  }
-
-  @Bean
-  @DependsOn("flyway")
-  public JmsTemplate jmsTemplate() throws Exception {
-    JmsTemplate jmsTemplate = new JmsTemplate();
-    jmsTemplate.setConnectionFactory(connectionFactory());
-    jmsTemplate.setMessageConverter(messageConverter());
-    return jmsTemplate;
   }
 
   @Bean

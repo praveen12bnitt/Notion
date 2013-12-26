@@ -149,7 +149,8 @@ App.PoolRoute = Ember.Route.extend({
 })
 
 App.PoolView = Ember.View.extend({
-	layoutName: 'pool'
+	layoutName: 'pool',
+
 })
 
 

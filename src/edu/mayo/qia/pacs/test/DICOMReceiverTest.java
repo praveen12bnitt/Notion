@@ -9,10 +9,13 @@ import java.util.UUID;
 
 import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 public class DICOMReceiverTest extends PACSTest {
 
   @Test
@@ -27,7 +30,7 @@ public class DICOMReceiverTest extends PACSTest {
 
     List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
 
-    int studyCount = template.queryForObject("select count(*) from Study where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class);
+    int studyCount = template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class);
     assertEquals("StudyCount", 1, studyCount);
     int seriesCount = template.queryForObject("select count(Series.SeriesKey) from Study, Series where Study.PoolKey = ? and Series.StudyKey = Study.StudyKey", new Object[] { pool.poolKey }, Integer.class);
     assertEquals("Series Count", 2, seriesCount);

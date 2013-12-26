@@ -8,6 +8,7 @@ App.Router.map(function() {
 	  // A 'resource' defines a group of routes that work together
     this.resource("pools", function() {	
       this.resource("studies", {path: 'studies/:poolKey'})
+      this.resource("lookup", {path: 'lookup/:poolKey'})
       this.resource("pool", { path: 'pool/:poolKey'})
       this.route("new")
     })
@@ -98,3 +99,31 @@ App.AceEditorComponent = Ember.Component.extend({
     }
   }.property()
 });
+
+
+/** Extend the jtable */
+(function ($) {
+
+    //extension members
+    $.extend(true, $.hik.jtable.prototype, {
+
+        showEditForm: function(val) {
+            var $row = null;
+            if (typeof(val) == 'number') {
+                $row = this.getRowByKey(val);
+                if ($row == null)
+                    throw "Invalid key.";
+            } else
+                $row = val;
+
+            if (!$row.hasClass('jtable-data-row'))
+                throw "This is not a valid jtable data row";
+
+            this._showEditForm($row);
+        }
+
+    });
+
+})(jQuery);
+
+

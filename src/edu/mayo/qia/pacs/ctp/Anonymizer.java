@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
@@ -43,7 +44,6 @@ import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.Script;
-import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @Component
 @Scope("prototype")
@@ -82,6 +82,7 @@ public class Anonymizer {
     ScriptableObject.putProperty(scope, "anonymizer", this);
     NativeObject tagObject = new NativeObject();
 
+    SpecificCharacterSet cs = tags.getSpecificCharacterSet();
     Iterator<DicomElement> iterator = tags.datasetIterator();
     while (iterator.hasNext()) {
       DicomElement element = iterator.next();
@@ -91,9 +92,11 @@ public class Anonymizer {
       // tagName = tagName.replaceAll("[ ']+", "");
       String tagName = fieldMap.get(element.tag());
       try {
-        tagObject.defineProperty(tagName, tags.getString(element.tag()), NativeObject.READONLY);
+        if (!element.hasItems()) {
+          tagObject.defineProperty(tagName, element.getString(cs, false), NativeObject.READONLY);
+        }
       } catch (UnsupportedOperationException e) {
-        logger.error("Could not process tag: " + tagName + " unable to convert to a string", e);
+        logger.warn("Could not process tag: " + tagName + " unable to convert to a string: " + e.getMessage());
       }
       // logger.info("Setting: " + tagName + ": " +
       // tags.getString(element.tag()));
@@ -145,6 +148,10 @@ public class Anonymizer {
   }
 
   public Integer setValue(final String type, final String name, final String value) {
+    return setValue(type, name, value, true);
+  }
+
+  Integer setValue(final String type, final String name, final String value, final Boolean visible) {
     return transactionTemplate.execute(new TransactionCallback<Integer>() {
 
       @Override
@@ -160,11 +167,12 @@ public class Anonymizer {
 
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value ) VALUES ( ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value, Visible ) VALUES ( ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
               statement.setInt(1, pool.poolKey);
               statement.setString(2, type);
               statement.setString(3, name);
               statement.setString(4, value);
+              statement.setBoolean(5, visible);
               return statement;
             }
           }, keyHolder);
@@ -188,7 +196,7 @@ public class Anonymizer {
           Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
           sequenceName = "pool_sequence_" + pool.poolKey + "_" + i;
           template.update("create sequence " + sequenceName + " AS INT START WITH 1");
-          setValue("Pool", internalType, sequenceName);
+          setValue("Pool", internalType, sequenceName, false);
         } else {
           sequenceName = (String) k[0];
         }
@@ -209,7 +217,7 @@ public class Anonymizer {
         } else {
           String sequence = getSequence(internalType);
           Integer i = template.queryForObject("VALUES( NEXT VALUE FOR " + sequence + ")", Integer.class);
-          setValue(internalType, name, i.toString());
+          setValue(internalType, name, i.toString(), false);
           return i;
         }
       }

@@ -58,7 +58,10 @@ App.Device = Ember.Object.extend(App.Serializable, {
 			url: "/rest/pool/" + this.get('poolKey') + "/device" ,
 			data: JSON.stringify(this.serialize()),
 			success: function ( data ) {
-				console.log ( "saved!" )
+				$.pnotify({
+					title: 'Saved device',
+					text: 'Saved device'
+				})
 			}
 		})
 	}
@@ -126,6 +129,7 @@ App.Pool = Ember.Object.extend (App.Serializable, {
 	description: null,
 	anonymize: false,
 	editCTP: false,
+	editRules: false,
 	devices: function() {
 		return this.loadDevices()
 	}.property(),
