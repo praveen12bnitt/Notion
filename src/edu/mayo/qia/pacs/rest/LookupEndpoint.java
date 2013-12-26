@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.rest;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -9,8 +10,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -39,6 +43,39 @@ public class LookupEndpoint extends TableEndpoint {
   public Response get(@Context UriInfo uriInfo) throws Exception {
     JSONObject json = super.get(uriInfo.getQueryParameters(), "LOOKUP", " and Visible = true ", new String[] { "Type", "Name", "Value" }, "LookupKey");
     return Response.ok(json).build();
+  }
+
+  @PUT
+  @Path("/csv")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response loadCSV(JSONObject json) throws JSONException {
+    /*
+     * var csv = { headers: results.results.shift(), rows: results.results,
+     * headerIndex: headerIndex, typeColumn: null, keyColumn: null, valueColumn:
+     * null, }
+     */
+    if (!(json.has("headers") && json.has("rows") && json.has("typeColumn") && json.has("keyColumn") && json.has("valueColumn"))) {
+      return Response.status(Status.BAD_REQUEST).entity(new SimpleResponse("message", "did not have expected columns")).build();
+    }
+    int typeIndex = json.getJSONObject("typeColumn").optInt("index", 0);
+    int keyIndex = json.getJSONObject("keyColumn").optInt("index", 1);
+    int valueIndex = json.getJSONObject("valueColumn").optInt("index", 2);
+    JSONObject result = new JSONObject();
+
+    Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
+    anonymizer.setPool(poolManager.getContainer(poolKey).getPool());
+
+    JSONArray rows = json.getJSONArray("rows");
+    for (int idx = 0; idx < rows.length(); ++idx) {
+      JSONArray row = rows.getJSONArray(idx);
+      String type = row.getString(typeIndex);
+      String name = row.getString(keyIndex);
+      String value = row.getString(valueIndex);
+      anonymizer.setValue(type, name, value);
+    }
+    result.put("status", "success");
+    result.put("message", "Updated / inserted " + rows.length() + " lookup entries");
+    return Response.ok(result).build();
   }
 
   @POST

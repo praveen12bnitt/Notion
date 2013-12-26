@@ -4,16 +4,26 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.sun.jersey.api.client.ClientResponse;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
@@ -141,32 +151,14 @@ public class AnonymizerTest extends PACSTest {
     anonymizer.setValue("PatientName", tags.getString(Tag.PatientName), patientName);
 
     // @formatter:off
-    script = "anonymizer.info ( 'starting to anonymize' )\n"
-        + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
-        + "if ( ! pn ) { \n"
-        + "  anonymizer.info ( 'did not find an entry' )\n"
-        + "  // Generate a new name using a sequence\n"
-        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n"
-        + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n"
-        + "}\n"
-        + "// Be sure the last thing is our return value\n"
-        + "anonymizer.info ( 'returning: ' + pn )\n"
-        + "pn\n"
-        ;
+    script = "anonymizer.info ( 'starting to anonymize' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n" + "  // Generate a new name using a sequence\n"
+        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n" + "// Be sure the last thing is our return value\n"
+        + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
-    
-    script = "anonymizer.info ( 'starting to anonymize PatientID' )\n"
-        + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
-        + "if ( ! pn ) { \n"
-        + "  anonymizer.info ( 'did not find an entry' )\n"
-        + "  // Generate a new name using a sequence\n"
-        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n"
-        + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n"
-        + "}\n"
-        + "// Be sure the last thing is our return value\n"
-        + "anonymizer.info ( 'returning: ' + pn )\n"
-        + "pn\n"
-        ;
+
+    script = "anonymizer.info ( 'starting to anonymize PatientID' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n"
+        + "  // Generate a new name using a sequence\n" + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n"
+        + "// Be sure the last thing is our return value\n" + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
     template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
 
     // @formatter:on
@@ -189,5 +181,57 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
+  }
+
+  @Test
+  public void populateWithCSV() throws Exception {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    // 1. Construct a 'CSV' JSON object
+    // 2. Send it to our server
+    // 3. Verify the entries
+    // 4. Anonymize using the pre-populated values
+
+    Resource resource = new ClassPathResource("csv.json");
+    String jsonSource = IOUtils.toString(resource.getInputStream());
+    JSONObject csv = new JSONObject(jsonSource);
+
+    // Send it to the server
+    ClientResponse clientResponse = null;
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool").path("/" + pool.poolKey + "/lookup/csv").build();
+    clientResponse = client.resource(uri).type(JSON).accept(JSON).put(ClientResponse.class, csv);
+    assertEquals("Put succeeded", Status.OK.getStatusCode(), clientResponse.getStatus());
+
+    // Anonymize with the data
+    String script;
+    for (String tag : new String[] { "PatientName", "PatientID", "AccessionNumber" }) {
+      script = "anonymizer.info ( 'starting to anonymize' )\n" + "anonymizer.lookup ( '" + tag + "', tags." + tag + ")\n";
+      template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, tag, script);
+    }
+    // @formatter:on
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("PatientName", "PN-68", response.getString(Tag.PatientName));
+    assertEquals("PatientID", "PID-68", response.getString(Tag.PatientID));
+    assertEquals("AccessionNumber", "12345", response.getString(Tag.AccessionNumber));
+    assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
   }
 }
