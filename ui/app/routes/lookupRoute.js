@@ -8,12 +8,60 @@ App.LookupRoute = Ember.Route.extend({
 		this.set("pool", pool)
 		return pool
 	},
-	actions: {}
+	actions: {},
+})
+
+App.LookupController = Ember.ObjectController.extend({
+    actions: {
+        loadCSV: function() {
+            var self = this
+            var csv = self.get('csv')
+            console.log("Sending CSV data", csv)
+            if ( !csv ) { 
+                $.pnotify({
+                    title: "No CSV",
+                    text: "CSV data is not loaded",
+                    type: "error"
+                })
+                return 
+            }
+            $.ajax ({
+                contentType : 'application/json',
+                type: "PUT",
+                url: "/rest/pool/" + this.get('poolKey') + "/lookup/csv" ,
+                data: JSON.stringify(csv),
+                success: function ( data ) {
+                    $.pnotify({
+                        title: 'Saved CSV',
+                        text: data.message,
+                        type: 'success',
+                    })
+                    self.set("csv", null)
+                },
+                error: function() {
+                    $.pnotify({
+                        title: 'Error saving CSV',
+                        text: 'Server could not parse CSV',
+                        type: 'error'
+                    })
+                }
+            })
+        }
+    },
+    hasFileUpload: function() {
+        /* Check for the various File API support. */
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            return true;
+        } else {
+            return false;
+        }
+    }.property(),
 })
 
 App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
 	layoutName: 'lookup',
     actions: {
+
     },
     createLookupTable: function() {
         console.log ( "==== Starting up jtable ====")
@@ -134,6 +182,7 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
         this.get('table').jtable ('load')
     },
 	didInsertElement: function(){
+        var self = this
 		console.log("didInsertElement", this.$())
 		var pool = this.controller.get('model')
         this.createLookupTable()
@@ -141,12 +190,84 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
 
         // File upload
         console.log ( "Creating fileupload")
-        $('#fileupload').fileupload({
-            drop: function(e,data) {
-                alert ( data )
-            },
+        self.$('.upload').fileupload({
             add: function(e,data) {
-                alert ( data )
+                console.log('Add data', data, self.$(".upload").files)
+                $.each(data.files, function(idx, file){
+                    if ( file.type.indexOf("text") < 0 ) {
+                        $.pnotify({
+                            title: "Incorrect filetype",
+                            text: "File must be text and a CSV",
+                            type: "error"
+                        })
+                        return
+                    }
+                    var reader = new FileReader();
+
+                    reader.onerror = function () {
+                        console.log(reader.error)
+                        $.pnotify({
+                            title: "CSV Parsing Failed",
+                            type: "error",
+                            text: "Could not parse the file " + file + " <p>Error was: " + errreader.error
+                        })
+                        alert ( "Could not parse this CSV file")
+                    };
+                    reader.onload = function(event)
+                    {
+                        var text = event.target.result;
+                        var results = $.parse(text, {
+                            delimiter: ',',
+                            header: false,
+                            dynamicTyping: true
+                        });
+
+                        if ( results.errors.length > 0 ) {
+                            $.pnotify({
+                                title: "Parsing failed",
+                                type: "success",
+                                text: "Had " + results.errors.length + " errors (see console for details)"
+                            })
+                            console.error ( "Failed to parse", results )
+                        } else {
+                            $.pnotify({
+                                title: "Parsing completed",
+                                type: "success",
+                                text: "Finished parsing file"
+                            })
+                            var headerIndex = {}
+                            for ( var i = 0; i < results.results[0].length; i++) {
+                                headerIndex[i] = results.results[0][i]
+                            }
+                            var csv = {
+                                headers: results.results.shift(),
+                                rows: results.results,
+                                headerIndex: headerIndex,
+                                typeColumn: null,
+                                keyColumn: null,
+                                valueColumn: null,
+                            }
+                            /* Find the headers */
+                            $.each(csv.headers, function(idx, header) {
+                                if ( header.toLowerCase().match("type|t|tag")) {
+                                    csv.typeColumn = { index: idx, name: header }
+                                }
+                                if ( header.toLowerCase().match("key|k|name")) {
+                                    csv.keyColumn = { index: idx, name: header }
+                                }
+                                if ( header.toLowerCase().match("value|v")) {
+                                    csv.valueColumn = { index: idx, name: header }
+                                }
+                            })
+                            csv.valid = csv.valueColumn && csv.keyColumn && csv.typeColumn
+                            console.log ( "Reformated CSV results", csv)
+                            self.controller.set("csv", csv)                            
+                        }
+
+                    };
+
+                    reader.readAsText(file);
+                })
             }
         })
 
@@ -166,8 +287,6 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
                 this.get('table').jtable ('load')
             })
         })
-
-
-	}
+	},
 })
 
