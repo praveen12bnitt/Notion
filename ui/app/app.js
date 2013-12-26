@@ -12,6 +12,7 @@ App.Router.map(function() {
       this.resource("pool", { path: 'pool/:poolKey'})
       this.route("new")
     })
+    this.route('help');
     this.route('about');
   })
 
@@ -125,5 +126,11 @@ App.AceEditorComponent = Ember.Component.extend({
     });
 
 })(jQuery);
+
+var showdown = new Showdown.converter();
+
+Ember.Handlebars.helper('markdown', function(input) {
+  return new Handlebars.SafeString(showdown.makeHtml(input));
+});
 
 
