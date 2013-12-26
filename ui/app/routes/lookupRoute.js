@@ -35,11 +35,46 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
                     }
                 },
                 {
-                    text: "test",
-                    click: function () {
-                        var selectedRows = self.get('table').jtable('selectedRows');
-                        var row = self.get('table').jtable('getRowByKey', 9)
-                        console.log("Selected rows", selectedRows, row)
+                    text: 'New PatientName',
+                    click: function() {
+                        var entry = self.get('table').jtable('addRecord', {
+                            record: {
+                                Type: "PatientName",
+                                Name: "<replace>",
+                                Value: "<replace>"
+                            },
+                            success: function(a) {
+                                console.log("New PatientName: ", a, a.Record.LookupKey)
+                                var key = a.Record.LookupKey
+                                Ember.run.later ( self, function() {
+                                    var row = self.get('table').jtable('getRowByKey', key)
+                                    console.log ( "found row: ", row)
+                                    self.get('table').jtable('showEditForm', row)
+                                }, 700)
+                            }
+                        });
+                    }
+                },
+                {
+                    text: 'New AccessionNumber',
+                    click: function() {
+                        var entry = self.get('table').jtable('addRecord', {
+                            record: {
+                                Type: "AccessionNumber",
+                                Name: "<replace>",
+                                Value: "<replace>"
+                            },
+                            success: function(a) {
+                                console.log("New AccessionNumber: ", a, a.Record.LookupKey)
+                                var key = a.Record.LookupKey
+                                Ember.run.later ( self, function() {
+                                    var row = self.get('table').jtable('getRowByKey', key)
+                                    console.log ( "found row: ", row)
+                                    self.get('table').jtable('showEditForm', row)
+                                }, 700)
+
+                            }
+                        });
                     }
                 },
                 {
@@ -62,8 +97,6 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
 
                             }
                         });
-                        console.log("set new entry:", entry)
-                        // alert ( 'Would be moving ' + selectedRows.length + ' records')
                     }
                 }]
             },
@@ -98,24 +131,39 @@ App.LookupView = Ember.View.extend(Ember.TargetActionSupport, {
             }
         });
         this.set('table', table)
-        this.get('table').jtable ( 'load')
+        this.get('table').jtable ('load')
     },
 	didInsertElement: function(){
 		console.log("didInsertElement", this.$())
 		var pool = this.controller.get('model')
         this.createLookupTable()
+        var table = this.get('table')
+
+        // File upload
+        console.log ( "Creating fileupload")
+        $('#fileupload').fileupload({
+            drop: function(e,data) {
+                alert ( data )
+            },
+            add: function(e,data) {
+                alert ( data )
+            }
+        })
 
         // Make our binding
         this.get('controller').addObserver('model', this, function() {
             Ember.run.once(this, function() {
-                console.log("Lookup callback", this)
-                var table = this.get('table')
+                console.log("Lookup callback", table)
                 if ( table ) {
-                    table.jtable('destroy')
+                    try {
+                        table.jtable('destroy')
+                    } catch ( err ) {
+                        console.error ( "caught error", err)
+                    }
                 }             
                // Create the new one...
                 this.createLookupTable()
-                this.get('table').jtable ( 'load')
+                this.get('table').jtable ('load')
             })
         })
 

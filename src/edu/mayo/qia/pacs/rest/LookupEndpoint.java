@@ -45,6 +45,7 @@ public class LookupEndpoint extends TableEndpoint {
   @Path("/create")
   @Produces(MediaType.APPLICATION_JSON)
   public Response createRecord(@Context UriInfo uriInfo, @FormParam("Type") String type, @FormParam("Name") String name, @FormParam("Value") String value) throws Exception {
+    logger.info("Create: " + type + "/" + name + "/" + value);
     Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
     anonymizer.setPool(poolManager.getContainer(poolKey).getPool());
     JSONObject json;
@@ -70,7 +71,8 @@ public class LookupEndpoint extends TableEndpoint {
   @POST
   @Path("/update")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createRecord(@Context UriInfo uriInfo, @FormParam("LookupKey") final Integer lookupKey, @FormParam("Type") final String type, @FormParam("Name") String name, @FormParam("Value") final String value) throws Exception {
+  public Response createRecord(@Context UriInfo uriInfo, @FormParam("LookupKey") final Integer lookupKey, @FormParam("Type") final String type, @FormParam("Name") final String name, @FormParam("Value") final String value) throws Exception {
+    logger.info("Update: " + lookupKey + "/" + type + "/" + name + "/" + value);
     Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
     anonymizer.setPool(poolManager.getContainer(poolKey).getPool());
     JSONObject json;
@@ -86,7 +88,7 @@ public class LookupEndpoint extends TableEndpoint {
     transactionTemplate.execute(new TransactionCallback<JSONObject>() {
       @Override
       public JSONObject doInTransaction(TransactionStatus status) {
-        int count = template.update("update LOOKUP set Type = ?, Value = ? where PoolKey = ? and LookupKey = ?", type, value, poolKey, lookupKey);
+        int count = template.update("update LOOKUP set Name = ?, Value = ? where PoolKey = ? and LookupKey = ?", name, value, poolKey, lookupKey);
         JSONObject json = new JSONObject();
         try {
           if (count == 1) {
