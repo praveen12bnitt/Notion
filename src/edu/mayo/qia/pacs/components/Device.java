@@ -20,6 +20,7 @@ public final class Device {
   public int deviceKey = -1;
   public String applicationEntityTitle = null;
   public String hostName = null;
+  public String description = null;
   public int port = 0;
 
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
