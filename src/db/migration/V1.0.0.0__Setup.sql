@@ -96,11 +96,11 @@ CREATE  INDEX ContentDate_idx on INSTANCE (ContentDate ASC) ;
 
 
 
-CREATE TABLE Pool (
+CREATE TABLE POOL (
   PoolKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   Name VARCHAR(250) NOT NULL,
   ApplicationEntityTitle VARCHAR(256),
-  Description VARCHAR(250) NOT NULL,
+  Description VARCHAR(2048) NOT NULL,
   Anonymize INTEGER NOT NULL WITH DEFAULT 0,
   CONSTRAINT Unique_AETitle UNIQUE(ApplicationEntityTitle)
 );
@@ -110,6 +110,7 @@ CREATE TABLE DEVICE (
   PoolKey INT NOT NULL,
   ApplicationEntityTitle VARCHAR(250),
   HostName VARCHAR(250),
+  Description VARCHAR(2048),
   Port INT,
   CONSTRAINT DEVICE_fk1
     foreign key ( PoolKey ) references POOL(PoolKey) on delete cascade
