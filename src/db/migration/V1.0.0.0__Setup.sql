@@ -110,7 +110,9 @@ CREATE TABLE DEVICE (
   PoolKey INT NOT NULL,
   ApplicationEntityTitle VARCHAR(250),
   HostName VARCHAR(250),
-  Port INT
+  Port INT,
+  CONSTRAINT DEVICE_fk1
+    foreign key ( PoolKey ) references POOL(PoolKey) on delete cascade
 );
 
 
