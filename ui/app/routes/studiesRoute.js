@@ -83,8 +83,8 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
                 }]
             },
             actions: {
-                listAction: '/rest/pool/' + pool.get('poolKey') + "/series",
-                deleteAction: '/rest/pool/' + pool.get('poolKey') + "/series/delete"
+                listAction: '/rest/pool/' + pool.get('poolKey') + "/studies",
+                deleteAction: '/rest/pool/' + pool.get('poolKey') + "/studies/delete"
             },
             ajaxSettings: {
                 type: 'POST',

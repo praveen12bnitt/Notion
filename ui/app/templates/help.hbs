@@ -2,14 +2,15 @@
 		<div class="row-fluid">
 			<div class="span2">
 				<table class='table'>
-					<tr><td><a href="#" {{action render 'index'}}>Overview</a></td></tr>
-					<tr><td><a href="#" {{action render 'pools'}}>Pools</a></td></tr>
-					<tr><td><a href="#" {{action render 'devices'}}>Devices</a></td></tr>
-					<tr><td><a href="#" {{action render 'server'}}>Server configuration</a></td></tr>
+					<tr><td>{{#link-to 'help' 'index'}}Overview{{/link-to}}</td></tr>
+					<tr><td>{{#link-to 'help' 'pools'}}Pools{{/link-to}}</td></tr>
+					<tr><td>{{#link-to 'help' 'devices'}}Devices{{/link-to}}</td></tr>
+					<tr><td>{{#link-to 'help' 'anonymization'}}Anonymization{{/link-to}}</td></tr>
+					<tr><td>{{#link-to 'help' 'server'}}Server configuration{{/link-to}}</td></tr>
 				</table>
 			</div>
 			<div class="span9">
-				{{markdown topic}}
+				{{markdown model.content}}
 			</div>
 		</div>
 	</div>
