@@ -1,18 +1,17 @@
 	<div class="container-fluid">
 		<div class="row-fluid">
-			<div class="span2">
+			<div class="span3">
 				<table class='table'>
 					<thead>
 						<tr><th>{{#link-to 'pools.index'}}Pools{{/link-to}} 
 							<i class="fa fa-plus-circle" {{action open}}></i>
-						</th><th/><th/></tr>
+						</tr>
 					</thead>
 					{{#each model}}
 					<tr><td>
 						{{#link-to 'pool' this}}{{name}}{{/link-to}}: <small class='muted'>{{this.applicationEntityTitle}}</small>
+						<p>View {{#link-to 'studies' this}}Studies{{/link-to}} -- Edit {{#link-to 'lookup' this}}Lookup{{/link-to}} values</p>
 					</td>
-					<td>{{#link-to 'studies' this}}Studies{{/link-to}}</td>
-					<td>{{#link-to 'lookup' this}}Lookup{{/link-to}}</td>
 				</tr>						
 					{{/each}}
 				</table>

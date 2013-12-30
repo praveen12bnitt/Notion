@@ -96,7 +96,7 @@ App.PoolRoute = Ember.Route.extend({
 		newDevice: function() {
 			console.log ( 'PoolRoute -- newDevice')
 			var pool =  this.controller.get('model')
-			var device = App.Device.create({'hostName' : 'unknown', 'applicationEntityTitle': 'unknown', 'port': 0, 'poolKey' : pool.get('poolKey')});
+			var device = App.Device.create({'hostName' : null, 'applicationEntityTitle': null, 'port': null, 'description': null, 'poolKey' : pool.get('poolKey')});
 			this.controllerFor('newDevice').set ( 'model', device )
 			this.render ( 'newDevice', { into: 'pool', outlet: 'modal'});
 		},

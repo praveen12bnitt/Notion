@@ -47,6 +47,7 @@ App.Device = Ember.Object.extend(App.Serializable, {
 	hostName: null,
 	applicationEntityTitle: null,
 	port: null,
+	description: null,
 	deviceKey: -1,
 	poolKey: -1,
 	save: function ( ) {
