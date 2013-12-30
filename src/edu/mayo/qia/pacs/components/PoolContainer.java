@@ -85,6 +85,9 @@ public class PoolContainer {
   @Autowired
   SessionFactory sessionFactory;
 
+  @Autowired
+  PoolManager poolManager;
+
   private String sequenceName;
 
   public PoolContainer() {
@@ -335,13 +338,27 @@ public class PoolContainer {
   }
 
   public void delete() {
+    stop();
+    // First start by deleting all the studies
+    template.query("select StudyKey from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, new RowCallbackHandler() {
+
+      @Override
+      public void processRow(ResultSet rs) throws SQLException {
+        deleteStudy(rs.getInt("StudyKey"));
+      }
+    });
+
+    // Will cascade to all other tables
+    template.update("delete from POOL where PoolKey = ?", pool.poolKey);
+
     // Delete all the files associated with the container
     try {
       FileUtils.deleteDirectory(poolDirectory);
     } catch (IOException e) {
       logger.error("Failed to delete directory", e);
     }
-
+    // Remove this from the manager
+    poolManager.remove(this);
   }
 
   public Pool getPool() {

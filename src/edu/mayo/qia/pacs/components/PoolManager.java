@@ -135,4 +135,10 @@ public class PoolManager {
     getContainer(pool.poolKey).update(pool);
   }
 
+  public void remove(PoolContainer poolContainer) {
+    boolean v = poolContainers.remove(poolContainer.getPool().applicationEntityTitle, poolContainer);
+    if (!v) {
+      throw new RuntimeException("Could not remove pool for " + poolContainer.getPool().applicationEntityTitle);
+    }
+  }
 }
