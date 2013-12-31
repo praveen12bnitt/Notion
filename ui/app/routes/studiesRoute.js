@@ -121,13 +121,6 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
 		var pool = this.controller.get('model')
         this.createStudiesTable()
 
-		/**
-		this.$().find('.series-table').dataTable({
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "/rest/pool/" + pool.get('poolKey') + "/series"
-		})
-     	*/
         var self = this
         var input = this.$('.move-destination')
         console.log("move destination", input)

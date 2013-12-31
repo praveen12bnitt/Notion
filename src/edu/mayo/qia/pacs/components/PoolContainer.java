@@ -10,9 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledFuture;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,7 +35,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
@@ -49,7 +45,6 @@ import com.google.common.io.Files;
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.TagLoader;
-import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
 /**
  * Manage a particular pool.
@@ -71,10 +66,6 @@ public class PoolContainer {
   File incomingDirectory;
   File imageDirectory;
   PipelineStage ctpAnonymizer = null;
-
-  ConcurrentMap<String, Integer> instanceUIDs = new ConcurrentHashMap<String, Integer>();
-  ConcurrentMap<String, Integer> seriesUIDs = new ConcurrentHashMap<String, Integer>();
-  ConcurrentMap<String, Integer> studyUIDs = new ConcurrentHashMap<String, Integer>();
 
   @Autowired
   private JdbcTemplate template;
@@ -379,12 +370,6 @@ public class PoolContainer {
       relativePath = new File(relativePath, t);
     }
     return relativePath;
-  }
-
-  public void clearMaps() {
-    instanceUIDs.clear();
-    seriesUIDs.clear();
-    studyUIDs.clear();
   }
 
 }

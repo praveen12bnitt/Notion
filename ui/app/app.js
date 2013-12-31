@@ -127,16 +127,14 @@ App.AceEditorComponent = Ember.Component.extend({
 
 })(jQuery);
 
-var mdconverter = new Markdown.Converter();
 var showdown = new Showdown.converter();
 
 Ember.Handlebars.helper('markdown', function(input) {
   var text = input.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?((?:\([^)]*\)|[^()\s])*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,  function(whole, m1, m2, m3, m4){
-    console.log("replacing m1: " + m1 + " m2: "+ m2 + " m3: " + m3 + " m4: " +  m4)
     return "[" + m2 + "](index.html#/help/"+m4+")"
   });
 
-  return new Handlebars.SafeString(mdconverter.makeHtml(text));
+  return new Handlebars.SafeString(showdown.makeHtml(text));
 });
 
 
