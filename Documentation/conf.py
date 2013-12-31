@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ResearchPACS'
+project = u'Notion'
 copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -148,10 +148,10 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 #html_show_copyright = True
@@ -246,7 +246,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'ResearchPACS'
+epub_title = u'Notion'
 epub_author = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_publisher = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
