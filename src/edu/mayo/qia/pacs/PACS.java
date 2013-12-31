@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -25,6 +26,11 @@ public class PACS {
   static Logger logger = Logger.getLogger(PACS.class);
 
   public static String version = "1.0.0.0";
+
+  static {
+    System.setProperty("java.awt.headless", "true");
+    logger.debug("Using a headless environment: " + java.awt.GraphicsEnvironment.isHeadless());
+  }
 
   /**
    * Start the research PACS in the current directory, or the one specified on
@@ -45,6 +51,7 @@ public class PACS {
     options.addOption("p", "port", true, "Port to listen for DICOM traffic, default is 11117");
     options.addOption("r", "rest", true, "Port to listen for REST traffic, default is 11118");
     options.addOption("m", "memoryDB", false, "Start services in memory (DB only)");
+    options.addOption("h", "help", false, "Print help and exit");
     options.addOption("d", "db", true, "Start the embedded DB Web server on the given port (normally 8082), will not start without this option");
     CommandLine commandLine = null;
     try {
@@ -53,6 +60,24 @@ public class PACS {
       System.out.println("Error while parsing command line: " + e.getMessage() + "\n");
       System.exit(1);
     }
+    if (commandLine.hasOption("help")) {
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.setArgName("[directory]");
+      // @formatter:off
+      String footer = "\nStart the Notion PACS system using [directory] for data storage.  If not specified "
+        + "defaults to the current working directory (" + new File(System.getProperty("user.dir")).toString() + ").  "
+        + "By default the REST api is started on port 11118, with the web app being served at http://localhost:11118 "
+        + "\nThe DICOM listener starts on port 11117 (can be changed with a --port) and provides "
+        + "C-ECHO, C-MOVE, C-STORE and C-FIND services.  "
+        + "Notion serves as a full DICOM query / retrive SCP.\n"
+        + "Database administration can be handled via the bundled web interface.  By default, http://localhost:8082, if the "
+        + " --db option is given.  It will not start up otherwise. "
+        + "The JDBC connection URL is given in the log message of the server.";
+      formatter.printHelp("Notion [options] [directory]", "options:", options, footer);
+      // @formatter:on
+      System.exit(1);
+    }
+
     if (commandLine.getArgs().length >= 1) {
       directory = new File(commandLine.getArgs()[0]);
     } else {
@@ -84,6 +109,5 @@ public class PACS {
         logger.error("Error starting web server", e);
       }
     }
-
   }
 }

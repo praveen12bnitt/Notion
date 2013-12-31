@@ -5,17 +5,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerPlugin;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.plugin.StatisticsBrokerPlugin;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -26,10 +20,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.jms.listener.adapter.MessageListenerAdapter;
-import org.springframework.jms.support.converter.MappingJacksonMessageConverter;
-import org.springframework.jms.support.converter.MessageType;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.scheduling.TaskScheduler;
@@ -49,6 +39,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.spi.spring.container.SpringComponentProviderFactory;
 
 import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.http.LocalStaticHttpHandler;
 
 @Configuration
 @EnableScheduling
@@ -154,23 +145,14 @@ public class Beans {
   }
 
   @Bean
-  public ObjectMapper objectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
-    return objectMapper;
-  }
-
-  @Bean
-  public MappingJacksonMessageConverter messageConverter() {
-    MappingJacksonMessageConverter messageConverter = new MappingJacksonMessageConverter();
-    messageConverter.setTargetType(MessageType.TEXT);
-    messageConverter.setTypeIdPropertyName("JavaClass");
-    messageConverter.setObjectMapper(objectMapper());
-    return messageConverter;
-  }
-
-  @Bean
   public HttpServer httpServer() throws IOException {
+    // See if the html directory exists
+    File htmlDirectory = new File(PACS.directory, "html");
+    if (!htmlDirectory.exists()) {
+      htmlDirectory.mkdirs();
+      // Copy resources into it
+    }
+
     // We want to manage the server threads ourselves
     // The following code was extracted from ServerConfiguration and Google
     HttpServer server = new HttpServer();
@@ -188,9 +170,12 @@ public class Beans {
     SpringComponentProviderFactory handler = new SpringComponentProviderFactory(rc, PACS.context);
     HttpHandler processor = ContainerFactory.createContainer(HttpHandler.class, rc, handler);
     server.getServerConfiguration().addHttpHandler(processor, "/rest");
-    StaticHttpHandler staticHandler = new StaticHttpHandler(new File(PACS.directory, "html").getAbsolutePath());
+
+    LocalStaticHttpHandler cpHandler = new LocalStaticHttpHandler(PACS.class.getClassLoader(), "html/", "public/");
+
+    StaticHttpHandler staticHandler = new StaticHttpHandler(htmlDirectory.getAbsolutePath());
     staticHandler.setFileCacheEnabled(false);
-    server.getServerConfiguration().addHttpHandler(staticHandler, "/");
+    server.getServerConfiguration().addHttpHandler(cpHandler, "/");
 
     server.start();
     return server;
