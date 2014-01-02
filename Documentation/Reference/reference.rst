@@ -8,13 +8,15 @@ Notion Concepts
 
 
 .. _Pools:
+.. _Pool:
 
-Pools
+Pool
 ^^^^^
 
 .. _Devices:
+.. _Device:
 
-Devices
+Device
 ^^^^^^^
 
 .. _Anonymization:

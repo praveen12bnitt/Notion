@@ -251,6 +251,7 @@ epub_author = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Br
 epub_publisher = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
+epub_basename = u'Notion'
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
 #epub_language = ''

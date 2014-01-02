@@ -80,6 +80,9 @@ ResearchPACS dependencies.
     <dependency org="dcm4che" name="dcm4che-net" rev="2.0.24" conf="default->master"/>
     <dependency org="dcm4che" name="dcm4che-image" rev="2.0.24" conf="default->master"/>
     <dependency org="dcm4che" name="dcm4che-filecache" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che.tool" name="dcm4che-tool-dcmecho" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che.tool" name="dcm4che-tool-dcmsnd" rev="2.0.24" conf="default->master"/>
+    <dependency org="dcm4che.tool" name="dcm4che-tool-dcmqr" rev="2.0.24" conf="default->master"/>
 
     <!-- Misc -->
     <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="1.9.11" conf="default->master"/>

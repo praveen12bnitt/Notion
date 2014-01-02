@@ -56,6 +56,8 @@ Contents:
 
    GettingStarted/installation
    GettingStarted/getting_started
+   GettingStarted/anonymization
+   GettingStarted/moving_images
    GettingStarted/use_cases
    Reference/reference
    Development/development
