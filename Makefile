@@ -19,3 +19,6 @@ dist:
 	cp -r Documentation/_build/html $(dir)/Documentation
 	cp Documentation/_build/epub/Notion.epub $(dir)/Documentation
 	(cd zip-temp && zip -r ../$(versionDir).zip $(versionDir))
+
+watch:
+	(cd Documentation && while :; do make html ; sleep 5s; done)
