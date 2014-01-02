@@ -1,0 +1,9 @@
+{# Import the theme's layout. #}
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="../_static/notion.css" />
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+{{ super() }}
+{% endblock %}
