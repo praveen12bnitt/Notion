@@ -1,0 +1,19 @@
+#!/bin/bash
+# im-drop-shadow.sh
+# Apply a drop shadow using imagemagick.
+# For more arcana, see: http://www.imagemagick.org/Usage/blur/#shadow
+ 
+if [ $# != 1 ] ; then echo "Usage: $0 IMAGEFILE" ; exit; fi 
+ 
+FIN=$1
+FTEMP=$(mktemp -dt "$0")
+FTEMP=$FTEMP/temp.png
+ 
+#Uncomment the next line if you want to "mogrify" the input file.
+#FOUT=$FIN
+ 
+# Change this viewer if you don't have gpicview on your system.
+VIEWER=gpicview
+ 
+convert $FIN \( +clone  -background black  -shadow 80x3+5+5 \) +swap -background none -layers merge +repage $FTEMP
+cp $FTEMP $FIN
