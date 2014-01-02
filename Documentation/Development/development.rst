@@ -1,2 +1,4 @@
+.. include:: ../global.rst
+
 Development
 ===========

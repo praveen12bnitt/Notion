@@ -1,5 +1,7 @@
 .. include:: ../global.rst
 
+.. _Installation:
+
 Installation
 ============
 
@@ -16,9 +18,8 @@ After downloading Notion and unzipping, look in the ``Notion-x.x.x`` folder (whe
 
 The jar file and lib directory may be copied to any location as needed.
 
-Options
--------
-Notion takes several options:
+Running Notion
+--------------
 
 TL;DR
 ^^^^^
@@ -61,5 +62,5 @@ Notion supports setting several command line parameters:
 
 Of particular interest is the :tt:`--db` argument which specifies a port for the server to listen on for `web access <localhost:8082>`_ to the embedded database.  Performance tuning, db maintance, etc can be performed through the web interface (http://localhost:8082 by default).
 
-Notion listens for DICOM requests on a specific port (11117 by default) and for HTTP requests (port 11118 by default).  Configuration of DICOM is covered :ref:`elsewhere <DICOM-Config>`.  The HTTP server responds to REST requests
+Notion listens for DICOM requests on a specific port (11117 by default) and for HTTP requests (port 11118 by default).  Configuration of DICOM is covered :ref:`elsewhere <DICOMConfig>`.  The HTTP server responds to :ref:`REST requests <REST>` and serves :ref:`Notion's webapp <Webapp>`.
 

@@ -11,10 +11,6 @@ Notion: a PACS for researchers
 This project exists to create a low-overhead PACS system for researchers in radiology.  Notion provides several useful facilities for a department including multiple, independant "pools" of images, restrictions on access to images stored in pools, anonymization, simple installation, web interface for administration.
 
 
-
-Should have included global
-
-
 Why use Notion?
 ---------------
 
@@ -53,14 +49,17 @@ There are other Open Source / free PACS systems available including
 Depending on needs, one of the other systems may be a better fit.
 
 Contents:
+=========
 
 .. toctree::
    :maxdepth: 2
 
    GettingStarted/installation
    GettingStarted/getting_started
+   GettingStarted/use_cases
    Reference/reference
    Development/development
-   Reference/kitchen_sink
+
+.. Reference/kitchen_sink
 
 

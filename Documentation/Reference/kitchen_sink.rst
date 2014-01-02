@@ -46,6 +46,16 @@ subsection
 sub-subsection
 ^^^^^^^^^^^^^^
 
+
+
+    # with overline, for parts
+    * with overline, for chapters
+    =, for sections
+    -, for subsections
+    ^, for subsubsections
+    ", for paragraphs
+
+
 Footnotes [#fn1]_ is a footnote
 
 
