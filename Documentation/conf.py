@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Notion'
+project = u'Notion: a PACS for researchers'
 copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -165,7 +165,7 @@ html_show_sphinx = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ResearchPACSdoc'
+htmlhelp_basename = 'Notion'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -246,7 +246,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'Notion'
+epub_title = u'Notion: a PACS for Researchers'
 epub_author = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_publisher = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
