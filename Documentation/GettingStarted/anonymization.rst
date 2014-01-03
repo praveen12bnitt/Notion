@@ -70,8 +70,11 @@ The ``anonymizer`` object has several other functions
 ``lookup(Type,Key)``
  Lookup and return a value indexed by ``Type`` and ``Key``.  If the value does not exist, ``lookup`` returns null
 
- ``sequenceNumber(Type,Key)``
+``sequenceNumber(Type,Key)``
    First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymizer>` for details on prepopulating the lookup tables.
+
+``Exception(text)``
+  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See :ref:`PatientNameAnonymizer` for an example.
 
 Coming back to our example, set the anonymization rule for ``PatientName`` to be:
 
