@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
-import edu.mayo.qia.pacs.message.ProcessIncomingInstance;
 
 @Component
 public class StorageSCP extends StorageService {

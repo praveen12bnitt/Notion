@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ResearchPACS'
+project = u'Notion: a PACS for researchers'
 copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -132,7 +132,7 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+# html_sidebars = { '**': ['localtoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -148,10 +148,10 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 #html_show_copyright = True
@@ -165,7 +165,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ResearchPACSdoc'
+htmlhelp_basename = 'Notion'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -246,11 +246,12 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'ResearchPACS'
+epub_title = u'Notion: a PACS for Researchers'
 epub_author = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_publisher = u'William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 epub_copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
+epub_basename = u'Notion'
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
 #epub_language = ''

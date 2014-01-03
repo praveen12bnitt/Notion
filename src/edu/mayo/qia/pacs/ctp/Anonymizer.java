@@ -21,6 +21,7 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VRMap;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.mozilla.javascript.Context;
@@ -303,11 +304,17 @@ public class Anonymizer {
         }
         try {
           result = Context.jsToJava(result, String.class);
-          dcm.putString(tagValue, dcm.get(tagValue).vr(), (String) result);
         } catch (Exception e) {
           logger.error("Expected a string back from script, but instead got: " + result.toString());
           throw new Exception("Expected a string back from script, but instead got: " + result.toString());
         }
+        try {
+          dcm.putString(tagValue, null, (String) result);
+        } catch (Exception e) {
+          logger.error("Could not put the value (" + result + ") back into the DICOM image for tag: " + tag, e);
+          throw new Exception("Could not put the value (" + result + ") back into the DICOM image for tag: " + tag + " error: " + e.getMessage());
+        }
+
       }
     } finally {
       Context.exit();

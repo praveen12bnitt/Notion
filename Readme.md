@@ -1,32 +1,85 @@
 
-# Create a pool
-curl -X POST -H "Content-Type: application/json" -d '{"name":"default","applicationEntityTitle" : "default", "description":"bar"}' http://localhost:11118/rest/pool
+Notion PACS
+===========
 
-# Create a device
-curl -X POST -H "Content-Type: application/json" -d '{"applicationEntityTitle" : ".*", "hostName":".*", "port": 11117}' http://localhost:11118/rest/pool/1/device
+Notion is a stand-alone [PACS](http://en.wikipedia.org/wiki/Picture_archiving_and_communication_system) designed to be used by radiology researchers for storage and anonymization of research images.  
 
-### A loopback destination
-curl -X POST -H "Content-Type: application/json" -d '{"applicationEntityTitle" : "destination", "hostName":"localhost", "port": 11117}' http://localhost:11118/rest/pool/1/device
+### Why use Notion?
+
+If you have a need to:
+- store DICOM images, but do not want/have a dedicated research PACS
+- anonymize DICOM images
+- map Names, IDs and Accession numbers during anonymization
+- maintain separation of image data across projects
+- scale to 100's of independant research projects
+
+### Why *not* use Notion?
+
+If you:
+- already have a research PACS
+- do not need to anonymize data
+- do not care about isolation between research projects
+- are happy using manual anonymization tools
+
+There are other Open Source / free PACS systems available including 
+- [Conquest](http://ingenium.home.xs4all.nl/dicom.html)
+- [orthanc](http://code.google.com/p/orthanc/)
+- [OsiriX](http://www.osirix-viewer.com/)
+- [DCM4CHE](http://www.dcm4che.org/) (Notion is based on dcm4che)
+- [ClearCanvas](http://www.clearcanvas.ca/)
+
+Depending on needs, one of the other systems may be a better fit.
+
+#### Installation
+
+Download and unzip the Notion-x.x.x.zip package.  Inside you'll find several interesting files, including ```Notion.jar``` and the [documentation](Documentation/html).  Installation is complete at this point.
+
+#### Getting started
+
+###### TL;DR version
+```bash
+java -jar Notion.jar
+```
+Point a browser at [http://localhost:11118](http://localhost:11118).
+
+###### Command line options
+Notion supports setting several command line parameters:
+```bash
+# java -jar Notion-1.0.0.jar  --help
+usage: Notion [options] [directory]
+options:
+ -d,--db <arg>     Start the embedded DB Web server on the given port
+                   (normally 8082), will not start without this option
+ -h,--help         Print help and exit
+ -m,--memoryDB     Start services in memory (DB only)
+ -p,--port <arg>   Port to listen for DICOM traffic, default is 11117
+ -r,--rest <arg>   Port to listen for REST traffic, default is 11118
+
+Start the Notion PACS system using [directory] for data storage.  If not
+specified defaults to the current working directory
+(/Users/blezek/Source/ResearchPACS).  By default the REST api is started
+on port 11118, with the web app being served at http://localhost:11118
+The DICOM listener starts on port 11117 (can be changed with a --port) and
+provides C-ECHO, C-MOVE, C-STORE and C-FIND services.  Notion serves as a
+full DICOM query / retrive SCP.
+Database administration can be handled via the bundled web interface.  By
+default, http://localhost:8082, if the  --db option is given.  It will not
+start up otherwise. The JDBC connection URL is given in the log message of
+the server.
+```
+
+Of particular interest is the `--db` argument which specifies a port for the server to listen on for web access to the embedded database.  Performance tuning, db maintance, etc can be performed through the web interface ([http://localhost:8082](http://localhost:8082) by default).
 
 
-###  Second pool
-curl -X POST -H "Content-Type: application/json" -d '{"name":"default","applicationEntityTitle" : "destination", "description":"bar"}' http://localhost:11118/rest/pool
+#### Development
 
-# Create a device
-curl -X POST -H "Content-Type: application/json" -d '{"applicationEntityTitle" : ".*", "hostName":".*", "port": 11117}' http://localhost:11118/rest/pool/2/device
+Development of Notion requires several tools.
 
+##### Eclipse
+The primary development environment is [Eclipse](http://www.eclipse.org/) with the [IvyDE](http://ant.apache.org/ivy/ivyde/) plugin to manage dependancies.
 
+##### Ember.js
+[Ember.js](http://emberjs.com/) is a client side MVC framework for single page Javascript apps.  Notion's web app is constructed using Ember.js and several other UI interface tools, including [Bootstrap](http://getbootstrap.com/).
 
-
-### Send some data
-./dcm4che-2.0.28/bin/dcmsnd default@localhost:11117 DICOMTestData/
-
-
-### Query?
-./dcm4che-2.0.28/bin/dcmqr default@localhost:11117
-
-### Move some data
-./dcm4che-2.0.28/bin/dcmqr default@localhost:11117 -cmove destination -q StudyInstanceUID=1.2.40.0.13.1.1.172.22.2.90.20080613130257614.49733
-
-### Query the other pool
-./dcm4che-2.0.28/bin/dcmqr destination@localhost:11117
+##### Brunch.io
+[Brunch.io](http://brunch.io/) is a *"is an ultra-fast HTML5 build tool"* and is used in Notion to construct the web app.  Javascript code is automatically minified and concatenated, and style sheets are processed to conserve space.  Brunch.io is only one of many tools based on [node.js](http://nodejs.org/).

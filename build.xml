@@ -2,6 +2,8 @@
 <project name="ResearchPACS" default="jar" xmlns:ivy="antlib:org.apache.ivy.ant" >
   <property name="BuildProperties" value="BuildProperties.properties"/>
   <property name="lib.dir" value="lib"/>
+    <import file="./ant-revision.xml"/>
+
 	
   <!-- By default, don't send in any JVM args,
        On Ant's command line do this:
@@ -11,10 +13,11 @@
   <target name="test" depends="build">
     <mkdir dir="test-reports/"/>
     <!-- Set timeout to be 5 minutes to prevent hung jobs -->
-    <junit forkmode="perBatch" fork="yes" printsummary="yes" timeout="300000" maxmemory="1024m" showoutput="${junit.arg.output}" failureproperty="junit.status">
+    <junit forkmode="once" fork="yes" printsummary="yes" timeout="300000" maxmemory="1024m" showoutput="${junit.arg.output}" failureproperty="junit.status">
       <classpath>
         <pathelement location="${basedir}/bin"/>
         <pathelement location="${basedir}/DICOMTestData"/>
+        <pathelement location="${basedir}/ui"/>
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
         <fileset dir="${lib.dir}-testing" includes="**/*.jar"/>
       </classpath>
@@ -22,6 +25,7 @@
       <batchtest todir="test-reports/">
         <fileset dir="src">
           <include name="edu/**/*Test*"/>
+          <exclude name="edu/**/PACSTest*" />
         </fileset>
       </batchtest>
     </junit>
@@ -54,15 +58,27 @@
   <target name="jar" depends="build">
     <loadproperties srcFile="${BuildProperties}"/>
 
-    <manifestclasspath property="dewey.jar.classpath" jarfile="DeweyServer.jar">
+    <manifestclasspath property="dewey.jar.classpath" jarfile="Notion.jar">
       <classpath>
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
       </classpath>
     </manifestclasspath>
-    <jar destfile="DeweyServer.jar" basedir="bin/"
+    <jar destfile="Notion.jar" basedir="bin/"
          excludes="**/*Test.class **/*TestSuite.class **/test/*.class">
+      <mappedresources>
+         <fileset dir="ui/public" includes="**/*"/>
+         <globmapper from="*" to="html/*"/>
+      </mappedresources>
+      <mappedresources>
+         <fileset dir="Documentation/_build/html" includes="**/*"/>
+         <globmapper from="*" to="html/Documentation/*"/>
+      </mappedresources>
+      <mappedresources>
+         <fileset dir="Documentation/_build/epub" includes="*.epub"/>
+         <globmapper from="*" to="html/Documentation/*"/>
+      </mappedresources>
       <manifest>
-        <attribute name="Main-Class" value="edu.mayo.qia.dewey.server.Server"/>
+        <attribute name="Main-Class" value="edu.mayo.qia.pacs.PACS"/>
         <attribute name="Class-Path" value="${dewey.jar.classpath}"/>
         <attribute name="Implementation-Title" value="Basic Server"/>
         <attribute name="Implementation-Version" value="${build.major}.${build.minor}.${build.patch}"/>
@@ -71,70 +87,7 @@
       </manifest>
     </jar>
 
-    <jar destfile="DeweyReceiver.jar" basedir="bin/"
-         excludes="**/*Test.class **/*TestSuite.class">
-      <manifest>
-        <attribute name="Main-Class" value="org.dcm4che2.tool.dcmrcv.DcmRcv"/>
-        <attribute name="Class-Path" value="${dewey.jar.classpath}"/>
-        <attribute name="Implementation-Title" value="DEWEY DICOM Receiver"/>
-        <attribute name="Implementation-Version" value="${build.major}.${build.minor}.${build.patch}"/>
-        <attribute name="Implementation-Vendor" value="Mayo Clinic"/>
-        <attribute name="Built-By" value="${user.name}"/>
-      </manifest>
-    </jar>
   </target>
-
-  <!-- Build and install on the integration server -->
-  <target name="integration" depends="jar">
-    <!-- Copy to the integration server -->
-    <echo message="Copy to ${integration}"/>
-    <exec executable="rsync">
-      <arg value="--delete"/>
-      <arg value="--recursive"/>
-      <arg value="DeweyServer.jar"/>
-      <arg value="DeweyReceiver.jar"/>
-      <arg value="${lib.dir}"/>
-      <arg value="dewey@${integration}:/dewey/software/"/>
-    </exec>
-    <!-- Restart DEWEY -->
-    <exec executable="ssh">
-      <arg value="root@${integration}"/>
-      <arg value="for s in dewey dewey-receiver; do service $s restart; done"/>
-    </exec>
-  </target>
-
-  <!-- Build and install on the dewey-prod servers -->
-  <target name="dewey-prod" depends="jar">
-    <!-- Copy to the deweykvm shares (used by all hosts) -->
-    <echo message="Copy to deweykvm01 (dewey-prod)"/>
-    <exec executable="rsync">
-      <arg value="--delete"/>
-      <arg value="--recursive"/>
-      <arg value="DeweyServer.jar"/>
-      <arg value="DeweyReceiver.jar"/>
-      <arg value="${lib.dir}"/>
-      <arg value="dewey@deweykvm01:/dewey/software/"/>
-    </exec>
-    <!-- Restart DEWEY and DEWEY-RECEIVER on deweykvm01 -->
-    <exec executable="ssh">
-      <arg value="root@deweykvm01"/>
-      <arg value="for s in dewey dewey-receiver; do service $s restart; done"/>
-    </exec>
-  	<!-- Restart DEWEY (only) on dewey-prod-v and deweykvm02 -->
-    <exec executable="ssh">
-      <arg value="root@deweykvm02"/>
-      <arg value="service dewey restart"/>
-    </exec>
-    <exec executable="ssh">
-      <arg value="root@dewey-prod-v"/>
-      <arg value="service dewey restart"/>
-    </exec>
-  </target>
-
-  <path id="designer.classpath">
-    <fileset dir="DesignerPlugin/lib" includes="**/*.jar"/>
-  </path>
-  
   <path id="dewey.classpath">
     <fileset dir="${lib.dir}" includes="**/*.jar"/>
     <pathelement path="bin"/>
