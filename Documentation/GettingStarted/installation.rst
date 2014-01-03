@@ -30,6 +30,8 @@ TL;DR
 
 Point a browser at http://localhost:11118
 
+.. _CLI:
+
 Command line options
 ^^^^^^^^^^^^^^^^^^^^
 

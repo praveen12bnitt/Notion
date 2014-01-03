@@ -14,7 +14,7 @@ To turn on Anonymization, click the :tt:`Edit` icon next to the Pool info on thi
 .. figure:: /images/ctp_configuration.png
    :align: center
    :width: 768
-
+   
    Configuration of the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_.  Changes will be saved to the server and used for anonymization of incoming DICOM images.
 
 CTP is the first stage of the anonymization process in Notion.  The second stage is a series of `Javascript <http://en.wikipedia.org/wiki/JavaScript>`_ snippits that are used to substitute DICOM tags.  To demonstrate, we will add a new anonymization script by clicking the :tt:`plus` sign next to the :tt:`Anonymization Rules`.  This brings up a dialog to create the new rule.
@@ -71,7 +71,7 @@ The ``anonymizer`` object has several other functions
  Lookup and return a value indexed by ``Type`` and ``Key``.  If the value does not exist, ``lookup`` returns null
 
 ``sequenceNumber(Type,Key)``
-   First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymizer>` for details on prepopulating the lookup tables.
+   First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymization>` for details on prepopulating the lookup tables.
 
 ``Exception(text)``
   Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See :ref:`PatientNameAnonymizer` for an example.

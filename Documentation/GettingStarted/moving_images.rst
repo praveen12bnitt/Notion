@@ -1,6 +1,6 @@
 .. include:: /global.rst
 
-.. _MovingImages:
+.. _MovingTutorial:
 
 Tutorial 3
 ==========
