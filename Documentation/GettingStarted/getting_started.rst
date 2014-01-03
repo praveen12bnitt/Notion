@@ -11,6 +11,8 @@ Getting started with Notion is straightforward.  After :ref:`installation <Insta
 
 The goal of this tutorial is to introduce several of Notion's concepts including :ref:`Pools`, :ref:`Devices`, and :ref:`Anonymization`.  Once a simple :ref:`Pool <Pools>` is configured, test images will be sent to the Pool, both with and without anonymization.  The second step will be to move images between two pools to simulate the :ref:`multi-researcher / multi-pool <MultiResearcherUseCase>`.
 
+.. _CreateAPool:
+
 Create a Pool
 -------------
 
@@ -67,6 +69,8 @@ Our Device list will look like this:
 
 .. image:: /images/device_list.png
 	:align: center
+
+.. _SendImagesToAPool:
 
 Sending images to the Pool
 --------------------------
