@@ -41,7 +41,7 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
                 data: JSON.stringify(request),
                 success: function ( data ) {
                     $.pnotify({
-                        title: 'Moved studies',
+                        title: 'Moved Completed!',
                         text: 'Moved ' + request.studyKeys.length + ' studies to ' + destinationName
                     })
                 },
@@ -57,6 +57,7 @@ App.StudiesView = Ember.View.extend(Ember.TargetActionSupport, {
     createStudiesTable: function() {
         console.log ( "==== Starting up jtable ====")
         var pool = this.controller.get('model')
+        var self = this
 
         // $('#PersonTableContainer').jtable({
         var table = this.$('.study-table').jtable({
