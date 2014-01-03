@@ -139,7 +139,7 @@ public class PoolEndpoint {
     }
     json.put("Status", records);
     json.put("Result", "OK");
-    return Response.ok().build();
+    return Response.ok(json).build();
   }
 
   /** Devices */

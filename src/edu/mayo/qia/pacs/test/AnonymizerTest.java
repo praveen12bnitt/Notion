@@ -27,6 +27,7 @@ import com.sun.jersey.api.client.ClientResponse;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 import edu.mayo.qia.pacs.dicom.TagLoader;
@@ -181,6 +182,41 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
+  }
+
+  @Test
+  public void missingTag() throws Exception {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    List<DicomObject> tagList = getTags("TOF/IMAGE001.dcm");
+    DicomObject tags = tagList.get(0);
+    anonymizer.setPool(pool);
+    createScript(new Script(pool, "SeriesDescription", "tags.SeriesDescription"));
+    createScript(new Script(pool, "StudyDescription", "tags.StudyDescription"));
+
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+    // Ask for StudyDescription back
+    dcmQR.addMatchingKey(Tag.toTagPath("StudyDescription"), null);
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("StudyDescription", tags.getString(Tag.StudyDescription), response.getString(Tag.StudyDescription));
+    assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
   }
 
   @Test
