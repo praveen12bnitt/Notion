@@ -153,7 +153,7 @@ public class PoolEndpoint {
 
   /** Series */
   @Path("/{id: [1-9][0-9]*}/studies")
-  public StudiesEndpoint series(@PathParam("id") int id) {
+  public StudiesEndpoint studies(@PathParam("id") int id) {
     StudiesEndpoint seriesEndpoint;
     seriesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
     seriesEndpoint.poolKey = id;
@@ -169,7 +169,7 @@ public class PoolEndpoint {
     return endpoint;
   }
 
-  /** Devices */
+  /** Scripts */
   @Path("/{id: [1-9][0-9]*}/script")
   public ScriptEndpoint scripts(@PathParam("id") int id) {
     ScriptEndpoint scriptEndpoint;

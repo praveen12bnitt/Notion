@@ -49,7 +49,6 @@ public class MoveSCP extends DicomService implements CMoveSCP {
     final AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
     if (info == null) {
       throw new DicomServiceException(request, Status.ProcessingFailure, "Invalid or unknown association");
-
     }
     if (!info.canConnect) {
       throw new DicomServiceException(request, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
