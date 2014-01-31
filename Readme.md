@@ -42,6 +42,10 @@ java -jar Notion.jar
 ```
 Point a browser at [http://localhost:11118](http://localhost:11118).
 
+###### TL;DR video
+http://youtu.be/w1gzPN3aaDk
+[![Notion ResearchPACS Overview and Tutorial](http://img.youtube.com/vi/w1gzPN3aaDk/0.jpg)](http://youtu.be/w1gzPN3aaDk)
+
 ###### Command line options
 Notion supports setting several command line parameters:
 ```bash
