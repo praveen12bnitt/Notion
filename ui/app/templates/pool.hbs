@@ -1,0 +1,102 @@
+<div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">{{name}} <i class="fa fa-edit" {{action edit}}></i></h3>
+		</div>
+		<div class="panel-body">
+			<b>Name:</b> {{name}}<p/>
+			<b>Application Entity Title:</b> {{applicationEntityTitle}}<p/>
+			<b>Description:</b> {{description}}<p/>
+			<b>Anonymize?</b> 
+			{{#if anonymize}}
+			Uses anonymization
+			{{else}}
+			Does not anonymize
+			{{/if}}
+			<p/>
+
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Devices <i class="fa fa-plus-circle"{{action newDevice}}></i></h3>
+		</div>
+		<div class="panel-body">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>AE Title</th>
+						<th>Host</th>
+						<th>Port</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				{{#each devices}}
+				<tr>
+					<td>{{this.applicationEntityTitle}}</td>
+					<td>{{this.hostName}}</td>
+					<td>{{this.port}}</td>
+					<td>{{this.description}}</td>
+				</tr>
+				{{/each}}
+			</table>
+		</div>
+	</div>
+
+
+	{{#if anonymize}}
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title"><i {{bind-attr class="editCTP:fa-chevron-up:fa-chevron-down :fa"}} {{action toggle "editCTP"}}></i> CTP Configuration</h3>
+			{{#if editCTP}}
+			<div class="panel-body">
+				Edit the CTP Anonymizer configuration, <a href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">documented here</a>.<p/>
+				{{ace-editor content=ctpConfig saveScript="saveCTP" mode="ace/mode/xml" longText=true}}
+				<button class="btn" {{action saveCTP}}>Save</button>
+			</div>
+			{{/if}}
+		</div>
+	</div>	
+
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title"><i {{bind-attr class="editRules:fa-chevron-up:fa-chevron-down :fa"}} {{action toggle "editRules"}}></i>Anonymization Rules <i class="fa fa-plus-circle" {{action newScript}}></i></h3>
+		</div>
+		{{#if editRules}}
+		<div class="panel-body">
+			Use 'Ctrl-S' or 'Command-S' to save, 'Ctrl-Return' or 'Command-Return' to try the anonymizer.  Trial execution returns 'LOOKUP' for any <code>anonymizer.lookup()</code> calls, 42 for any <code>anonymizer.sequenceNumber()</code> requests and the '#TagName#' when accessing <code>tags.TagName</code>, e.g. tags.PatientId is '#PatientId#'.<p/>
+			{{#each scripts}}
+			<div class="well">
+				<b><i {{bind-attr class="display:fa-chevron-up:fa-chevron-down :fa"}} {{action toggleDisplay this}}></i> {{tag}}</b>
+				{{#if display}}
+				<div>
+					{{ace-editor content=script tryScript="tryScript" saveScript="saveScript" script=this}}
+				</div>
+				<div class="row-fluid">
+					<div class="span4">
+						<div class="btn-group">
+							<button class="btn" {{action saveScript this}}>Save</button>
+							<button class="btn" {{action tryScript this}}>Try</button>
+							<button class="btn" {{action deleteScript this}}>Delete</button>
+						</div>
+					</div>
+					<div class="span6">
+						Try Result: {{tryResult}}
+					</div>
+					{{/if}}
+				</div>
+				{{/each}}
+			</div>
+		{{/if}}
+	</div>
+
+	{{/if}} <!-- if Anonymize -->
+
+
+
+	{{outlet}}
+	{{outlet modal}}
+
+
+
+</div>

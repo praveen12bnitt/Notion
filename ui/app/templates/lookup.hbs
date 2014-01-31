@@ -1,0 +1,55 @@
+<div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Lookup items for anonymization</h3>
+		</div>
+		<div class="panel-body">
+			<div id="LookupTableContainer" class="lookup-table"></div>
+			<div>
+
+			</div>
+  			    {{#if hasFileUpload}}
+  			    <h4>CSV File Upload</h4>
+  			    Data can be uploaded in the form of a CSV file.  The CSV must contain the columns <code>Type</code>, <code>Key</code>, <code>Value</code>.  Existing values will be updated and new entries added to the Lookup for the anonymizer.
+  			    <div>
+  			    	<div class="btn btn-success fileinput-button">
+  			    		<i class="fa fa-plus"></i>
+  			    		<span>CSV file upload</span>
+  			    		<!-- The file input field used as target for the file upload widget -->
+  			    		<input class="upload" id="fileupload" type="file" name="files[]"></input>
+  			    	</div>
+  			    </div>
+  			    {{#if csv}}
+			    <div>
+			    	{{#if csv.valid}}
+			    	<button class="btn btn-success" {{action loadCSV}} >Load CVS</button>
+			    	{{else}}
+			    	<p class="text-error">CSV is not valid.  Must contain columns for Type, Key and Value.</p>
+			    	{{/if}}
+
+			    	<table class='table'>
+			    		<thead>
+			    			<tr>
+			    				{{#each csv.headers}}
+			    				<td>{{this}}</td>
+			    				{{/each}}
+			    			</tr>
+			    		</thead>
+			    		<tbody>
+			    			{{#each csv.rows}}
+			    			<tr>
+			    				{{#each this}}
+			    				<td>{{this}}</td>
+			    				{{/each}}
+			    			</tr>
+			    			{{/each}}
+			    		</tbody>
+			    	</table>
+			    </div>
+			    {{/if}}
+			{{/if}}
+		</div>
+	</div>
+</div>
+

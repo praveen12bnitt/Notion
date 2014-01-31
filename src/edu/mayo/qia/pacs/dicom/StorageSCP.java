@@ -20,17 +20,28 @@ import org.dcm4che2.util.CloseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 
 @Component
 public class StorageSCP extends StorageService {
-  static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
+  static Logger logger = LoggerFactory.getLogger(StorageSCP.class);
 
   @Autowired
   JdbcTemplate template;
+
+  @Autowired
+  PoolManager poolManager;
+
+  @Autowired
+  TaskExecutor taskExecutor;
+
+  @Autowired
+  DICOMReceiver dicomReceiver;
 
   public static final String[] CUIDS = { UID.BasicStudyContentNotificationSOPClassRetired, UID.StoredPrintStorageSOPClassRetired, UID.HardcopyGrayscaleImageStorageSOPClassRetired, UID.HardcopyColorImageStorageSOPClassRetired,
       UID.ComputedRadiographyImageStorage, UID.DigitalXRayImageStorageForPresentation, UID.DigitalXRayImageStorageForProcessing, UID.DigitalMammographyXRayImageStorageForPresentation, UID.DigitalMammographyXRayImageStorageForProcessing,
@@ -52,21 +63,21 @@ public class StorageSCP extends StorageService {
   }
 
   @Override
-  protected void onCStoreRQ(Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
+  protected void onCStoreRQ(final Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
     logger.info("Got request");
 
-    // Check to see if this is a valid Called AET
-    int count = template.queryForObject("select count(*) from ENTITY where Entity = ?", Integer.class, as.getCalledAET());
-    if (count != 1) {
+    AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
+    if (info == null) {
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
+    }
+    if (!info.canConnect) {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
     }
 
     String cuid = rq.getString(Tag.AffectedSOPClassUID);
     String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
 
-    File incoming = new File(PACS.directory, "incoming");
-    File root = new File(incoming, as.getCalledAET());
-    root.mkdirs();
+    File root = info.incomingRootDirectory;
     // Here we want to use a UUID so we don't have duplicates...
     UUID uuid = UUID.randomUUID();
 
@@ -89,10 +100,15 @@ public class StorageSCP extends StorageService {
 
     // Rename the file after it has been written. See DCM-279
     // XB3 File rename = new File(file.getParent(), iuid);
-    File rename = new File(root, uuid.toString());
+    final File rename = new File(root, uuid.toString());
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
-    // Tell someone else to process it
-    // TODO:
+    try {
+      poolManager.processIncomingFile(as, rename);
+    } catch (Exception e) {
+      logger.error("Error handling new instance", e);
+      throw new DicomServiceException(rq, Status.ProcessingFailure, "Failed to process image");
+    }
+    logger.info("Done");
   }
 }
