@@ -132,7 +132,6 @@ public class PoolContainer {
       // 1. Prepare the Javascript anonymizer
       // 2. Execute the CTP anonymizer
       // 3. Execute the Javascript anonymizer
-
       // Load the tags, replace PatientName, PatientID and AccessionNumber
       DicomObject originalTags = TagLoader.loadTags(fileObject.getFile());
 

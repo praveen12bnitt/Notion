@@ -172,6 +172,7 @@ public class Beans {
     server.getServerConfiguration().addHttpHandler(processor, "/rest");
 
     LocalStaticHttpHandler cpHandler = new LocalStaticHttpHandler(PACS.class.getClassLoader(), "html/", "public/");
+    cpHandler.setFileCacheEnabled(Boolean.parseBoolean(System.getProperty("NOTION_CACHE", "true")));
 
     StaticHttpHandler staticHandler = new StaticHttpHandler(htmlDirectory.getAbsolutePath());
     staticHandler.setFileCacheEnabled(false);
