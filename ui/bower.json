@@ -24,6 +24,10 @@
     "angular-route": "~1.2.14",
     "requirejs": "~2.1.11",
     "angularAMD": "~0.1.0",
-    "angular-ui-router": "~0.2.9"
+    "angular-ui-router": "~0.2.9",
+    "vex": "~2.0.1",
+    "angular-ui-bootstrap": "~0.10.0",
+    "angular-ui-bootstrap-bower": "~0.10.0",
+    "angular-ui-ace": "~0.1.0"
   }
 }

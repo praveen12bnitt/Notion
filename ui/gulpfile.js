@@ -65,6 +65,10 @@ gulp.task('vendor', function() {
     'vendor/scripts/moment.js',
     'vendor/scripts/showdown.js',
     'bower_components/jquery/jquery.js',
+    'bower_components/angular-ui-ace/ui-ace.js',
+    'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
+    'bower_components/vex/js/vex.dialog.js',
+    'bower_components/vex/js/vex.js',
     'bower_components/angular-ui-router/release/angular-ui-router.js',
     'bower_components/angularAMD/angularAMD.js',
     'bower_components/angularAMD/ngload.js',
@@ -79,11 +83,12 @@ gulp.task('vendor', function() {
     ])
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))
+
 })
 
 gulp.task('ace', function() {
-  gulp.src('bower_components/ace-builds/src/*.js')
-  .pipe(gulp.dest("public/ace"))
+  gulp.src('bower_components/ace-builds/src-noconflict/**')
+  .pipe(gulp.dest("public/js/ace"))
 })
 
 gulp.task('bootstrap', function() {

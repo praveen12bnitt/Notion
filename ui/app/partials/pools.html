@@ -4,18 +4,18 @@
       <table class='table'>
         <thead>
           <tr><th>Pools
-            <i class="fa fa-plus-circle"></i>
+            <a ng-href="#/pools/new"><i class="fa fa-plus-circle"></i></a>
           </tr>
         </thead>
         <tr ng-repeat="pool in poolCollection.models">
           <td>
-            {{pool.get('name')}}
+            {{pool.get('name')}} <a ng-href="#/pools/{{pool.id}}">detail</a>
           </td>
         </tr>            
       </table>
     </div>
     <div class="col-md-9">
-      This is the right hand side
+      <div ui-view></div>
     </div>
   </div>
 </div>
