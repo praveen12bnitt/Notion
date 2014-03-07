@@ -7,6 +7,9 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -84,6 +87,29 @@ public class DeviceEndpoint {
     } catch (Exception e) {
       logger.error("Error creating device", e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Error creating pool")).build();
+    } finally {
+      session.close();
+    }
+    return Response.ok(device).build();
+  }
+
+  /** Modify a pool. */
+  @PUT
+  @Path("/{id: [1-9][0-9]*}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response modifyDevice(@PathParam("id") int id, Device update) {
+    // Look up the pool and change it
+    Session session = sessionFactory.openSession();
+    Device device = null;
+    try {
+      session.beginTransaction();
+      device = (Device) session.byId(Device.class).load(id);
+      if (device == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
+      device.update(update);
+      session.getTransaction().commit();
     } finally {
       session.close();
     }

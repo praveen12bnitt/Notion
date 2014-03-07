@@ -50,4 +50,11 @@ public final class Device {
     this.pool = pool;
   }
 
+  public void update(Device update) {
+    this.applicationEntityTitle = update.applicationEntityTitle;
+    this.description = update.description;
+    this.port = update.port;
+    this.hostName = update.hostName;
+  }
+
 }
