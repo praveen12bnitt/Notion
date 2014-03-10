@@ -4,12 +4,12 @@
       <table class='table'>
         <thead>
           <tr><th>Pools
-            <a ng-href="#/pools/new"><i class="fa fa-plus-circle"></i></a>
+            <i class="fa fa-plus-circle" ng-click="newPool()"></a>
           </tr>
         </thead>
         <tr ng-repeat="pool in poolCollection.models">
           <td>
-            {{pool.get('name')}} <a ng-href="#/pools/{{pool.id}}">detail</a>
+            {{pool.get('name')}} <a ng-href="#/pools/{{pool.id}}">detail</a> <a ng-href="#/pools/{{pool.id}}/query">query</a>
           </td>
         </tr>            
       </table>

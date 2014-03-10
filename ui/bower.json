@@ -28,6 +28,7 @@
     "vex": "~2.0.1",
     "angular-ui-bootstrap": "~0.10.0",
     "angular-ui-bootstrap-bower": "~0.10.0",
-    "angular-ui-ace": "~0.1.0"
+    "angular-ui-ace": "~0.1.0",
+    "dropzone": "~3.8.4"
   }
 }

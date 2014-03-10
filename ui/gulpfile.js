@@ -4,7 +4,7 @@ npm install --save-dev gulp gulp-uglify gulp-concat gulp-notify gulp-cache gulp-
 npm install --save-dev streamqueue
 npm install --save-dev gulp-ember-handlebars
 npm install --save-dev gulp-styl
-npm install --save-dev gulp-uglify
+npm install --save-dev gulp-uglify gulp-rename
 */
 
 
@@ -22,6 +22,7 @@ var gulp = require('gulp'),
     styl = require('gulp-styl'),
     stylus = require('gulp-stylus'),
     uglify = require('gulp-uglify'),
+    rename = require('gulp-rename'),
     server = lr();
 
 gulp.task("default", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], function() {
@@ -81,6 +82,11 @@ gulp.task('vendor', function() {
     'bower_components/ember/ember.js',
     'vendor/scripts/console-polyfill.js',
     ])
+  .pipe(uglify({outSourceMap: true}))
+  .pipe(gulp.dest('public/js'))
+
+  gulp.src(['bower_components/dropzone/downloads/dropzone-amd-module.js'])
+  .pipe(rename('dropzone.js'))
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))
 

@@ -42,7 +42,13 @@ require.config({
 })
 
 // For Grater to work, the model, angular and angularAMD packages are required
-require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace' ], function(angular, angularAMD, Backbone ) {
+require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace', 'dropzone' ], function(angular, angularAMD, Backbone ) {
+
+  // Helper for shortening strings
+  String.prototype.trunc = String.prototype.trunc ||
+  function(n){
+    return this.length>n ? this.substr(0,n-1)+'...' : this;
+  };
 
   PoolModel = Backbone.Model.extend({
     idAttribute: "poolKey",
@@ -95,7 +101,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     parse: function(response) {
       var m = [];
       for(var i = 0; i < response.script.length; i++) {
-        m.push(new DeviceModel(response.script[i]))
+        m.push(new ScriptModel(response.script[i]))
       }
       this.set ( m )
       return this.models;
@@ -122,15 +128,15 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
       templateUrl: 'partials/pools.index.html',
       controller: 'PoolsController'
     })
-    .state('pools.new', {
-      url: "/new",
-      templateUrl: 'partials/pool.new.html',
-      controller: 'NewPoolController'
-    })
     .state('pools.pool', {
       url: "/:poolKey",
       templateUrl: 'partials/pool.detail.html',
       controller: 'PoolController'
+    })
+    .state('pools.query', {
+      url: "/:poolKey/query",
+      templateUrl: 'partials/pool.query.html',
+      controller: 'QueryController'
     })
   });
 
@@ -143,7 +149,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     //   });
     // }]);
 
-  notionApp.controller ( 'PoolsController', function($scope,$timeout,$state) {
+  notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal) {
     $scope.poolCollection = new PoolCollection();
     // Make the first one syncrhonous
     $scope.poolCollection.fetch({remove:true, async:false})
@@ -155,6 +161,26 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
       $scope.$apply (  $scope.poolCollection.fetch({remove:true, async:false}) );
     };
 
+
+    $scope.newPool = function() {
+      $modal.open ({
+        templateUrl: 'partials/pool.edit.html',
+        scope: $scope,
+        controller: function($scope,$modalInstance) {
+         $scope.pool = new PoolModel();
+         $scope.model = $scope.pool.toJSON()
+         $scope.title = "Create a new pool"
+         $scope.hideAETitle = false
+          $scope.save = function() {
+            $scope.pool.set ( $scope.model )
+            $scope.poolCollection.add( $scope.pool)
+            $scope.pool.save ( $scope.model )
+            $modalInstance.close()
+          };
+          $scope.cancel = function() { $modalInstance.dismiss() };
+        }
+      });
+    };
 
     (function tick() {
       $scope.poolCollection.fetch({remove: true});
@@ -185,6 +211,8 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         templateUrl: 'partials/pool.edit.html',
         scope: $scope,
         controller: function($scope, $modalInstance) {
+          $scope.title = "Edit " + $scope.pool.get('name')
+          $scope.hideAETitle = true
           $scope.save = function() {
             $scope.pool.save ( $scope.model )
             $modalInstance.close()
@@ -194,8 +222,10 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
       });
     };
 
+    // Devices
     $scope.editDevice = function(device) {
       console.log("EditDevice")
+      var newDevice = !device
       if ( !device ) {
         console.log("Create new device")
         device = new DeviceModel()
@@ -206,6 +236,11 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         templateUrl: 'partials/device.edit.html',
         scope: $scope,
         controller: function($scope, $modalInstance) {
+          if ( newDevice ) {
+            $scope.title = "Create a new device"
+          } else {
+            $scope.title = "Edit the device"
+          }
           $scope.save = function(){
             device.set ( $scope.deviceModel )
             $scope.deviceCollection.add(device)
@@ -216,6 +251,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         }
       });
     };
+
 
     // CTP Configuration
     $scope.ctp = new CTPModel();
@@ -232,25 +268,99 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     $scope.scriptCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/script';
     $scope.scriptCollection.fetch({async:false})
 
+    $scope.editScript = function(script) {
+      var newScript = !script
+      if ( newScript ) {
+        script = new ScriptModel();
+      }
+      $modal.open ({
+        templateUrl: 'partials/script.edit.html',
+        scope: $scope,
+        controller: function($scope, $modalInstance) {
+          $scope.script = script
+          $scope.scriptModel = script.toJSON()
+          $scope.tryResult = ""
+          if ( newScript ) {
+            $scope.title = "Create a new script"
+          } else {
+            $scope.title = "Edit the script for " + script.get('tag')
+            $scope.hideTag = true
+          }
+          $scope.save = function(){
+            script.set ( $scope.scriptModel )
+            $scope.scriptCollection.add(script)
+            console.log ( "Saving script ", script)
+            script.save();
+            $modalInstance.close();
+          };
+          $scope.cancel = function() { $modalInstance.dismiss() };
+          $scope.aceLoaded = function(editor) {
+            console.log ( "Ace loaded" )
+             editor.commands.addCommand({
+              name: 'save',
+              bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+              exec: $scope.save
+            });
+
+            // Try
+            editor.commands.addCommand({
+              name: 'exec',
+              bindKey: {win: 'Ctrl-Return', mac: 'Command-Return'},
+              exec: $scope.try
+            });
+          };
+
+          $scope.try = function() {
+            // Cal the rest API and give it a go
+            console.log ( "Trying script on the server")
+            var url = "/rest/pool/" + $scope.pool.get('poolKey') + '/script/try'
+            $.ajax ({
+              contentType: 'application/json',
+              type: 'PUT',
+              url: url,
+              data: JSON.stringify($scope.scriptModel),
+              success: function ( data ) {
+                console.log("Tried script, got back ", data)
+                $scope.$apply ( function() {
+                  $scope.tryResult = data.result
+                })
+              }
+            });
+          }
+        }
+      })
+    }
+
   })
 
-  notionApp.controller ( 'NewPoolController', function($scope, $state) {
-    // Create a new pool
-    $scope.pool = new PoolModel();
+
+  notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams, $state, $modal) {
+    $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
+    console.log ( "QueryController for ", $stateParams.poolKey )
+    console.log ( "Pool is: ", $scope.pool)
     $scope.model = $scope.pool.toJSON();
 
-    $scope.save = function() {
-      $scope.pool.set ( $scope.model )
-      $scope.pool.save( $scope.model, {
-        error: function(model,xhr,options){
-          alert ( "Could not save the pool: " + xhr)
-        },
-        success: function(model, response, options) {
-          $scope.$parent.newPoolKey = model.id
+    $scope.submit = function() {
+      console.log ( $('#queryFile')[0].files[0])
+      var formData = new FormData();
+      console.log ( formData )
+      formData.append('file', $('#queryFile')[0].files[0] )
+      console.log ( formData )
+      $.ajax({
+        url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function() {
+          $scope.$apply ( function(){
+            $scope.query = "1234"
+          })
         }
       });
     }
   });
+
 
 
   // Here is where the fun happens. angularAMD contains support for initializing an angular
@@ -260,3 +370,33 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
 
   console.log ("Build notion app")
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
