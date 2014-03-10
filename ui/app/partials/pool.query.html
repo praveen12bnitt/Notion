@@ -1,0 +1,41 @@
+<div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2 class="panel-title">Query {{model.name}}</h3>
+    </div>
+    <div class="panel-body">
+      <b>Name:</b> {{model.name}}<p/>
+      <b>Application Entity Title:</b> {{model.applicationEntityTitle}}<p/>
+      <b>Description:</b> {{model.description}}<p/>
+      <b>Anonymize?</b> {{model.anonymize}}<p />
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2 class="panel-title">Query</h3>
+    </div>
+
+    <div class="panel-body">
+      <form role="form" enctype="multipart/form-data" >
+        <div class="form-group">
+          <label>File input</label>
+          <input type="file" name="file" id="queryFile">
+          <p class="help-block">Upload an Excel or CSV file using the templates (Excel / CSV).</p>
+        </div>
+        <button ng-click="submit()" class="btn btn-default">Submit</button>
+      </form>
+    </div>    
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2 class="panel-title">Query Result</h3>
+    </div>
+    <div class="panel-body">
+    {{query}}
+    </div>
+  </div>
+
+
+</div>
