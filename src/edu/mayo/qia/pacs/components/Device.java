@@ -22,24 +22,30 @@ public final class Device {
   public String hostName = null;
   public String description = null;
   public int port = 0;
+  public String callingApplicationEntityTitle = null;
 
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
   @JoinColumn(name = "PoolKey")
   @JsonIgnore
-  private Pool pool;
+  public Pool pool;
 
   public Device() {
   }
 
   public Device(String applicationEntityTitle, String hostName, int port) {
-    this(applicationEntityTitle, hostName, port, null);
+    this(applicationEntityTitle, hostName, port, null, null);
   }
 
   public Device(String applicationEntityTitle, String hostName, int port, Pool pool) {
+    this(applicationEntityTitle, hostName, port, null, pool);
+  }
+
+  public Device(String applicationEntityTitle, String hostName, int port, String callingApplicationEntityTitle, Pool pool) {
     this.applicationEntityTitle = applicationEntityTitle;
     this.hostName = hostName;
     this.port = port;
     this.pool = pool;
+    this.callingApplicationEntityTitle = callingApplicationEntityTitle;
   }
 
   public Pool getPool() {
