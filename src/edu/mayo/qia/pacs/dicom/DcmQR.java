@@ -407,6 +407,22 @@ public class DcmQR {
   }
 
   // Query for one specific study
+  public DimseRSP queryAll() throws IOException, InterruptedException, DcmMoveException {
+    final String fn = "query: ";
+
+    TransferCapability tc = selectFindTransferCapability();
+    String cuid = tc.getSopClass();
+    String tsuid = selectTransferSyntax(tc);
+
+    if (log.isDebugEnabled()) {
+      log.debug(fn + "Send Query Request using " + UIDDictionary.getDictionary().prompt(cuid) + ":\n" + keys.toString());
+    }
+
+    DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+    return rsp;
+  }
+
+  // Query for one specific study
   public DicomObject query() throws IOException, InterruptedException, DcmMoveException {
     final String fn = "query: ";
 
