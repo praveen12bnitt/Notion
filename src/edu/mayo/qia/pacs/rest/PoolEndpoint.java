@@ -178,6 +178,15 @@ public class PoolEndpoint {
     return scriptEndpoint;
   }
 
+  /** Query */
+  @Path("/{id: [1-9][0-9]*}/query")
+  public QueryEndpoint query(@PathParam("id") int id) {
+    QueryEndpoint queryEndpoint;
+    queryEndpoint = resourceContext.getResource(QueryEndpoint.class);
+    queryEndpoint.poolKey = id;
+    return queryEndpoint;
+  }
+
   /** CTP */
   @GET
   @Path("/{id: [1-9][0-9]*}/ctp")
