@@ -75,20 +75,33 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     model: DeviceModel,
     url: function () { return this.urlRoot; },
     parse: function(response) {
-      console.log ( "Parsing DeviceCollection", response)
       var m = [];
       for(var i = 0; i < response.device.length; i++) {
-        console.log("Creating new device")
         m.push(new DeviceModel(response.device[i]))
       }
       this.set ( m )
-      console.log("Created array", m, " Models: ", this.models)
+      return this.models;
+    }
+  });
+
+  CTPModel = Backbone.Model.extend();
+
+  ScriptModel = Backbone.Model.extend({
+    idAttribute: 'scriptKey'
+  });
+  ScriptCollection = Backbone.Collection.extend({
+    model: ScriptModel,
+    url: function () { return this.urlRoot; },
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.script.length; i++) {
+        m.push(new DeviceModel(response.script[i]))
+      }
+      this.set ( m )
       return this.models;
     }
 
   });
-
-  CTPModel = Backbone.Model.extend();
 
 
 
@@ -214,7 +227,10 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
       $scope.ctp.sync("update", $scope.ctp)
     }
 
-
+    // Scripts
+    $scope.scriptCollection = new ScriptCollection();
+    $scope.scriptCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/script';
+    $scope.scriptCollection.fetch({async:false})
 
   })
 
