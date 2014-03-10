@@ -108,6 +108,9 @@ public class DeviceEndpoint {
       if (device == null) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
       }
+      if (device.pool.poolKey != poolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
       device.update(update);
       session.getTransaction().commit();
     } finally {
@@ -126,6 +129,9 @@ public class DeviceEndpoint {
     try {
       session.beginTransaction();
       device = (Device) session.byId(Device.class).getReference(device.deviceKey);
+      if (device.pool.poolKey != poolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
       session.delete(device);
       session.getTransaction().commit();
     } finally {
