@@ -339,12 +339,47 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     console.log ( "QueryController for ", $stateParams.poolKey )
     console.log ( "Pool is: ", $scope.pool)
     $scope.model = $scope.pool.toJSON();
+    $scope.pools = $scope.$parent.poolCollection.toJSON()
+
+    $scope.deviceCollection = new DeviceCollection();
+    $scope.deviceCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/device';
+    console.log( $scope.deviceCollection )
+    $scope.deviceCollection.fetch({async:false})
+    $scope.devices = $scope.deviceCollection.toJSON()
+
+    $scope.refresh = function(){
+      $.get('/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.queryKey, function(data) {
+        $scope.$apply (function() { $scope.query = data });
+      });      
+    }
+
+
+    // For testing
+    $.get('/rest/pool/' + $scope.pool.get('poolKey') + '/query/6', function(data) {
+      $scope.$apply (function() { $scope.query = data });
+    });      
+
+    $scope.fetchAll = function(item){
+      if ( !item.hasOwnProperty('doFetch')) {
+        item.doFetch = false
+      }
+      item.doFetch = !item.doFetch
+      console.log("fetchAll", item)
+      $.each(item.items, function(index,value){
+        item.items[index].doFetch = item.doFetch
+      })
+    };
+    $scope.toggleFetch = function(item) {
+      item.doFetch = !item.doFetch
+    }
 
     $scope.submit = function() {
       console.log ( $('#queryFile')[0].files[0])
       var formData = new FormData();
       console.log ( formData )
       formData.append('file', $('#queryFile')[0].files[0] )
+      formData.append('destinationPoolKey', $scope.receivingPool)
+      formData.append('deviceKey', $scope.queryDevice)
       console.log ( formData )
       $.ajax({
         url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
@@ -352,13 +387,21 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         data: formData,
         processData: false,
         contentType: false,
-        success: function() {
+        success: function(data) {
           $scope.$apply ( function(){
-            $scope.query = "1234"
+            $scope.query = data
           })
+        },
+        error: function(xhr, status, error) {
+          alert ( "Query failed: " + xhr.responseText )
         }
       });
-    }
+    };
+
+    $scope.fetch = function(){
+      // Actually do the fetching!
+    };
+
   });
 
 
