@@ -50,6 +50,11 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     return this.length>n ? this.substr(0,n-1)+'...' : this;
   };
 
+  String.prototype.startsWith = String.prototype.startsWith ||
+  function (str){
+    return this.indexOf(str) == 0;
+  };
+
   PoolModel = Backbone.Model.extend({
     idAttribute: "poolKey",
     // urlRoot: '/rest/pool',
@@ -91,6 +96,22 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
   });
 
   CTPModel = Backbone.Model.extend();
+  QueryModel = Backbone.Model.extend({
+    idAttribute: 'queryKey',
+    url: function () { return this.urlRoot; },
+    parse: function(response) {
+      // Sort the items
+      response.items.sort ( function(a,b){
+        return a.queryItemKey - b.queryItemKey
+      });
+      for ( var i = 0; i < response.items.length; i++ ) {
+        response.items[i].items.sort ( function(a,b){
+          return a.queryResultKey - b.queryResultKey;
+        })
+      }
+      return response;
+    }
+  });
 
   ScriptModel = Backbone.Model.extend({
     idAttribute: 'scriptKey'
@@ -176,6 +197,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
             $scope.poolCollection.add( $scope.pool)
             $scope.pool.save ( $scope.model )
             $modalInstance.close()
+            $scope.poolCollection.fetch({remove:true, async:false})
           };
           $scope.cancel = function() { $modalInstance.dismiss() };
         }
@@ -188,7 +210,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         $state.transitionTo ( 'pools.pool', { poolKey: $scope.newPoolKey} )
         $scope.newPoolKey = false
       }
-      $timeout(tick, 20000)
+      $timeout(tick, 2000)
     })();
   });
 
@@ -347,30 +369,28 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     $scope.deviceCollection.fetch({async:false})
     $scope.devices = $scope.deviceCollection.toJSON()
 
+    // $scope.query = new QueryModel();
+    // $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1';
+    // $scope.query.fetch({'async':false}).done(function() {
+    //   console.log ("Initial query completed")
+    // })
+
+    query = $scope.query
+
     $scope.refresh = function(){
-      $.get('/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.queryKey, function(data) {
-        $scope.$apply (function() { $scope.query = data });
-      });      
-    }
-
-
-    // For testing
-    $.get('/rest/pool/' + $scope.pool.get('poolKey') + '/query/6', function(data) {
-      $scope.$apply (function() { $scope.query = data });
-    });      
+      $scope.query.fetch({'async':false});
+    };
 
     $scope.fetchAll = function(item){
-      if ( !item.hasOwnProperty('doFetch')) {
-        item.doFetch = false
-      }
-      item.doFetch = !item.doFetch
-      console.log("fetchAll", item)
       $.each(item.items, function(index,value){
-        item.items[index].doFetch = item.doFetch
+        item.items[index].doFetch = true
       })
+      $scope.query.save();
     };
+
     $scope.toggleFetch = function(item) {
       item.doFetch = !item.doFetch
+      $scope.query.save();
     }
 
     $scope.submit = function() {
@@ -389,7 +409,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         contentType: false,
         success: function(data) {
           $scope.$apply ( function(){
-            $scope.query = data
+            $scope.query = new QueryModel(data);
           })
         },
         error: function(xhr, status, error) {
@@ -398,13 +418,35 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
       });
     };
 
+    var queryTick = function(){
+      if ( $scope.query ) {
+        console.log("queryTick")
+        $scope.query.fetch({'async':false}).done(function() {
+          console.log ("queryTick completed")
+          if ($scope.query.get('status').startsWith("Fetch Pending")) {
+            $timeout(queryTick, 2000)
+          }
+        });
+          // console.log("query done")
+        // });          
+      }
+    };
+
+
     $scope.fetch = function(){
-      // Actually do the fetching!
+      $.ajax({
+        url: $scope.query.urlRoot + "/fetch",
+        type: 'PUT',
+        data: {},
+        success: function(data){
+          queryTick();
+          console.log("started ticker")
+          $scope.refresh();        
+        }
+      });
     };
 
   });
-
-
 
   // Here is where the fun happens. angularAMD contains support for initializing an angular
   // app after the page load.
