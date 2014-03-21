@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -40,7 +41,7 @@ public class Item {
   public String modalitiesInStudy;
   public String studyDescription;
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "item")
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "item", fetch = FetchType.EAGER)
   public Set<Result> items = new HashSet<Result>();
 
   @JsonIgnore

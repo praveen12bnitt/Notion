@@ -101,7 +101,6 @@ public class QueryEndpoint {
       if (query == null || query.pool.poolKey != poolKey) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
       }
-      query.items.size();
     } catch (Exception e) {
       logger.error("Failed to save query", e);
       SimpleResponse r = new SimpleResponse("message", "Failed to load query");
@@ -112,5 +111,4 @@ public class QueryEndpoint {
     }
     return Response.ok(query).build();
   }
-
 }

@@ -1,6 +1,5 @@
 package edu.mayo.qia.pacs.components;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +10,7 @@ import java.util.concurrent.Executor;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -25,12 +25,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.net.CommandUtils;
-import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -49,19 +47,19 @@ public class Query {
 
   public String status;
 
-  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
   @JoinColumn(name = "PoolKey")
   public Pool pool;
 
-  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
   @JoinColumn(name = "DestinationPoolKey")
   public Pool destinationPool;
 
-  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
   @JoinColumn(name = "DeviceKey")
   public Device device;
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "query")
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "query", fetch = FetchType.EAGER)
   public Set<Item> items = new HashSet<Item>();
 
   /**
@@ -143,21 +141,6 @@ public class Query {
     for (final Item item : items) {
       PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        @Override
         public void run() {
           Thread.currentThread().setName ( "Query " + device );
           DcmQR dcmQR = new DcmQR();

@@ -54,7 +54,9 @@ public class DcmQR {
 
   private static final String[] STUDY_LEVEL_MOVE_CUID = { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE, UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
 
-  private static final int[] STUDY_RETURN_KEYS = { Tag.StudyDate, Tag.StudyTime, Tag.PatientID, Tag.PatientName, Tag.AccessionNumber, Tag.StudyID, Tag.StudyInstanceUID, Tag.NumberOfStudyRelatedSeries, Tag.NumberOfStudyRelatedInstances };
+  // NB: added StudyDescription for Notion's sake
+  private static final int[] STUDY_RETURN_KEYS = { Tag.StudyDate, Tag.StudyTime, Tag.PatientID, Tag.PatientName, Tag.AccessionNumber, Tag.StudyID, Tag.StudyInstanceUID, Tag.NumberOfStudyRelatedSeries, Tag.NumberOfStudyRelatedInstances,
+      Tag.StudyDescription };
 
   private static final int[] MOVE_KEYS = { Tag.QueryRetrieveLevel, Tag.PatientID, Tag.StudyInstanceUID, Tag.SeriesInstanceUID, Tag.SOPInstanceUID, };
 
