@@ -55,7 +55,7 @@ gulp.task('app', function() {
 gulp.task('style', function() {
   gulp.src([
     'app/styles/*.css',
-    'bower_components/angular-ui-select/dist/select.css'
+    'bower_components/font-awesome/css/font-awesome*.css'
     ])
 //  .pipe(styl({compress : true }))
 //  .pipe(stylus)
