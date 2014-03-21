@@ -29,6 +29,8 @@
     "angular-ui-bootstrap": "~0.10.0",
     "angular-ui-bootstrap-bower": "~0.10.0",
     "angular-ui-ace": "~0.1.0",
-    "dropzone": "~3.8.4"
+    "dropzone": "~3.8.4",
+    "angular-ui-select2": "~0.0.5",
+    "angular-ui-select": "~0.0.1"
   }
 }

@@ -53,7 +53,10 @@ gulp.task('app', function() {
 
 // CSS using Styl
 gulp.task('style', function() {
-  gulp.src('app/styles/*.css')
+  gulp.src([
+    'app/styles/*.css',
+    'bower_components/angular-ui-select/dist/select.css'
+    ])
 //  .pipe(styl({compress : true }))
 //  .pipe(stylus)
   .pipe(gulp.dest('public/css'))
@@ -71,6 +74,7 @@ gulp.task('vendor', function() {
     'bower_components/vex/js/vex.dialog.js',
     'bower_components/vex/js/vex.js',
     'bower_components/angular-ui-router/release/angular-ui-router.js',
+    'bower_components/angular-ui-select/dist/select.js',
     'bower_components/angularAMD/angularAMD.js',
     'bower_components/angularAMD/ngload.js',
     'bower_components/requirejs/require.js',
