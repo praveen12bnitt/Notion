@@ -63,4 +63,10 @@ public final class Device {
     this.hostName = update.hostName;
   }
 
+  public String toString() {
+    StringBuilder b = new StringBuilder();
+    b.append(applicationEntityTitle).append("@").append(hostName).append(":").append(port);
+    return b.toString();
+  }
+
 }

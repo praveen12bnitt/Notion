@@ -10,6 +10,7 @@ import javax.persistence.Table;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "queryresult")
@@ -25,7 +26,8 @@ public class Result {
   private Item item;
 
   public String status;
-  public String doFetch;
+  @Type(type = "true_false")
+  public Boolean doFetch;
   public String patientName;
   public String patientID;
   public String accessionNumber;
@@ -33,4 +35,5 @@ public class Result {
   public String studyDate;
   public String modalitiesInStudy;
   public String studyDescription;
+  public String studyInstanceUID;
 }

@@ -33,6 +33,7 @@ import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.dicom.DcmMoveException;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 
 @Entity
@@ -138,11 +139,24 @@ public class Query {
 
   // Implement a C-FIND and store results away...
   public void executeQuery() {
-    for (final Item item : items) {
-      PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+    PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+
+
+
+
+
+
+
+
+
+
 
         public void run() {
           Thread.currentThread().setName ( "Query " + device );
+          JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+          template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
+          for (final Item item : items) {
+
           DcmQR dcmQR = new DcmQR();
           dcmQR.setRemoteHost(device.hostName);
           dcmQR.setRemotePort(device.port);
@@ -154,7 +168,6 @@ public class Query {
           for (String key : map.keySet()) {
             dcmQR.addMatchingKey(Tag.toTagPath(key), map.get(key));
           }
-          JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
           try {
             dcmQR.open();
             DimseRSP response = dcmQR.queryAll();
@@ -179,7 +192,7 @@ public class Query {
                     + " ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
                     item.queryItemKey,
                     status,
-                    "false",
+                    "F",
                     ds.getString(Tag.StudyInstanceUID ),
                     ds.getString(Tag.PatientName, (String)null),
                     ds.getString(Tag.PatientID, (String)null),
@@ -198,7 +211,72 @@ public class Query {
           }
           template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "complete", item.queryItemKey);
         }
-      });
+        template.update("update QUERY set Status = ? where QueryKey = ?", "Query Completed", queryKey);
+        Thread.currentThread().setName("Idle");
+      }
+    });
+  }
+
+  /** Update the query, by triggering a fetch on each query result */
+  public void update(Query update) {
+    if (update.queryKey == this.queryKey) {
+      JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+      for (Item updateItem : update.items) {
+        // Find this item...
+        for (Item item : items) {
+          if (item.queryItemKey == updateItem.queryItemKey) {
+            for (Result updateResult : updateItem.items) {
+              for (Result result : item.items) {
+                if (result.queryResultKey == updateResult.queryResultKey) {
+                  logger.info(updateResult.doFetch);
+                  String doFetch = updateResult.doFetch ? "T" : "F";
+                  template.update("update QUERYRESULT set DoFetch = ? where QueryResultKey = ?", doFetch, result.queryResultKey);
+                  continue;
+                }
+              }
+            }
+            continue;
+          }
+        }
+      }
     }
+  }
+
+  public void doFetch() {
+    logger.debug("Queuing fetch");
+    PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+      public void run() {
+        final JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
+        Thread.currentThread().setName("Fetch " + device);
+
+        for (final Item item : items) {
+          for (final Result result : item.items) {
+            if (!result.doFetch) {
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "not fetching", result.queryResultKey);
+              continue;
+            }
+            template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "pending", result.queryResultKey);
+            DcmQR dcmQR = new DcmQR();
+            dcmQR.setRemoteHost(device.hostName);
+            dcmQR.setRemotePort(device.port);
+            dcmQR.setCalledAET(device.applicationEntityTitle);
+            dcmQR.setCalling(destinationPool.applicationEntityTitle);
+            dcmQR.setMoveDest(destinationPool.applicationEntityTitle);
+            try {
+              dcmQR.qrStudy(result.studyInstanceUID);
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "success", result.queryResultKey);
+            } catch (DcmMoveException e) {
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: " + e.toString(), result.queryResultKey);
+            } catch (Exception e) {
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: unknown exception " + e.toString(), result.queryResultKey);
+            }
+          }
+        }
+        template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Completed", queryKey);
+        logger.debug("Fetch Compeleted");
+        Thread.currentThread().setName("Idle");
+      }
+    });
   }
 }

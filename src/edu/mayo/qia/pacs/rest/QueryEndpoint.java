@@ -6,6 +6,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -42,6 +43,56 @@ public class QueryEndpoint {
   JdbcTemplate template;
 
   public int poolKey;
+
+  @PUT
+  @Path("/{id: [1-9][0-9]*}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response update(@PathParam("id") int id, Query update) {
+    Session session = sessionFactory.openSession();
+    Query query;
+    try {
+      session.beginTransaction();
+      query = (Query) session.byId(Query.class).load(id);
+      if (query == null || query.pool.poolKey != poolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
+      }
+      query.update(update);
+    } catch (Exception e) {
+      logger.error("Failed to save query", e);
+      SimpleResponse r = new SimpleResponse("message", "Failed to load query");
+      r.put("reason", e.getLocalizedMessage());
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
+    } finally {
+      session.close();
+    }
+    return getQuery(id);
+  }
+
+  @PUT
+  @Path("/{id: [1-9][0-9]*}/fetch")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response fetch(@PathParam("id") int id) {
+    Session session = sessionFactory.openSession();
+    Query query;
+    try {
+      session.beginTransaction();
+      query = (Query) session.byId(Query.class).load(id);
+      if (query == null || query.pool.poolKey != poolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
+      }
+      query.doFetch();
+    } catch (Exception e) {
+      logger.error("Failed to save query", e);
+      SimpleResponse r = new SimpleResponse("message", "Failed to load query");
+      r.put("reason", e.getLocalizedMessage());
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
+    } finally {
+      session.close();
+    }
+    return getQuery(id);
+  }
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
