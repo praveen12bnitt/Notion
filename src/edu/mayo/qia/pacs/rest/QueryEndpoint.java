@@ -129,7 +129,7 @@ public class QueryEndpoint {
       session.getTransaction().commit();
       query.executeQuery();
     } catch (Exception e) {
-      logger.error("Failed to save query", e);
+      // logger.error("Failed to save query", e);
       SimpleResponse r = new SimpleResponse("message", "Failed to construct query");
       r.put("reason", e.getLocalizedMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
