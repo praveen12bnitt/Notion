@@ -3,10 +3,8 @@ package edu.mayo.qia.pacs.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -18,7 +16,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cache.spi.QueryResultsRegion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,7 +149,7 @@ public class QueryTest extends PACSTest {
     Device queryDevice = createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool.applicationEntityTitle, pool));
 
     // Send some test data to the PACS pool
-    List<File> testSeries = sendDICOM(pacsPool.applicationEntityTitle, destinationPool.applicationEntityTitle, "TOF/IMAGE001.dcm");
+    sendDICOM(pacsPool.applicationEntityTitle, destinationPool.applicationEntityTitle, "TOF/IMAGE001.dcm");
 
     // Upload our query
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").build();
