@@ -245,83 +245,85 @@ public class PoolContainer {
     process(importFile);
   }
 
-  public synchronized void process(File incoming) throws Exception, IOException {
-    // Handle one per container
-    // Have the container process!
-    org.rsna.ctp.objects.DicomObject fileObject = new org.rsna.ctp.objects.DicomObject(incoming);
-    FileObject outObject = this.executePipeline(fileObject);
-    File inFile = outObject.getFile();
-    File originalFile = incoming;
+  public void process(File incoming) throws Exception, IOException {
+    synchronized (this) {
+      // Handle one per container
+      // Have the container process!
+      org.rsna.ctp.objects.DicomObject fileObject = new org.rsna.ctp.objects.DicomObject(incoming);
+      FileObject outObject = this.executePipeline(fileObject);
+      File inFile = outObject.getFile();
+      File originalFile = incoming;
 
-    // Index the file
-    DicomObject tags = TagLoader.loadTags(inFile);
-    logger.info("Saving file for " + tags.getString(Tag.PatientName));
+      // Index the file
+      DicomObject tags = TagLoader.loadTags(inFile);
+      logger.info("Saving file for " + tags.getString(Tag.PatientName));
 
-    File relativePath = constructRelativeFileName(tags);
+      File relativePath = constructRelativeFileName(tags);
 
-    File outFile = new File(this.poolDirectory, relativePath.getPath());
+      File outFile = new File(this.poolDirectory, relativePath.getPath());
 
-    if (!inFile.exists()) {
-      logger.error("Input file " + inFile + " does not exist");
-      throw new Exception("Input file " + inFile + " does not exist");
-    }
-
-    logger.debug("Final path: " + outFile);
-    outFile.getParentFile().mkdirs();
-
-    // Insert
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
-
-    try {
-
-      Query query;
-      query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
-      query.setInteger("poolkey", pool.poolKey);
-      query.setString("suid", tags.getString(Tag.StudyInstanceUID));
-      Study study = (Study) query.uniqueResult();
-      if (study == null) {
-        study = new Study(tags);
-        study.pool = pool;
-        session.saveOrUpdate(study);
+      if (!inFile.exists()) {
+        logger.error("Input file " + inFile + " does not exist");
+        throw new Exception("Input file " + inFile + " does not exist");
       }
 
-      // Find the Instance
-      query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
-      query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
-      Series series = (Series) query.uniqueResult();
-      if (series == null) {
-        series = new Series(tags);
-        series.study = study;
-        session.saveOrUpdate(series);
-      }
+      logger.debug("Final path: " + outFile);
+      outFile.getParentFile().mkdirs();
 
-      // Find the Instance
-      query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
-      query.setString("suid", tags.getString(Tag.SOPInstanceUID));
-      Instance instance = (Instance) query.uniqueResult();
-      if (instance == null) {
-        instance = new Instance(tags, relativePath.getPath());
-        instance.series = series;
-        session.saveOrUpdate(instance);
-      }
+      // Insert
+      Session session = sessionFactory.getCurrentSession();
+      session.beginTransaction();
 
-      // Copy the file, remove later
-      Files.copy(inFile, outFile);
-      logger.debug("Moved file " + inFile + " to " + outFile);
+      try {
 
-      // Delete the input file, it is not needed any more
-      if (inFile.exists()) {
-        inFile.delete();
-      }
-      if (originalFile.exists()) {
-        originalFile.delete();
-      }
+        Query query;
+        query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
+        query.setInteger("poolkey", pool.poolKey);
+        query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+        Study study = (Study) query.uniqueResult();
+        if (study == null) {
+          study = new Study(tags);
+          study.pool = pool;
+          session.saveOrUpdate(study);
+        }
 
-    } catch (Exception e) {
-      logger.error("Caught exception", e);
-    } finally {
-      session.getTransaction().commit();
+        // Find the Instance
+        query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
+        query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+        Series series = (Series) query.uniqueResult();
+        if (series == null) {
+          series = new Series(tags);
+          series.study = study;
+          session.saveOrUpdate(series);
+        }
+
+        // Find the Instance
+        query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
+        query.setString("suid", tags.getString(Tag.SOPInstanceUID));
+        Instance instance = (Instance) query.uniqueResult();
+        if (instance == null) {
+          instance = new Instance(tags, relativePath.getPath());
+          instance.series = series;
+          session.saveOrUpdate(instance);
+        }
+
+        // Copy the file, remove later
+        Files.copy(inFile, outFile);
+        logger.info("Moved file " + inFile + " to " + outFile);
+
+        // Delete the input file, it is not needed any more
+        if (inFile.exists()) {
+          inFile.delete();
+        }
+        if (originalFile.exists()) {
+          originalFile.delete();
+        }
+
+      } catch (Exception e) {
+        logger.error("Caught exception", e);
+      } finally {
+        session.getTransaction().commit();
+      }
     }
   }
 
@@ -386,8 +388,12 @@ public class PoolContainer {
       @Override
       public void processRow(ResultSet rs) throws SQLException {
         File f = new File(getPoolDirectory(), rs.getString("FilePath"));
+        File tempDir = new File(getPoolDirectory(), "incoming");
+        tempDir.mkdirs();
+        File tmpFile = new File(tempDir, UUID.randomUUID().toString() + ".dcm");
         try {
-          destination.process(f);
+          Files.copy(f, tmpFile);
+          destination.process(tmpFile);
         } catch (Exception e) {
           successful.set(false);
           logger.error("Error processing file: " + f + " into pool " + pool, e);
