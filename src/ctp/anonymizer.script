@@ -1,3 +1,21 @@
+<!-- This is a slightly modified version of CTP default profile.  In particular
+     Notion preserves several tags that CTP removed, they include:
+     
+     InstanceCreationDate
+     StudyDate
+     SeriesDat
+     AcquisitionDate
+     ContentDate
+     OverlayDate
+     Manufacturer
+     SeriesDescription
+     StudyDescription
+     PatientSex
+     PatientBirthDate
+     
+     See the comment at the end of this file for original settings.
+     -->
+     
 <script>
  <p t="DATEINC">-137</p>
  <p t="PROFILENAME">DICOM-S142-Baseline</p>
@@ -9,24 +27,9 @@
  <p t="UIDROOT">9999</p>
  <e en="T" t="00080005" n="SpecificCharacterSet">@keep()</e>
  <e en="F" t="00080008" n="ImageType"></e>
- <e en="T" t="00080012" n="InstanceCreationDate">@hashdate(this,PatientID)</e>
- <e en="F" t="00080013" n="InstanceCreationTime"></e>
  <e en="T" t="00080014" n="InstanceCreatorUID">@hashuid(@UIDROOT,this)</e>
  <e en="T" t="00080016" n="SOPClassUID">@keep()</e>
  <e en="T" t="00080018" n="SOPInstanceUID">@hashuid(@UIDROOT,this)</e>
- <e en="T" t="00080020" n="StudyDate">@hashdate(this,PatientID)</e>
- <e en="T" t="00080021" n="SeriesDate">@remove()</e>
- <e en="T" t="00080022" n="AcquisitionDate">@remove()</e>
- <e en="T" t="00080023" n="ContentDate">@hashdate(this,PatientID)</e>
- <e en="T" t="00080024" n="OverlayDate">@remove()</e>
- <e en="T" t="00080025" n="CurveDate">@remove()</e>
- <e en="T" t="0008002a" n="AcquisitionDatetime">@remove()</e>
- <e en="T" t="00080030" n="StudyTime">@empty()</e>
- <e en="T" t="00080031" n="SeriesTime">@remove()</e>
- <e en="T" t="00080032" n="AcquisitionTime">@remove()</e>
- <e en="T" t="00080033" n="ContentTime">@empty()</e>
- <e en="T" t="00080034" n="OverlayTime">@remove()</e>
- <e en="T" t="00080035" n="CurveTime">@remove()</e>
  <e en="F" t="00080052" n="QueryRetrieveLevel"></e>
  <e en="F" t="00080054" n="RetrieveAET"></e>
  <e en="F" t="00080056" n="InstanceAvailability"></e>
@@ -35,7 +38,6 @@
  <e en="F" t="00080061" n="ModalitiesInStudy"></e>
  <e en="F" t="00080064" n="ConversionType"></e>
  <e en="F" t="00080068" n="PresentationIntentType"></e>
- <e en="T" t="00080070" n="Manufacturer">@empty()</e>
  <e en="T" t="00080080" n="InstitutionName">@remove()</e>
  <e en="T" t="00080081" n="InstitutionAddress">@remove()</e>
  <e en="F" t="00080082" n="InstitutionCodeSeq"></e>
@@ -56,9 +58,7 @@
  <e en="F" t="0008010f" n="ContextIdentifier"></e>
  <e en="T" t="00080201" n="TimezoneOffsetFromUTC">@remove()</e>
  <e en="T" t="00081010" n="StationName">@remove()</e>
- <e en="T" t="00081030" n="StudyDescription">@remove()</e>
  <e en="F" t="00081032" n="ProcedureCodeSeq"></e>
- <e en="T" t="0008103e" n="SeriesDescription">@remove()</e>
  <e en="T" t="00081040" n="InstitutionalDepartmentName">@remove()</e>
  <e en="T" t="00081048" n="PhysicianOfRecord">@remove()</e>
  <e en="T" t="00081049" n="PhysicianOfRecordIdSeq">@remove()</e>
@@ -130,9 +130,6 @@
  <e en="T" t="00100010" n="PatientName">@hashname(this,6,2)</e>
  <e en="T" t="00100020" n="PatientID">@param(@SHORTNAME)-@hashptid(@SITEID,this,10)</e>
  <e en="T" t="00100021" n="IssuerOfPatientID">@remove()</e>
- <e en="T" t="00100030" n="PatientBirthDate">@hashdate(this,PatientID)</e>
- <e en="T" t="00100032" n="PatientBirthTime">@remove()</e>
- <e en="T" t="00100040" n="PatientSex">@empty()</e>
  <e en="T" t="00100050" n="PatientInsurancePlanCodeSeq">@remove()</e>
  <e en="T" t="00100101" n="PatientPrimaryLanguageCodeSeq">@remove()</e>
  <e en="T" t="00100102" n="PatientPrimaryLanguageModifierCodeSeq">@remove()</e>
@@ -140,9 +137,6 @@
  <e en="T" t="00101001" n="OtherPatientNames">@remove()</e>
  <e en="T" t="00101002" n="OtherPatientIDsSeq">@remove()</e>
  <e en="T" t="00101005" n="PatientBirthName">@remove()</e>
- <e en="T" t="00101010" n="PatientAge">@remove()</e>
- <e en="T" t="00101020" n="PatientSize">@remove()</e>
- <e en="T" t="00101030" n="PatientWeight">@remove()</e>
  <e en="T" t="00101040" n="PatientAddress">@remove()</e>
  <e en="T" t="00101050" n="InsurancePlanIdentification">@remove()</e>
  <e en="T" t="00101060" n="PatientMotherBirthName">@remove()</e>
@@ -1042,4 +1036,32 @@
  <r en="T" t="privategroups">Remove private groups</r>
  <r en="F" t="unspecifiedelements">Remove unchecked elements</r>
 </script>
- 
+
+<-- Original settings
+
+ <e en="T" t="00080012" n="InstanceCreationDate">@hashdate(this,PatientID)</e>
+ <e en="F" t="00080013" n="InstanceCreationTime"></e>
+ <e en="T" t="00080020" n="StudyDate">@hashdate(this,PatientID)</e>
+ <e en="T" t="00080021" n="SeriesDate"></e>
+ <e en="T" t="00080022" n="AcquisitionDate">@remove()</e>
+ <e en="T" t="00080023" n="ContentDate">@hashdate(this,PatientID)</e>
+ <e en="T" t="00080024" n="OverlayDate">@remove()</e>
+ <e en="T" t="00080025" n="CurveDate">@remove()</e>
+ <e en="T" t="0008002a" n="AcquisitionDatetime">@remove()</e>
+ <e en="T" t="00080030" n="StudyTime">@empty()</e>
+ <e en="T" t="00080031" n="SeriesTime">@remove()</e>
+ <e en="T" t="00080032" n="AcquisitionTime">@remove()</e>
+ <e en="T" t="00080033" n="ContentTime">@empty()</e>
+ <e en="T" t="00080034" n="OverlayTime">@remove()</e>
+ <e en="T" t="00080035" n="CurveTime">@remove()</e>
+ <e en="T" t="00080070" n="Manufacturer">@empty()</e>
+ <e en="T" t="00081030" n="StudyDescription">@remove()</e>
+ <e en="T" t="0008103e" n="SeriesDescription">@remove()</e>
+ <e en="T" t="00100040" n="PatientSex">@empty()</e>
+ <e en="T" t="00100030" n="PatientBirthDate">@hashdate(this,PatientID)</e>
+ <e en="T" t="00100032" n="PatientBirthTime">@remove()</e>
+ <e en="T" t="00101010" n="PatientAge">@remove()</e>
+ <e en="T" t="00101020" n="PatientSize">@remove()</e>
+ <e en="T" t="00101030" n="PatientWeight">@remove()</e>
+
+-->
