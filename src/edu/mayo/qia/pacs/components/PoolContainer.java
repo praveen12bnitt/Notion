@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -183,6 +184,13 @@ public class PoolContainer {
       IOUtils.write(text, fos);
     } finally {
       IOUtils.closeQuietly(fos);
+    }
+  }
+
+  public void deleteStudy(String studyInstanceUID) {
+    Integer studyKey = template.queryForObject("select StudyKey from STUDY where PoolKey = ? and StudyInstanceUID = ?", new Object[] { pool.poolKey, studyInstanceUID }, Integer.class);
+    if (studyKey != null) {
+      deleteStudy(studyKey);
     }
   }
 
@@ -369,6 +377,24 @@ public class PoolContainer {
       relativePath = new File(relativePath, t);
     }
     return relativePath;
+  }
+
+  public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination) {
+    final AtomicBoolean successful = new AtomicBoolean(true);
+    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { studyInstanceUID }, new RowCallbackHandler() {
+
+      @Override
+      public void processRow(ResultSet rs) throws SQLException {
+        File f = new File(getPoolDirectory(), rs.getString("FilePath"));
+        try {
+          destination.process(f);
+        } catch (Exception e) {
+          successful.set(false);
+          logger.error("Error processing file: " + f + " into pool " + pool, e);
+        }
+      }
+    });
+    return successful.get();
   }
 
 }

@@ -39,6 +39,7 @@ import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.components.Script;
 
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -247,6 +248,14 @@ public class PoolEndpoint {
     Session session = sessionFactory.openSession();
     try {
       session.beginTransaction();
+      Script s;
+      s = new Script("PatientName", Script.createDefaultScript("PatientName", "PN-"));
+      pool.scripts.add(s);
+      s.setPool(pool);
+      s = new Script("PatientID", Script.createDefaultScript("PatientID", null));
+      pool.scripts.add(s);
+      s.setPool(pool);
+
       session.save(pool);
       session.getTransaction().commit();
     } finally {

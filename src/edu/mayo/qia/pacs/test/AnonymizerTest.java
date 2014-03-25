@@ -155,12 +155,13 @@ public class AnonymizerTest extends PACSTest {
     script = "anonymizer.info ( 'starting to anonymize' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n" + "  // Generate a new name using a sequence\n"
         + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n" + "// Be sure the last thing is our return value\n"
         + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+    
+    template.update("update SCRIPT set Script = ? where PoolKey = ? and Tag = ?", script, pool.poolKey, "PatientName");
 
     script = "anonymizer.info ( 'starting to anonymize PatientID' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n"
         + "  // Generate a new name using a sequence\n" + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n"
         + "// Be sure the last thing is our return value\n" + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+    template.update("update SCRIPT set Script = ? where PoolKey = ? and Tag = ?", script, pool.poolKey, "PatientID");
 
     // @formatter:on
     List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");

@@ -40,6 +40,8 @@ public class Item {
   public String studyDate;
   public String modalitiesInStudy;
   public String studyDescription;
+  public String anonymizedName;
+  public String anonymizedID;
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "item", fetch = FetchType.EAGER)
   public Set<Result> items = new HashSet<Result>();

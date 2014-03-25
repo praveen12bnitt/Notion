@@ -33,6 +33,7 @@ import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DcmMoveException;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 
@@ -111,7 +112,9 @@ public class Query {
       item.studyDate = getColumn(headerMap, row, "StudyDate");
       item.modalitiesInStudy = getColumn(headerMap, row, "ModalitiesInStudy");
       item.studyDescription = getColumn(headerMap, row, "StudyDescription");
-      if (item.patientID != null && item.patientName != null) {
+      item.anonymizedID = getColumn(headerMap, row, "AnonymizedID");
+      item.anonymizedName = getColumn(headerMap, row, "AnonymizedName");
+      if (item.patientID != null) {
         item.query = query;
         query.items.add(item);
       }
@@ -140,15 +143,6 @@ public class Query {
   // Implement a C-FIND and store results away...
   public void executeQuery() {
     PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
-
-
-
-
-
-
-
-
-
 
 
         public void run() {
@@ -248,7 +242,12 @@ public class Query {
       public void run() {
         final JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
+        template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "pending fetch", queryKey);
         Thread.currentThread().setName("Fetch " + device);
+        PoolManager poolManager = PACS.context.getBean(PoolManager.class);
+        PoolContainer poolContainer = poolManager.getContainer(pool.poolKey);
+        Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
+        anonymizer.setPool(poolContainer.getPool());
 
         for (final Item item : items) {
           for (final Result result : item.items) {
@@ -256,7 +255,7 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "not fetching", result.queryResultKey);
               continue;
             }
-            template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "pending", result.queryResultKey);
+            template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fetching", result.queryResultKey);
             DcmQR dcmQR = new DcmQR();
             dcmQR.setRemoteHost(device.hostName);
             dcmQR.setRemotePort(device.port);
@@ -265,7 +264,23 @@ public class Query {
             dcmQR.setMoveDest(destinationPool.applicationEntityTitle);
             try {
               dcmQR.qrStudy(result.studyInstanceUID);
-              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "success", result.queryResultKey);
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "moving", result.queryResultKey);
+
+              // Initiate the move
+              if (pool.poolKey != destinationPool.poolKey) {
+                // Move and delete, otherwise ignore
+                // Create the entries
+                anonymizer.setValue("PatientName", result.patientName, item.anonymizedName);
+                anonymizer.setValue("PatientID", result.patientID, item.anonymizedID);
+                if (!poolManager.getContainer(destinationPool.poolKey).moveStudyTo(result.studyInstanceUID, poolContainer)) {
+                  template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: could not move study ", result.queryResultKey);
+                } else {
+                  // Delete the study
+                  poolManager.getContainer(destinationPool.poolKey).deleteStudy(result.studyInstanceUID);
+                }
+              }
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "completed", result.queryResultKey);
+
             } catch (DcmMoveException e) {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: " + e.toString(), result.queryResultKey);
             } catch (Exception e) {

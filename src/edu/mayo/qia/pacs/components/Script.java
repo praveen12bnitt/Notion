@@ -53,4 +53,20 @@ public class Script {
     script = inScript.script;
   }
 
+  public static String createDefaultScript(String tag, String prefix) {
+    StringBuffer s = new StringBuffer();
+    s.append("// Lookup a value for this tag\n");
+    s.append("var newTag = anonymizer.lookup('" + tag + "', tags." + tag + ");\n");
+    s.append("// If we do not have the value, generate a new value\n");
+    s.append("if (!newTag) {\n");
+    if (prefix != null) {
+      s.append("  newTag = '" + prefix + "' + anonymizer.sequenceNumber('" + tag + "', tags." + tag + ");\n");
+    } else {
+      s.append("  newTag = anonymizer.sequenceNumber('" + tag + "', tags." + tag + ");\n");
+    }
+    s.append("}\n\n");
+    s.append("// Return the new tag\n");
+    s.append("newTag\n");
+    return s.toString();
+  }
 }

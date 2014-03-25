@@ -14,6 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mozilla.javascript.Context;
@@ -59,6 +61,22 @@ public class ScriptTest extends PACSTest {
   }
 
   @Test
+  public void defaultScripts() throws Exception {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, false);
+    pool = createPool(pool);
+
+    ClientResponse response = null;
+    URI uri;
+    uri = UriBuilder.fromUri(baseUri).path("/pool/").path("" + pool.poolKey).path("/script").build();
+    response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+    JSONObject json = response.getEntity(JSONObject.class);
+    assertTrue("Result", json.has("script"));
+    assertEquals("Number of Scripts", 2, json.getJSONArray("script").length());
+  }
+
+  @Test
   public void rhino() {
     Context context = Context.enter();
     try {
@@ -91,10 +109,9 @@ public class ScriptTest extends PACSTest {
     String aet = uid.toString().substring(0, 10);
 
     Pool pool = createPool(new Pool(aet, aet, aet, false));
-    Script script = createScript(new Script(pool, "PatientName", "foo"));
+    Script script = createScript(new Script(pool, "StationName", "foo"));
 
     // Query it back
-
     URI uri;
     uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/" + script.scriptKey).build();
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
