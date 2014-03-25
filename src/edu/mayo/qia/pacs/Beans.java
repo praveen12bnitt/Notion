@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
-import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -25,7 +26,6 @@ import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -136,12 +136,8 @@ public class Beans {
   }
 
   @Bean
-  @DependsOn("flyway")
-  public ThreadPoolTaskExecutor taskExecutor() {
-    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-    taskExecutor.setCorePoolSize(2);
-    taskExecutor.setMaxPoolSize(10);
-    return taskExecutor;
+  public Executor executor() {
+    return Executors.newFixedThreadPool(4);
   }
 
   @Bean
@@ -172,6 +168,7 @@ public class Beans {
     server.getServerConfiguration().addHttpHandler(processor, "/rest");
 
     LocalStaticHttpHandler cpHandler = new LocalStaticHttpHandler(PACS.class.getClassLoader(), "html/", "public/");
+    cpHandler.setFileCacheEnabled(Boolean.parseBoolean(System.getProperty("NOTION_CACHE", "true")));
 
     StaticHttpHandler staticHandler = new StaticHttpHandler(htmlDirectory.getAbsolutePath());
     staticHandler.setFileCacheEnabled(false);

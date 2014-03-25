@@ -1,0 +1,21 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-3">
+      <table class='table'>
+        <thead>
+          <tr><th>Pools
+            <i class="fa fa-plus-circle" ng-click="newPool()"></a>
+          </tr>
+        </thead>
+        <tr ng-repeat="pool in poolCollection.models">
+          <td>
+            {{pool.get('name')}} <a ng-href="#/pools/{{pool.id}}">detail</a> <a ng-href="#/pools/{{pool.id}}/query">query</a>
+          </td>
+        </tr>            
+      </table>
+    </div>
+    <div class="col-md-9">
+      <div ui-view></div>
+    </div>
+  </div>
+</div>

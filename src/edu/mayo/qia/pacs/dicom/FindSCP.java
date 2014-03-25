@@ -100,7 +100,7 @@ public class FindSCP extends DicomService implements CFindSCP {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
     }
     if (!info.canConnect) {
-      throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
+      throw new DicomServiceException(rq, Status.ProcessingFailure, info.failureMessage);
     }
 
     logger.info("Got request: \n" + rq);

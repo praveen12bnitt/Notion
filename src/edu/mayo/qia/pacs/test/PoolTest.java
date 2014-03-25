@@ -60,10 +60,8 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
@@ -72,6 +70,11 @@ public class PoolTest extends PACSTest {
     pool = response.getEntity(Pool.class);
     logger.info("Entity back: " + pool);
     assertTrue("Assigned an id", pool.poolKey != 0);
+
+    // Pool should have 2 scripts attached
+    uri = UriBuilder.fromUri(baseUri).path("/pool/").path("" + pool.poolKey).path("/script").build();
+    response = client.resource(uri).accept(JSON).get(ClientResponse.class);
+    assertEquals("Got result", 200, response.getStatus());
   }
 
   @Test
@@ -93,8 +96,6 @@ public class PoolTest extends PACSTest {
     pool = createPool(pool);
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
-    createScript(new Script(pool, "PatientName", "foo"));
-    createScript(new Script(pool, "PatientID", "foo"));
 
     sendDICOM(aet, aet, "TOF/*.dcm");
 

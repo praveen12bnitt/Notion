@@ -54,7 +54,9 @@ public class DcmQR {
 
   private static final String[] STUDY_LEVEL_MOVE_CUID = { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE, UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
 
-  private static final int[] STUDY_RETURN_KEYS = { Tag.StudyDate, Tag.StudyTime, Tag.PatientID, Tag.PatientName, Tag.AccessionNumber, Tag.StudyID, Tag.StudyInstanceUID, Tag.NumberOfStudyRelatedSeries, Tag.NumberOfStudyRelatedInstances };
+  // NB: added StudyDescription for Notion's sake
+  private static final int[] STUDY_RETURN_KEYS = { Tag.StudyDate, Tag.StudyTime, Tag.PatientID, Tag.PatientName, Tag.AccessionNumber, Tag.StudyID, Tag.StudyInstanceUID, Tag.NumberOfStudyRelatedSeries, Tag.NumberOfStudyRelatedInstances,
+      Tag.StudyDescription };
 
   private static final int[] MOVE_KEYS = { Tag.QueryRetrieveLevel, Tag.PatientID, Tag.StudyInstanceUID, Tag.SeriesInstanceUID, Tag.SOPInstanceUID, };
 
@@ -404,6 +406,22 @@ public class DcmQR {
 
   public void open() throws IOException, ConfigurationException, InterruptedException {
     assoc = ae.connect(remoteAE, executor);
+  }
+
+  // Query for one specific study
+  public DimseRSP queryAll() throws IOException, InterruptedException, DcmMoveException {
+    final String fn = "query: ";
+
+    TransferCapability tc = selectFindTransferCapability();
+    String cuid = tc.getSopClass();
+    String tsuid = selectTransferSyntax(tc);
+
+    if (log.isDebugEnabled()) {
+      log.debug(fn + "Send Query Request using " + UIDDictionary.getDictionary().prompt(cuid) + ":\n" + keys.toString());
+    }
+
+    DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+    return rsp;
   }
 
   // Query for one specific study

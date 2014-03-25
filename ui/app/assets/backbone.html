@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Mayo Research PACS</title>
+    <style type="text/css">
+      @import "/css/bootstrap.min.css";
+      @import "/css/font-awesome.min.css";
+      @import "/css/bootstrap-theme.min.css";
+      @import "/media/css/demo_page.css";
+      @import "/media/css/demo_table.css";
+      @import "/css/jquery.pnotify.default.css";
+      @import "/css/jquery.fileupload.css";
+      @import "/css/jquery.fileupload-ui.css";
+    </style>
+
+    <!-- Include one of jTable styles. -->
+    <link href="jtable/themes/metro/blue/jtable.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="css/app.css">
+
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default">
+      <div class="navbar-inner">
+        <a class="navbar-brand" href="#">PACS</a>
+        <ul class="nav navbar-nav">
+          <li>Pools</li>
+          <li>Help</li>
+          <li><a href="Documentation/index.html">Documentation</a></li>
+          <li><a href="Documentation/Notion.epub">Documentation(epub)</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div ui-view></div>  
+
+
+   <!-- Use RequireJS for loading and the like -->
+  <script data-main="js/notion" src="js/require.js"></script>
+
+  <!-- Support live reload -->
+  <script>document.write('<script src="http://'
+    + (location.host || 'localhost').split(':')[0]
+    + ':35729/livereload.js?snipver=1"></'
+    + 'script>')</script>
+
+  </body>
+</html>

@@ -110,4 +110,10 @@ public class PACS {
       }
     }
   }
+
+  public static void checkAssertion(boolean v, String message) throws Exception {
+    if (!v) {
+      throw new Exception(message);
+    }
+  }
 }

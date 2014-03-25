@@ -109,6 +109,7 @@ CREATE TABLE DEVICE (
   DeviceKey INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY ,
   PoolKey INT NOT NULL,
   ApplicationEntityTitle VARCHAR(250),
+  CallingApplicationEntityTitle VARCHAR(250),
   HostName VARCHAR(250),
   Description VARCHAR(2048),
   Port INT,

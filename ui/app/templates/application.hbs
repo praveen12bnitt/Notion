@@ -1,14 +1,15 @@
 
- <div class="navbar">
+<nav class="navbar navbar-default">
   <div class="navbar-inner">
-    <a class="brand" href="#">PACS</a>
-    <ul class="nav">
+    <a class="navbar-brand" href="#">PACS</a>
+    <ul class="nav navbar-nav">
       <li>{{#link-to 'pools'}}Pools{{/link-to}}</li>
       <li>{{#link-to 'help' 'index'}}Help{{/link-to}}</li>
       <li><a href="Documentation/index.html">Documentation</a></li>
       <li><a href="Documentation/Notion.epub">Documentation(epub)</a></li>
     </ul>
   </div>
-  </div>
-  {{outlet}}
+</nav>
+
+{{outlet}}
   
