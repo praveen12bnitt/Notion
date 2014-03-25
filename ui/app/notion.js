@@ -42,7 +42,7 @@ require.config({
 })
 
 // For Grater to work, the model, angular and angularAMD packages are required
-require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace', 'dropzone' ], function(angular, angularAMD, Backbone ) {
+require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace' ], function(angular, angularAMD, Backbone ) {
 
   // Helper for shortening strings
   String.prototype.trunc = String.prototype.trunc ||
@@ -98,7 +98,10 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
   CTPModel = Backbone.Model.extend();
   QueryModel = Backbone.Model.extend({
     idAttribute: 'queryKey',
-    url: function () { return this.urlRoot; },
+    url: function () {
+      // return '/rest/pool/' + this.get('poolKey') + '/query/' + this.get('queryKey')
+      return this.urlRoot;
+    },
     parse: function(response) {
       // Sort the items
       response.items.sort ( function(a,b){
@@ -222,9 +225,9 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
 
     // Grab the devices
     $scope.deviceCollection = new DeviceCollection();
-    $scope.deviceCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/device';
-    console.log( $scope.deviceCollection )
+    $scope.deviceCollection.urlRoot = '/rest/pool/' + $stateParams.poolKey + '/device';
     $scope.deviceCollection.fetch({async:false})
+    console.log( $scope.deviceCollection )
     pool = $scope.pool
     devices = $scope.deviceCollection
 
@@ -369,15 +372,22 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
     $scope.deviceCollection.fetch({async:false})
     $scope.devices = $scope.deviceCollection.toJSON()
 
-    // $scope.query = new QueryModel();
-    // $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1';
-    // $scope.query.fetch({'async':false}).done(function() {
-    //   console.log ("Initial query completed")
+    // $.ajax({
+    //   url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1',
+    //   type: 'GET',
+    //   data: {},
+    //   success: function(data) {
+    //     $scope.$apply ( function(){
+    //       $scope.query = new QueryModel(data);
+    //       $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1';
+    //     })
+    //   }
     // })
 
     query = $scope.query
 
     $scope.refresh = function(){
+      console.log ( $scope.query )
       $scope.query.fetch({'async':false});
     };
 
@@ -410,6 +420,7 @@ require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap
         success: function(data) {
           $scope.$apply ( function(){
             $scope.query = new QueryModel(data);
+            $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
           })
         },
         error: function(xhr, status, error) {
