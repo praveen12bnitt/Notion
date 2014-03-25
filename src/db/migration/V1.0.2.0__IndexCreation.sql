@@ -21,6 +21,8 @@ CREATE TABLE QUERYITEM (
 	StudyDate VARCHAR(250),
 	ModalitiesInStudy VARCHAR(250),
 	StudyDescription VARCHAR(250),
+	AnonymizedName VARCHAR(250),
+	AnonymizedID VARCHAR(250),
 	CONSTRAINT QUERYITEM_fk1
 	  foreign key ( QueryKey ) references QUERY(QueryKey) on delete cascade
 );
