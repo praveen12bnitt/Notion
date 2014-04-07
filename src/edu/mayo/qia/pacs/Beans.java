@@ -54,7 +54,7 @@ public class Beans {
   @DependsOn("flyway")
   public LocalSessionFactoryBean sessionFactory() throws SQLException {
     Properties hibernateProperties = new Properties();
-    hibernateProperties.setProperty("hibernate.show_sql", "true");
+    // hibernateProperties.setProperty("hibernate.show_sql", "true");
     // setProperty("hibernate.globally_quoted_identifiers", "true");
     hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
 

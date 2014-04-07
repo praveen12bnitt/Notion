@@ -11,7 +11,7 @@ dir=zip-temp/$(versionDir)
 dist:
 	(cd Documentation && make html)
 	(cd Documentation && make epub)
-	(cd ui/ && brunch build)
+	(cd ui/ && gulp build)
 	ant clean 
 	ant resolve
 	ant jar

@@ -25,12 +25,15 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     server = lr();
 
-gulp.task("default", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], function() {
+gulp.task("default", ['watch'], function() {
+})
 
+gulp.task("build", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], function() {
 })
 
 
-gulp.task("watch", ['lr-server', 'default'], function() {
+gulp.task("watch", ['lr-server', 'build'], function() {
+  console.log("\nStarting webserver and watching files\n")
   gulp.watch ( ['app/*.js', 'app/partials/**', 'app/*.html'], ['app'])
 })
 
