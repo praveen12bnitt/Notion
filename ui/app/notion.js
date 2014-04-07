@@ -42,7 +42,7 @@ require.config({
 })
 
 // For Grater to work, the model, angular and angularAMD packages are required
-require(['angular', 'angularAMD', "Backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace' ], function(angular, angularAMD, Backbone ) {
+require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace' ], function(angular, angularAMD, Backbone ) {
 
   // Helper for shortening strings
   String.prototype.trunc = String.prototype.trunc ||
