@@ -17,6 +17,8 @@ then
 else
   USER=qin
   NOTION_HOME=/research/images/Notion/Notion
+  PACS_PORT=11117
+  REST_PORT=11118
   PACS_DIR=/research/images/Notion/
   JAVA_ARGS="$JAVA_ARGS -Xmx1048m -Xdebug -Xrunjdwp:transport=dt_socket,address=8050,server=y,suspend=n"
   JAVA_HOME=/usr/java/default
@@ -34,7 +36,7 @@ start() {
   touch /var/log/$prog.error
   chown $USER /var/log/$prog.error ${PACS_DIR}
 
-  daemonize -e /var/log/$prog.error -c $NOTION_HOME -p /var/run/$prog.pid -l /var/lock/subsys/$prog -u $USER $JAVA_HOME/bin/java $JAVA_ARGS -jar $NOTION_HOME/Notion.jar $PACS_DIR
+  daemonize -e /var/log/$prog.error -c $NOTION_HOME -p /var/run/$prog.pid -l /var/lock/subsys/$prog -u $USER $JAVA_HOME/bin/java $JAVA_ARGS -jar $NOTION_HOME/Notion.jar --port $PACS_PORT --rest $REST_PORT $PACS_DIR
   RETVAL=$?
   [ $RETVAL -eq 0 ] && success || failure
   echo
