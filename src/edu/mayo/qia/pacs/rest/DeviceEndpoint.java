@@ -1,8 +1,5 @@
 package edu.mayo.qia.pacs.rest;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -93,7 +90,7 @@ public class DeviceEndpoint {
     return Response.ok(device).build();
   }
 
-  /** Modify a pool. */
+  /** Modify a Device. */
   @PUT
   @Path("/{id: [1-9][0-9]*}")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -121,14 +118,16 @@ public class DeviceEndpoint {
 
   /** Delete a Device. */
   @DELETE
+  @Path("/{id: [1-9][0-9]*}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteDevice(Device device) {
+  public Response deleteDevice(@PathParam("id") int id) {
     // Look up the pool and change it
     Session session = sessionFactory.openSession();
+    Device device;
     try {
       session.beginTransaction();
-      device = (Device) session.byId(Device.class).getReference(device.deviceKey);
+      device = (Device) session.byId(Device.class).getReference(id);
       if (device.pool.poolKey != poolKey) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
       }
@@ -137,10 +136,9 @@ public class DeviceEndpoint {
     } finally {
       session.close();
     }
-    Map<String, String> response = new HashMap<String, String>();
+    SimpleResponse response = new SimpleResponse();
     response.put("status", "success");
     response.put("message", "Delete device " + device.deviceKey);
-    return Response.ok().build();
+    return Response.ok(response).build();
   }
-
 }
