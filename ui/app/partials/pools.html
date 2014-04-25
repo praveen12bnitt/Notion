@@ -10,6 +10,7 @@
           <tr ng-repeat="pool in poolCollection.models">
             <td>
               {{pool.get('name')}} <a ng-href="#/pools/{{pool.id}}">detail</a> <a ng-href="#/pools/{{pool.id}}/query">query</a><br /><a ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
+              <a ng-href="#/pools/{{pool.id}}/studies">studies</a>
             </td>
           </tr>
         </table>

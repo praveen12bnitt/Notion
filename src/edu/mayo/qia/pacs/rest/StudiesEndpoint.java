@@ -4,14 +4,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -91,9 +92,9 @@ public class StudiesEndpoint {
       query.append(" FETCH NEXT ? ROWS ONLY ");
       parameters.add(queryParameters.getFirst("jtPageSize"));
 
-      // Also need to return the total number of records
-      json.put("TotalRecordCount", template.queryForObject("select count(*) from STUDY", Integer.class));
     }
+    // Also need to return the total number of records
+    json.put("TotalRecordCount", template.queryForObject("select count(*) from STUDY", Integer.class));
 
     template.query(query.toString(), parameters.toArray(), new RowCallbackHandler() {
 
@@ -115,6 +116,21 @@ public class StudiesEndpoint {
     });
 
     return Response.ok(json).build();
+  }
+
+  /** Delete a Study. */
+  @DELETE
+  @Path("/{id: [1-9][0-9]*}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteScript(@PathParam("id") int id) {
+    if (poolManager.getContainer(poolKey) != null) {
+      poolManager.getContainer(poolKey).deleteStudy(id);
+    }
+    SimpleResponse response = new SimpleResponse();
+    response.put("status", "success");
+    response.put("message", "Delete study " + id);
+    return Response.ok(response).build();
   }
 
   @POST

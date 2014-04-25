@@ -21,8 +21,6 @@
 
 // })
 
-
-
 // Configuration for require.js
 // foundation, xtk and dat.gui are loaded by default
 require.config({
@@ -42,7 +40,7 @@ require.config({
 })
 
 // For Grater to work, the model, angular and angularAMD packages are required
-require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace' ], function(angular, angularAMD, Backbone ) {
+require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap-tpls', 'ui-ace', 'ace/ace'], function(angular, angularAMD, Backbone ) {
 
   // Helper for shortening strings
   String.prototype.trunc = String.prototype.trunc ||
@@ -159,6 +157,11 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
     url: "/:poolKey",
     templateUrl: 'partials/pool.detail.html',
     controller: 'PoolController'
+  })
+  .state('pools.studies', {
+    url: "/:poolKey/studies",
+    templateUrl: 'partials/pool.studies.html',
+    controller: 'StudyController'
   })
   .state('pools.query', {
     url: "/:poolKey/query",
@@ -410,6 +413,57 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
       }
     })
   }
+
+});
+
+notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateParams, $state, $modal) {
+  $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
+  $scope.numberOfItems = 100;
+  $scope.pageSize = 50;
+
+  $scope.reload = function(){
+    console.log("Page is " + $scope.currentPage)
+    var start = 0;
+    if ( $scope.currentPage ) {
+      start = $scope.pageSize * $scope.currentPage;
+    }
+    $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies',
+    {
+      jtStartIndex: start,
+      jtPageSize: $scope.pageSize
+    }
+    )
+    .success(function(data,status,headers) {
+      console.log("got ", data)
+      $scope.studies = data
+      $scope.numberOfItems = data.TotalRecordCount
+    });
+  };
+
+    $scope.$watch('currentPage', $scope.reload);
+
+
+    $scope.deleteStudy = function(study) {
+      $scope.study = study
+      $modal.open ({
+        templateUrl: 'partials/modal.html',
+        scope: $scope,
+        controller: function($scope, $modalInstance) {
+          $scope.title = "Delete study?"
+          $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber
+          $scope.ok = function(){
+            $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
+            .success(function() {
+              $scope.reload()
+              $modalInstance.dismiss()
+            })
+          };
+          $scope.cancel = function() { $modalInstance.dismiss() };
+        }
+      });
+    };
+
+
 
 });
 
