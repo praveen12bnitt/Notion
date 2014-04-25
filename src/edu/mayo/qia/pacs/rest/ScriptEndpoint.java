@@ -1,8 +1,5 @@
 package edu.mayo.qia.pacs.rest;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,10 +22,10 @@ import org.springframework.stereotype.Component;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.resource.PerRequest;
 
+import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
-import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 @Scope("prototype")
@@ -147,19 +144,23 @@ public class ScriptEndpoint {
 
   /** Delete a Script. */
   @DELETE
+  @Path("/{id: [1-9][0-9]*}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteScript(Script Script) {
+  public Response deleteScript(@PathParam("id") int id) {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
     session.beginTransaction();
-    Script = (Script) session.byId(Script.class).getReference(Script.scriptKey);
-    session.delete(Script);
+    Script script = (Script) session.byId(Script.class).getReference(id);
+    if (script.getPool().poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not find the script")).build();
+    }
+    session.delete(script);
     session.getTransaction().commit();
-    Map<String, String> response = new HashMap<String, String>();
+    SimpleResponse response = new SimpleResponse();
     response.put("status", "success");
-    response.put("message", "Delete Script " + Script.scriptKey);
-    return Response.ok().build();
+    response.put("message", "Delete Script " + script.scriptKey);
+    return Response.ok(response).build();
   }
 
 }
