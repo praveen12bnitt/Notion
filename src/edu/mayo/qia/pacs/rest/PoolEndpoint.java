@@ -15,10 +15,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -28,21 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.ImmutableBiMap.Builder;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
-import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
-
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
 @Path("/pool")
@@ -58,6 +52,9 @@ public class PoolEndpoint {
 
   @Autowired
   PoolManager poolManager;
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   @Context
   ResourceContext resourceContext;
@@ -319,4 +316,5 @@ public class PoolEndpoint {
     }
     return Response.ok().build();
   }
+
 }
