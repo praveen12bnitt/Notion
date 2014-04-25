@@ -34,18 +34,18 @@ public class Study {
   // @JoinColumn(name = "PoolKey")
   public Set<Series> series = new HashSet<Series>();
 
-  String StudyInstanceUID;
-  String AccessionNumber;
-  String PatientID;
-  String PatientName;
-  Date PatientBirthDate;
-  String PatientSex;
-  String StudyID;
-  Date StudyDate;
-  Date StudyTime;
+  public String StudyInstanceUID;
+  public String AccessionNumber = "";
+  public String PatientID = "";
+  public String PatientName = "";
+  public Date PatientBirthDate;
+  public String PatientSex = "";
+  public String StudyID = "";
+  public Date StudyDate;
+  public Date StudyTime;
 
-  String ReferringPhysicianName;
-  String StudyDescription;
+  public String ReferringPhysicianName;
+  public String StudyDescription;
 
   public Study() {
   }
