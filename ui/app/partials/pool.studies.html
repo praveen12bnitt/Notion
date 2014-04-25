@@ -1,0 +1,25 @@
+<div id="container">
+
+<table class="table table-striped table-hover table-condensed">
+  <thead>
+    <tr>
+<td>PatientID</td>
+<td>Patient Name</td>
+<td>Accession Number</td>
+<td>Study Description</td>
+      <td></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="study in studies.Records">
+      <td>{{study.PatientID}}</td>
+      <td>{{study.PatientName}}</td>
+      <td>{{study.AccessionNumber}}</td>
+      <td>{{study.StudyDescription}}</td>
+      <td><i class="fa fa-times-circle" ng-click="deleteStudy(study)"></i></td>
+    </tr>
+  </tbody>
+</table>
+
+    <pagination total-items="numberOfItems" ng-model="pg" page="currentPage"  ng-change="pageChanged()"></pagination>
+</div>
