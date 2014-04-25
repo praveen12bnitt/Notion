@@ -37,10 +37,14 @@ public class Instance {
 
   public Instance(DicomObject tags, String path) {
     SOPInstanceUID = tags.getString(Tag.SOPInstanceUID);
+    this.update(tags);
+    FilePath = path;
+  }
+
+  public void update(DicomObject tags) {
     SOPClassUID = tags.getString(Tag.SOPClassUID);
     InstanceNumber = tags.getString(Tag.InstanceNumber);
     ContentDate = tags.getDate(Tag.ContentDate);
     ContentTime = tags.getDate(Tag.ContentTime);
-    FilePath = path;
   }
 }

@@ -47,6 +47,10 @@ public final class Series {
 
   public Series(DicomObject tags) {
     SeriesInstanceUID = tags.getString(Tag.SeriesInstanceUID);
+    this.update(tags);
+  }
+
+  public void update(DicomObject tags) {
     SeriesNumber = tags.getString(Tag.SeriesNumber);
     Modality = tags.getString(Tag.Modality);
     BodyPartExamined = tags.getString(Tag.BodyPartExamined);
@@ -57,6 +61,7 @@ public final class Series {
     InstitutionalDepartmentName = tags.getString(Tag.InstitutionalDepartmentName);
     PerformingPhysicianName = tags.getString(Tag.PerformingPhysicianName);
     NumberOfSeriesRelatedInstances = tags.getInt(Tag.NumberOfSeriesRelatedInstances, 0);
+
   }
 
 }

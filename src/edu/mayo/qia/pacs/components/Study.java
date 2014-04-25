@@ -52,6 +52,10 @@ public class Study {
 
   public Study(DicomObject tags) {
     StudyInstanceUID = tags.getString(Tag.StudyInstanceUID);
+    this.update(tags);
+  }
+
+  public void update(DicomObject tags) {
     AccessionNumber = tags.getString(Tag.AccessionNumber);
     PatientID = tags.getString(Tag.PatientID);
     PatientName = tags.getString(Tag.PatientName);
