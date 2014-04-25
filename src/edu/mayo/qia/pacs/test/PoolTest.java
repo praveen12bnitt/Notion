@@ -1,21 +1,21 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.net.ConfigurationException;
-import org.junit.Before;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
-import edu.mayo.qia.pacs.components.Script;
+import edu.mayo.qia.pacs.dicom.DcmQR;
 
 @Component
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -60,8 +60,10 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
@@ -136,4 +138,74 @@ public class PoolTest extends PACSTest {
     }
     assertNull("Manager", poolManager.getContainer(pool.poolKey));
   }
+
+  @Test
+  public void updateOnNewSeries() throws Exception {
+
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    String accessionNumber = "AccessionNumber-1234";
+    String script;
+    script = "'" + accessionNumber + "'";
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "AccessionNumber", script);
+
+    String patientName = "PN-1234";
+    script = "'" + patientName + "'";
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+
+    String patientID = "MRA-0068-MRA-0068";
+    script = "tags.PatientID + '-' + tags.PatientName";
+    // + '-' +
+    // tags.PatientName";
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientID", script);
+
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("AccessionNumber", accessionNumber, response.getString(Tag.AccessionNumber));
+    assertEquals("PatientName", patientName, response.getString(Tag.PatientName));
+    assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+
+    template.update("delete from SCRIPT where PoolKey = ?", pool.poolKey);
+    script = "'42'";
+    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "AccessionNumber", script);
+    script = "'Gone'";
+    template.update("insert into SCRIPT ( PoolKey, Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+
+    // Send again and query
+    testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
+    dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    response = dcmQR.query();
+    dcmQR.close();
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertEquals("AccessionNumber", "42", response.getString(Tag.AccessionNumber));
+    assertEquals("PatientName", "Gone", response.getString(Tag.PatientName));
+    assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+  }
+
 }

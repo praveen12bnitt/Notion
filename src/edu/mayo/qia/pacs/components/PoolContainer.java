@@ -284,18 +284,23 @@ public class PoolContainer {
         if (study == null) {
           study = new Study(tags);
           study.pool = pool;
-          session.saveOrUpdate(study);
+        } else {
+          study.update(tags);
         }
+        session.saveOrUpdate(study);
 
         // Find the Instance
-        query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid").setInteger("studykey", study.StudyKey);
+        query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
+        query.setInteger("studykey", study.StudyKey);
         query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
         Series series = (Series) query.uniqueResult();
         if (series == null) {
           series = new Series(tags);
           series.study = study;
-          session.saveOrUpdate(series);
+        } else {
+          series.update(tags);
         }
+        session.saveOrUpdate(series);
 
         // Find the Instance
         query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
@@ -304,8 +309,10 @@ public class PoolContainer {
         if (instance == null) {
           instance = new Instance(tags, relativePath.getPath());
           instance.series = series;
-          session.saveOrUpdate(instance);
+        } else {
+          instance.update(tags);
         }
+        session.saveOrUpdate(instance);
 
         // Copy the file, remove later
         Files.copy(inFile, outFile);
