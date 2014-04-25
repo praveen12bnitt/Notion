@@ -89,7 +89,8 @@ public class Query {
       Cell headerCell = headerIterator.next();
       headerMap.put(headerCell.getStringCellValue(), headerCell.getColumnIndex());
     }
-    PACS.checkAssertion(headerMap.containsKey("PatientName"), "Could not find PatientName column");
+    // PACS.checkAssertion(headerMap.containsKey("PatientName"),
+    // "Could not find PatientName column");
     PACS.checkAssertion(headerMap.containsKey("PatientID"), "Could not find PatientID column");
 
     query.status = "Created";
@@ -102,7 +103,8 @@ public class Query {
       Row row = rowIterator.next();
       Item item = new Item();
 
-      PACS.checkAssertion(row.getCell(headerMap.get("PatientName")) != null, "Row " + row.getRowNum() + " does not contain a PatientName");
+      // PACS.checkAssertion(row.getCell(headerMap.get("PatientName")) != null,
+      // "Row " + row.getRowNum() + " does not contain a PatientName");
       PACS.checkAssertion(row.getCell(headerMap.get("PatientID")) != null, "Row " + row.getRowNum() + " does not contain a PatientID");
       item.status = "created";
       item.patientName = getColumn(headerMap, row, "PatientName");
@@ -143,6 +145,8 @@ public class Query {
   // Implement a C-FIND and store results away...
   public void executeQuery() {
     PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+
+
 
 
         public void run() {

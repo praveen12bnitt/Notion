@@ -11,14 +11,15 @@ dir=zip-temp/$(versionDir)
 dist:
 	(cd Documentation && make html)
 	(cd Documentation && make epub)
-	(cd ui/ && brunch build)
+	(cd ui/ && gulp build)
 	ant clean 
 	ant resolve
 	ant jar
 	rm -rf zip-temp
 	mkdir -p $(dir)
 	cp -r lib $(dir)
-	cp Notion.jar $(dir)/Notion-$(build).jar
+	cp notion $(dir)
+	cp Notion.jar $(dir)/Notion.jar
 	cp Readme.md $(dir)
 	mkdir -p $(dir)/Documentation
 	cp -r Documentation/_build/html $(dir)/Documentation
@@ -32,3 +33,6 @@ dist:
 
 watch:
 	(cd Documentation && while :; do make html ; sleep 5s; done)
+
+install: dist
+	rsync -arvz zip-temp/$(versionDir) qin@qia:/research/images/Notion

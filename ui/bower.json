@@ -15,7 +15,6 @@
   ],
   "dependencies": {
     "bootstrap": "3.1.1",
-    "ember": "~1.4.0",
     "ace-builds": "~1.1.1",
     "chosen": "~1.1.0",
     "backbone": "~1.1.2",

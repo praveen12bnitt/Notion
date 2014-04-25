@@ -378,6 +378,8 @@ public class PoolContainer {
       }
       relativePath = new File(relativePath, t);
     }
+    // Always store with .dcm at the end
+    relativePath = new File(relativePath.getParentFile(), relativePath.getName() + ".dcm");
     return relativePath;
   }
 

@@ -1,16 +1,23 @@
 package edu.mayo.qia.pacs.rest;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -18,15 +25,17 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 
 @Scope("prototype")
@@ -38,9 +47,43 @@ public class LookupEndpoint extends TableEndpoint {
   @Autowired
   TransactionTemplate transactionTemplate;
 
+  @Autowired
+  JdbcTemplate template;
+
+  @Autowired
+  PoolManager poolManager;
+
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getCSV() throws Exception {
+    // Return the lookup values as CSV
+
+    StreamingOutput stream = new StreamingOutput() {
+      @Override
+      public void write(OutputStream output) throws IOException {
+        final PrintWriter writer = new PrintWriter(output);
+        writer.println("Tag,Original,Anonymized");
+        template.query("select Type, Name, Value from LOOKUP where Visible = true and PoolKey = ?", new Object[] { poolKey }, new RowCallbackHandler() {
+
+          @Override
+          public void processRow(ResultSet rs) throws SQLException {
+            writer.print(rs.getString("Type"));
+            writer.print(",");
+            writer.print(rs.getString("Name"));
+            writer.print(",");
+            writer.println(rs.getString("Value"));
+          }
+        });
+        writer.close();
+      }
+    };
+    String fn = poolManager.getContainer(poolKey).getPool().applicationEntityTitle + "-Lookup.csv";
+    return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
+  }
+
   @POST
   @Produces(MediaType.APPLICATION_JSON)
-  public Response get(@Context UriInfo uriInfo) throws Exception {
+  public Response getLookupData(@Context UriInfo uriInfo) throws Exception {
     JSONObject json = super.get(uriInfo.getQueryParameters(), "LOOKUP", " and Visible = true ", new String[] { "Type", "Name", "Value" }, "LookupKey");
     return Response.ok(json).build();
   }
