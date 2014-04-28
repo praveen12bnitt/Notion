@@ -56,50 +56,50 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
   PoolModel = Backbone.Model.extend({
     idAttribute: "poolKey",
     // urlRoot: '/rest/pool',
-  defaults: {
-    'name' : null,
-    'anonymize' : false,
-    'applicationEntityTitle' : null,
-    'description' : "This is a new Pool"
-  }
-});
-
-PoolCollection = Backbone.Collection.extend({
-  model: PoolModel,
-  url: '/rest/pool',
-  parse: function(response) {
-    var m = [];
-    for(var i = 0; i < response.pool.length; i++) {
-      m.push(new PoolModel(response.pool[i]))
+    defaults: {
+      'name' : null,
+      'anonymize' : false,
+      'applicationEntityTitle' : null,
+      'description' : "This is a new Pool"
     }
-    this.set ( m )
-    return this.models;
-  }
-});
+  });
 
-DeviceModel = Backbone.Model.extend({
-  idAttribute: 'deviceKey',
-  format: function() {
-    return this.get('applicationEntityTitle') + "@" + this.get('hostName') + ":" + this.get('port')
-  }
-});
-DeviceCollection = Backbone.Collection.extend({
-  model: DeviceModel,
-  url: function () { return this.urlRoot; },
-  parse: function(response) {
-    var m = [];
-    for(var i = 0; i < response.device.length; i++) {
-      m.push(new DeviceModel(response.device[i]))
+  PoolCollection = Backbone.Collection.extend({
+    model: PoolModel,
+    url: '/rest/pool',
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.pool.length; i++) {
+        m.push(new PoolModel(response.pool[i]))
+      }
+      this.set ( m )
+      return this.models;
     }
-    this.set ( m )
-    return this.models;
-  }
-});
+  });
 
-CTPModel = Backbone.Model.extend();
-QueryModel = Backbone.Model.extend({
-  idAttribute: 'queryKey',
-  url: function () {
+  DeviceModel = Backbone.Model.extend({
+    idAttribute: 'deviceKey',
+    format: function() {
+      return this.get('applicationEntityTitle') + "@" + this.get('hostName') + ":" + this.get('port')
+    }
+  });
+  DeviceCollection = Backbone.Collection.extend({
+    model: DeviceModel,
+    url: function () { return this.urlRoot; },
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.device.length; i++) {
+        m.push(new DeviceModel(response.device[i]))
+      }
+      this.set ( m )
+      return this.models;
+    }
+  });
+
+  CTPModel = Backbone.Model.extend();
+  QueryModel = Backbone.Model.extend({
+    idAttribute: 'queryKey',
+    url: function () {
     // return '/rest/pool/' + this.get('poolKey') + '/query/' + this.get('queryKey')
     return this.urlRoot;
   },
@@ -117,58 +117,58 @@ QueryModel = Backbone.Model.extend({
   }
 });
 
-ScriptModel = Backbone.Model.extend({
-  idAttribute: 'scriptKey'
-});
-ScriptCollection = Backbone.Collection.extend({
-  model: ScriptModel,
-  url: function () { return this.urlRoot; },
-  parse: function(response) {
-    var m = [];
-    for(var i = 0; i < response.script.length; i++) {
-      m.push(new ScriptModel(response.script[i]))
+  ScriptModel = Backbone.Model.extend({
+    idAttribute: 'scriptKey'
+  });
+  ScriptCollection = Backbone.Collection.extend({
+    model: ScriptModel,
+    url: function () { return this.urlRoot; },
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.script.length; i++) {
+        m.push(new ScriptModel(response.script[i]))
+      }
+      this.set ( m )
+      return this.models;
     }
-    this.set ( m )
-    return this.models;
-  }
 
-});
+  });
 
 
 
-notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
+  notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
 
-notionApp.config(function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.when('', '/pools/index')
-  $urlRouterProvider.otherwise('/pools/index')
-  $stateProvider
-  .state('pools', {
-    abstract: true,
-    url: "/pools",
-    templateUrl: 'partials/pools.html',
-    controller: 'PoolsController'
-  })
-  .state('pools.index', {
-    url: "/index",
-    templateUrl: 'partials/pools.index.html',
-    controller: 'PoolsController'
-  })
-  .state('pools.pool', {
-    url: "/:poolKey",
-    templateUrl: 'partials/pool.detail.html',
-    controller: 'PoolController'
-  })
-  .state('pools.studies', {
-    url: "/:poolKey/studies",
-    templateUrl: 'partials/pool.studies.html',
-    controller: 'StudyController'
-  })
-  .state('pools.query', {
-    url: "/:poolKey/query",
-    templateUrl: 'partials/pool.query.html',
-    controller: 'QueryController'
-  })
-});
+  notionApp.config(function($stateProvider, $urlRouterProvider) {
+    $urlRouterProvider.when('', '/pools/index')
+    $urlRouterProvider.otherwise('/pools/index')
+    $stateProvider
+    .state('pools', {
+      abstract: true,
+      url: "/pools",
+      templateUrl: 'partials/pools.html',
+      controller: 'PoolsController'
+    })
+    .state('pools.index', {
+      url: "/index",
+      templateUrl: 'partials/pools.index.html',
+      controller: 'PoolsController'
+    })
+    .state('pools.pool', {
+      url: "/:poolKey",
+      templateUrl: 'partials/pool.detail.html',
+      controller: 'PoolController'
+    })
+    .state('pools.studies', {
+      url: "/:poolKey/studies",
+      templateUrl: 'partials/pool.studies.html',
+      controller: 'StudyController'
+    })
+    .state('pools.query', {
+      url: "/:poolKey/query",
+      templateUrl: 'partials/pool.query.html',
+      controller: 'QueryController'
+    })
+  });
 
 // ['$routeProvider',
 // function($routeProvider){
@@ -412,20 +412,20 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
         }
       }
     })
-  }
+}
 
 });
 
 notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateParams, $state, $modal) {
   $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
-  $scope.numberOfItems = 100;
+  $scope.numberOfItems = 1;
   $scope.pageSize = 50;
 
   $scope.reload = function(){
     console.log("Page is " + $scope.currentPage)
     var start = 0;
     if ( $scope.currentPage ) {
-      start = $scope.pageSize * $scope.currentPage;
+      start = $scope.pageSize * ($scope.currentPage - 1 );
     }
     $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies',
     {
@@ -435,41 +435,41 @@ notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateP
       PatientName : $scope.PatientName,
       AccessionNumber : $scope.AccessionNumber
     }
-  )
-  .success(function(data,status,headers) {
-    console.log("got ", data)
-    $scope.studies = data
-    $scope.numberOfItems = data.TotalRecordCount
-  });
-};
+    )
+    .success(function(data,status,headers) {
+      console.log("got ", data)
+      $scope.studies = data
+      $scope.numberOfItems = data.TotalRecordCount
+    });
+  };
 
-$scope.$watch('currentPage', $scope.reload);
-$scope.clear = function() {
-  $scope.PatientID = "";
-  $scope.PatientName = "";
-  $scope.AccessionNumber = "";
-  $scope.reload()
+  $scope.$watch('currentPage', $scope.reload);
+  $scope.clear = function() {
+    $scope.PatientID = "";
+    $scope.PatientName = "";
+    $scope.AccessionNumber = "";
+    $scope.reload()
 
-}
-$scope.deleteStudy = function(study) {
-  $scope.study = study
-  $modal.open ({
-    templateUrl: 'partials/modal.html',
-    scope: $scope,
-    controller: function($scope, $modalInstance) {
-      $scope.title = "Delete study?"
-      $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber
-      $scope.ok = function(){
-        $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
-        .success(function() {
-          $scope.reload()
-          $modalInstance.dismiss()
-        })
-      };
-      $scope.cancel = function() { $modalInstance.dismiss() };
-    }
-  });
-};
+  }
+  $scope.deleteStudy = function(study) {
+    $scope.study = study
+    $modal.open ({
+      templateUrl: 'partials/modal.html',
+      scope: $scope,
+      controller: function($scope, $modalInstance) {
+        $scope.title = "Delete study?"
+        $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber
+        $scope.ok = function(){
+          $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
+          .success(function() {
+            $scope.reload()
+            $modalInstance.dismiss()
+          })
+        };
+        $scope.cancel = function() { $modalInstance.dismiss() };
+      }
+    });
+  };
 
 
 
@@ -501,78 +501,78 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   //   }
   // })
 
-  query = $scope.query
+query = $scope.query
 
-  $scope.refresh = function(){
-    console.log ( $scope.query )
-    $scope.query.fetch({'async':false});
-  };
+$scope.refresh = function(){
+  console.log ( $scope.query )
+  $scope.query.fetch({'async':false});
+};
 
-  $scope.fetchAll = function(item){
-    $.each(item.items, function(index,value){
-      item.items[index].doFetch = true
-    })
-    $scope.query.save();
-  };
+$scope.fetchAll = function(item){
+  $.each(item.items, function(index,value){
+    item.items[index].doFetch = true
+  })
+  $scope.query.save();
+};
 
-  $scope.toggleFetch = function(item) {
-    item.doFetch = !item.doFetch
-    $scope.query.save();
-  }
+$scope.toggleFetch = function(item) {
+  item.doFetch = !item.doFetch
+  $scope.query.save();
+}
 
-  $scope.submit = function() {
-    console.log ( $('#queryFile')[0].files[0])
-    var formData = new FormData();
-    console.log ( formData )
-    formData.append('file', $('#queryFile')[0].files[0] )
-    formData.append('destinationPoolKey', $scope.receivingPool)
-    formData.append('deviceKey', $scope.queryDevice)
-    console.log ( formData )
-    $.ajax({
-      url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function(data) {
-        $scope.$apply ( function(){
-          $scope.query = new QueryModel(data);
-          $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-        })
-      },
-      error: function(xhr, status, error) {
-        alert ( "Query failed: " + xhr.responseText )
+$scope.submit = function() {
+  console.log ( $('#queryFile')[0].files[0])
+  var formData = new FormData();
+  console.log ( formData )
+  formData.append('file', $('#queryFile')[0].files[0] )
+  formData.append('destinationPoolKey', $scope.receivingPool)
+  formData.append('deviceKey', $scope.queryDevice)
+  console.log ( formData )
+  $.ajax({
+    url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
+    type: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(data) {
+      $scope.$apply ( function(){
+        $scope.query = new QueryModel(data);
+        $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+      })
+    },
+    error: function(xhr, status, error) {
+      alert ( "Query failed: " + xhr.responseText )
+    }
+  });
+};
+
+var queryTick = function(){
+  if ( $scope.query ) {
+    console.log("queryTick")
+    $scope.query.fetch({'async':false}).done(function() {
+      console.log ("queryTick completed")
+      if ($scope.query.get('status').startsWith("Fetch Pending")) {
+        $timeout(queryTick, 2000)
       }
     });
-  };
-
-  var queryTick = function(){
-    if ( $scope.query ) {
-      console.log("queryTick")
-      $scope.query.fetch({'async':false}).done(function() {
-        console.log ("queryTick completed")
-        if ($scope.query.get('status').startsWith("Fetch Pending")) {
-          $timeout(queryTick, 2000)
-        }
-      });
       // console.log("query done")
       // });
+}
+};
+
+
+$scope.fetch = function(){
+  $.ajax({
+    url: $scope.query.urlRoot + "/fetch",
+    type: 'PUT',
+    data: {},
+    success: function(data){
+      queryTick();
+      console.log("started ticker")
+      $scope.refresh();
     }
-  };
-
-
-  $scope.fetch = function(){
-    $.ajax({
-      url: $scope.query.urlRoot + "/fetch",
-      type: 'PUT',
-      data: {},
-      success: function(data){
-        queryTick();
-        console.log("started ticker")
-        $scope.refresh();
-      }
-    });
-  };
+  });
+};
 
 });
 
