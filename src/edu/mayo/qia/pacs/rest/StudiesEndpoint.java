@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -119,9 +120,7 @@ public class StudiesEndpoint {
       query.append(" FETCH NEXT ? ROWS ONLY ");
       parameters.add(qParams.optInt("jtPageSize", 50));
     }
-    // Also need to return the total number of records
-    json.put("TotalRecordCount", template.queryForObject("select count(*) from STUDY", Integer.class));
-
+    final AtomicInteger count = new AtomicInteger(0);
     template.query(query.toString(), parameters.toArray(), new RowCallbackHandler() {
 
       @Override
@@ -134,12 +133,15 @@ public class StudiesEndpoint {
           for (String column : new String[] { "StudyKey" }) {
             row.put(column, rs.getInt(column));
           }
+          count.incrementAndGet();
         } catch (JSONException e) {
           logger.error("Error setting field", e);
         }
         records.put(row);
       }
     });
+    // Also need to return the total number of records
+    json.put("TotalRecordCount", count.get());
 
     return Response.ok(json).build();
   }
