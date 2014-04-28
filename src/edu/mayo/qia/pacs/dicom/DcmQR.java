@@ -111,10 +111,15 @@ public class DcmQR {
   private ActionListener moveActionListener;
 
   public DcmQR() {
+    this("DCMQR");
+  }
+
+  public DcmQR(String deviceName) {
     remoteAE.setInstalled(true);
     remoteAE.setAssociationAcceptor(true);
     remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
 
+    device = new Device(deviceName);
     device.setNetworkApplicationEntity(ae);
     device.setNetworkConnection(conn);
     ae.setNetworkConnection(conn);

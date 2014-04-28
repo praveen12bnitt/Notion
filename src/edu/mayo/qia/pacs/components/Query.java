@@ -149,13 +149,17 @@ public class Query {
 
 
 
+
+
+
+
         public void run() {
           Thread.currentThread().setName ( "Query " + device );
           JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
           template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
           for (final Item item : items) {
 
-          DcmQR dcmQR = new DcmQR();
+          DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
           dcmQR.setRemoteHost(device.hostName);
           dcmQR.setRemotePort(device.port);
           dcmQR.setCalledAET(device.applicationEntityTitle);
@@ -260,7 +264,7 @@ public class Query {
               continue;
             }
             template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fetching", result.queryResultKey);
-            DcmQR dcmQR = new DcmQR();
+            DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
             dcmQR.setRemoteHost(device.hostName);
             dcmQR.setRemotePort(device.port);
             dcmQR.setCalledAET(device.applicationEntityTitle);
