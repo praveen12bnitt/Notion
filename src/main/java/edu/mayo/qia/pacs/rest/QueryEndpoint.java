@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -46,58 +48,41 @@ public class QueryEndpoint {
 
   @PUT
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response update(@PathParam("id") int id, Query update) {
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Query query;
-    try {
-      session.beginTransaction();
-      query = (Query) session.byId(Query.class).load(id);
-      if (query == null || query.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
-      }
-      query.update(update);
-    } catch (Exception e) {
-      logger.error("Failed to save query", e);
-      SimpleResponse r = new SimpleResponse("message", "Failed to load query");
-      r.put("reason", e.getLocalizedMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
-    } finally {
-      session.close();
+    query = (Query) session.byId(Query.class).load(id);
+    if (query == null || query.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
     }
+    query.update(update);
     return getQuery(id);
   }
 
   @PUT
   @Path("/{id: [1-9][0-9]*}/fetch")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response fetch(@PathParam("id") int id) {
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Query query;
-    try {
-      session.beginTransaction();
-      query = (Query) session.byId(Query.class).load(id);
-      if (query == null || query.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
-      }
-      query.doFetch();
-    } catch (Exception e) {
-      logger.error("Failed to save query", e);
-      SimpleResponse r = new SimpleResponse("message", "Failed to load query");
-      r.put("reason", e.getLocalizedMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
-    } finally {
-      session.close();
+    query = (Query) session.byId(Query.class).load(id);
+    if (query == null || query.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
     }
+    query.doFetch();
     return getQuery(id);
   }
 
   @POST
+  @UnitOfWork
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createQuery(@FormDataParam("file") InputStream spreadSheetInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail, @FormDataParam("connectorKey") int connectorKey) {
+  public Response createQuery(@FormDataParam("file") InputStream spreadSheetInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail, @FormDataParam("connectorKey") int connectorKey) throws Exception {
 
     ;
     logger.info("handling  " + fileDetail.getFileName());
@@ -106,69 +91,50 @@ public class QueryEndpoint {
     if (fileDetail.getFileName().toLowerCase().endsWith(".xls")) {
       // Parse and create a query
     }
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Query query;
-    try {
-      session.beginTransaction();
-      Connector connector = (Connector) session.byId(Connector.class).load(connectorKey);
+    Connector connector = (Connector) session.byId(Connector.class).load(connectorKey);
 
-      int destinationPoolKey = connector.destinationPoolKey;
-      int deviceKey = connector.queryDeviceKey;
-      int queryPoolKey = connector.queryPoolKey;
+    int destinationPoolKey = connector.destinationPoolKey;
+    int deviceKey = connector.queryDeviceKey;
+    int queryPoolKey = connector.queryPoolKey;
 
-      Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
-      if (pool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-      }
-
-      Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
-      if (destinationPool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
-      }
-
-      Device device = (Device) session.byId(Device.class).load(deviceKey);
-
-      if (device == null || device.pool.poolKey != queryPoolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-      query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);
-      query.pool = pool;
-      query.device = device;
-      query.destinationPool = destinationPool;
-      session.save(query);
-      session.getTransaction().commit();
-      query.executeQuery();
-    } catch (Exception e) {
-      // logger.error("Failed to save query", e);
-      SimpleResponse r = new SimpleResponse("message", "Failed to construct query");
-      r.put("reason", e.getLocalizedMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
-    } finally {
-      session.close();
+    Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
+    if (pool == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
     }
+
+    Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
+    if (destinationPool == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
+    }
+
+    Device device = (Device) session.byId(Device.class).load(deviceKey);
+
+    if (device == null || device.pool.poolKey != queryPoolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+    }
+    query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);
+    query.pool = pool;
+    query.device = device;
+    query.destinationPool = destinationPool;
+    session.save(query);
+    session.getTransaction().commit();
+    query.executeQuery();
     return Response.ok(query).build();
   }
 
   @GET
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getQuery(@PathParam("id") int id) {
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Query query;
-    try {
-      session.beginTransaction();
-      query = (Query) session.byId(Query.class).load(id);
-      if (query == null || query.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
-      }
-    } catch (Exception e) {
-      logger.error("Failed to save query", e);
-      SimpleResponse r = new SimpleResponse("message", "Failed to load query");
-      r.put("reason", e.getLocalizedMessage());
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(r).build();
-    } finally {
-      session.close();
+    query = (Query) session.byId(Query.class).load(id);
+    if (query == null || query.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
     }
     return Response.ok(query).build();
   }

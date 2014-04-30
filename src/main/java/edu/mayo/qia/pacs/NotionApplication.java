@@ -102,6 +102,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
     context.setParent(parent);
     context.register(Beans.class, PoolManager.class, PoolContainer.class);
+    context.scan("edu.mayo.qia.pacs.dicom");
     context.scan("edu.mayo.qia.pacs.rest");
 
     context.refresh();

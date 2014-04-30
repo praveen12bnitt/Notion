@@ -60,17 +60,12 @@ public class PoolEndpoint {
   /** List all the pools */
   @SuppressWarnings("unchecked")
   @GET
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response listPools() {
     List<Pool> result = new ArrayList<Pool>();
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      result = session.createCriteria(Pool.class).list();
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    result = session.createCriteria(Pool.class).list();
     SimpleResponse s = new SimpleResponse("pool", result);
     return Response.ok(s).build();
   }
@@ -78,18 +73,13 @@ public class PoolEndpoint {
   /** Get a pool. */
   @GET
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response getPool(@PathParam("id") int id) {
     // Look up the pool and change it
     Pool pool = null;
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      pool = (Pool) session.byId(Pool.class).load(id);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    pool = (Pool) session.byId(Pool.class).load(id);
     return Response.ok(pool).build();
   }
 
@@ -256,55 +246,42 @@ public class PoolEndpoint {
   /** Modify a pool. */
   @PUT
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response modifyPool(@PathParam("id") int id, Pool update) {
     // Look up the pool and change it
     Pool pool = null;
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      pool = (Pool) session.byId(Pool.class).load(id);
-      if (pool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-      }
-      session.getTransaction().commit();
-      if (!pool.applicationEntityTitle.equals(update.applicationEntityTitle)) {
-        return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle can not be changed existing: " + pool.applicationEntityTitle + " attepted change: " + update.applicationEntityTitle)).build();
-
-      }
-      // Update the pool
-      session.beginTransaction();
-      pool.update(update);
-      session.update(pool);
-      session.getTransaction().commit();
-      poolManager.update(pool);
-    } finally {
-      session.close();
+    Session session = sessionFactory.getCurrentSession();
+    pool = (Pool) session.byId(Pool.class).load(id);
+    if (pool == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
     }
+    if (!pool.applicationEntityTitle.equals(update.applicationEntityTitle)) {
+      return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle can not be changed existing: " + pool.applicationEntityTitle + " attepted change: " + update.applicationEntityTitle)).build();
 
+    }
+    // Update the pool
+    pool.update(update);
+    session.update(pool);
+    poolManager.update(pool);
     return Response.ok(pool).build();
   }
 
   /** Delete a pool. */
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   public Response modifyPool(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      Pool pool = (Pool) session.byId(Pool.class).load(id);
-      if (pool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-      }
-      // Delete
-      session.delete(pool);
-      poolManager.deletePool(pool);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
+    Session session = sessionFactory.getCurrentSession();
+    Pool pool = (Pool) session.byId(Pool.class).load(id);
+    if (pool == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
     }
+    // Delete
+    session.delete(pool);
+    poolManager.deletePool(pool);
     return Response.ok().build();
   }
 

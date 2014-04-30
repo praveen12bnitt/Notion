@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,49 +53,34 @@ public class ConnectorEndpoint {
   ResourceContext resourceContext;
 
   @GET
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response getConnector() {
     List<Connector> result = new ArrayList<Connector>();
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      result = session.createCriteria(Connector.class).list();
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    result = session.createCriteria(Connector.class).list();
     SimpleResponse s = new SimpleResponse("connector", result);
     return Response.ok(s).build();
   }
 
   @POST
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createConnector(Connector connector) {
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      session.save(connector);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    session.save(connector);
     return Response.ok(connector).build();
   }
 
   @PUT
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateConnector(@PathParam("id") int id, Connector connector) {
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      session.update(connector);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    session.update(connector);
     return Response.ok(connector).build();
   }
 
@@ -101,14 +88,8 @@ public class ConnectorEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteConnector(Connector connector) {
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      session.delete(connector);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    session.delete(connector);
     return Response.ok().build();
   }
 }

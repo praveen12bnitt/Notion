@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -63,18 +65,13 @@ public class ScriptEndpoint {
 
   @GET
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response getScript(@PathParam("id") int id) {
     // Look up the pool and change it
     Script script = null;
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      script = (Script) session.byId(Script.class).load(id);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    script = (Script) session.byId(Script.class).load(id);
     return Response.ok(script).build();
   }
 
@@ -90,6 +87,7 @@ public class ScriptEndpoint {
 
   /** Create a Script. */
   @POST
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createScript(Script script) {
@@ -99,64 +97,47 @@ public class ScriptEndpoint {
       return Response.status(Status.FORBIDDEN).entity(new SimpleResponse("message", "Script tag (" + script.tag + ") must be unique for this pool")).build();
     }
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
-      // Ensure the Script does not think it already exists!
-      script.scriptKey = -1;
-      script.setPool(pool);
-      pool.getScripts().add(script);
-      session.getTransaction().commit();
-    } catch (Exception e) {
-      logger.error("Error creating Script", e);
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
+    // Ensure the Script does not think it already exists!
+    script.scriptKey = -1;
+    script.setPool(pool);
+    pool.getScripts().add(script);
     return Response.ok(script).build();
   }
 
   /** Update a Script. */
   @PUT
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response modifyScript(@PathParam("id") int id, Script inScript) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Script script = inScript;
-    try {
-      session.beginTransaction();
-      script = (Script) session.byId(Script.class).load(id);
-      if (!inScript.tag.equals(script.tag)) {
-        throw new Exception("Script tags must not change");
-      }
-      script.update(inScript);
-      session.getTransaction().commit();
-    } catch (Exception e) {
-      logger.error("Error creating Script", e);
-      return Response.status(Status.FORBIDDEN).entity(new SimpleResponse("message", "Could not update script")).build();
-    } finally {
-      session.close();
+    script = (Script) session.byId(Script.class).load(id);
+    if (!inScript.tag.equals(script.tag)) {
+      return Response.serverError().entity(new SimpleResponse("message", "Script tags must not change")).build();
     }
+    script.update(inScript);
     return Response.ok(script).build();
   }
 
   /** Delete a Script. */
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteScript(@PathParam("id") int id) {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
     Script script = (Script) session.byId(Script.class).getReference(id);
     if (script.getPool().poolKey != poolKey) {
       return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not find the script")).build();
     }
     session.delete(script);
-    session.getTransaction().commit();
     SimpleResponse response = new SimpleResponse();
     response.put("status", "success");
     response.put("message", "Delete Script " + script.scriptKey);
