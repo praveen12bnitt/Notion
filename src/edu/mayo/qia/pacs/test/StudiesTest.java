@@ -1,18 +1,14 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.codehaus.jettison.json.JSONObject;
-import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -22,6 +18,7 @@ import com.sun.jersey.api.representation.Form;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.rest.SimpleResponse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class StudiesTest extends PACSTest {
@@ -40,7 +37,7 @@ public class StudiesTest extends PACSTest {
 
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/studies").build();
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class);
+    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, new SimpleResponse());
     assertEquals("Got result", 200, response.getStatus());
     JSONObject json = response.getEntity(JSONObject.class);
     assertTrue("Result", json.has("Result"));

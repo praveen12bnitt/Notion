@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -90,9 +91,11 @@ public class StudiesEndpoint {
     ArrayList<Object> parameters = new ArrayList<Object>();
     parameters.add(poolKey);
 
+    StringBuilder where = new StringBuilder(" ");
+
     for (String column : columns) {
       if (qParams.has(column)) {
-        query.append(" and " + column + " like ? ");
+        where.append(" and " + column + " like ? ");
         parameters.add("%" + qParams.getString(column) + "%");
       }
     }
@@ -103,14 +106,19 @@ public class StudiesEndpoint {
       for (String clause : qParams.getString("jtSorting").split(",")) {
         String[] p = clause.split("\\s+");
         if (columns.contains(p[0])) {
-          query.append(p[0]);
+          where.append(p[0]);
         }
         if (directions.contains(p[1])) {
-          query.append(" " + p[1]);
+          where.append(" " + p[1]);
         }
       }
     }
 
+    // do our count here:
+    Integer count = template.queryForObject("select count(*) from STUDY where PoolKey = ? " + where, parameters.toArray(), Integer.class);
+    // Also need to return the total number of records
+    json.put("TotalRecordCount", count);
+    query.append(where);
     // jtStartIndex: Start index of records for current page.
     // jtPageSize: Count of maximum expected records.
     if (qParams.has("jtStartIndex") && qParams.has("jtPageSize")) {
@@ -119,9 +127,6 @@ public class StudiesEndpoint {
       query.append(" FETCH NEXT ? ROWS ONLY ");
       parameters.add(qParams.optInt("jtPageSize", 50));
     }
-    // Also need to return the total number of records
-    json.put("TotalRecordCount", template.queryForObject("select count(*) from STUDY", Integer.class));
-
     template.query(query.toString(), parameters.toArray(), new RowCallbackHandler() {
 
       @Override

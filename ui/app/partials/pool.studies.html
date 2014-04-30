@@ -28,7 +28,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="study in studies.Records">
+      <tr ng-repeat="study in studies.Records | orderBy:'StudyKey'">
         <td>{{study.PatientID}}</td>
         <td>{{study.PatientName}}</td>
         <td>{{study.AccessionNumber}}</td>
@@ -39,5 +39,5 @@
     </tbody>
   </table>
 
-  <pagination total-items="numberOfItems" ng-model="pg" page="currentPage"  ng-change="pageChanged()"></pagination>
+  <pagination total-items="numberOfItems" items-per-page="pageSize" ng-model="pg" page="currentPage"  ng-change="pageChanged()"></pagination>
 </div>

@@ -66,6 +66,28 @@ public class DeviceEndpoint {
     return Response.ok(s).build();
   }
 
+  /** Get an individual Device. */
+  @GET
+  @Path("/{id: [1-9][0-9]*}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getDevice(@PathParam("id") int id) {
+    // Look up the pool and change it
+    Session session = sessionFactory.openSession();
+    Device device = null;
+    try {
+      device = (Device) session.byId(Device.class).load(id);
+      if (device == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
+      if (device.pool.poolKey != poolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
+    } finally {
+      session.close();
+    }
+    return Response.ok(device).build();
+  }
+
   /** Create a Device. */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)

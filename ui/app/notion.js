@@ -53,6 +53,25 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
     return this.indexOf(str) == 0;
   };
 
+  ConnectorModel = Backbone.Model.extend({
+    idAttribute: "connectorKey",
+    url: '/rest/connector'
+
+  });
+
+  ConnectorCollection = Backbone.Collection.extend({
+    model: ConnectorModel,
+    url: '/rest/connector',
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.connector.length; i++) {
+        m.push(new ConnectorModel(response.connector[i]))
+      }
+      this.set ( m )
+      return this.models;
+    }
+  });
+
   PoolModel = Backbone.Model.extend({
     idAttribute: "poolKey",
     // urlRoot: '/rest/pool',
@@ -168,6 +187,11 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
     templateUrl: 'partials/pool.query.html',
     controller: 'QueryController'
   })
+  .state('connectors', {
+    url: "/connectors",
+    templateUrl: 'partials/connectors.html',
+    controller: 'ConnectorsController'
+  })
 });
 
 // ['$routeProvider',
@@ -179,6 +203,113 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
 //   });
 // }]);
 
+
+notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal) {
+  $scope.poolCollection = new PoolCollection();
+  // Make the first one syncrhonous
+  $scope.poolCollection.fetch({remove:true, async:false})
+  $scope.connectorCollection = new ConnectorCollection();
+  $scope.connectorCollection.fetch({async:false});
+  $scope.pools = $scope.poolCollection.toJSON()
+  $scope.deviceCache = {}
+
+  $scope.getPoolInfo = function(poolKey) {
+    var pool = $scope.poolCollection.get(poolKey);
+    return pool.get('name') + " / " + pool.get("applicationEntityTitle");
+  }
+
+  $scope.getDeviceInfo = function (poolKey, deviceKey) {
+    var device;
+    if ( deviceKey in $scope.deviceCache ) {
+      device = $scope.deviceCache[deviceKey]
+    } else {
+      device = new DeviceModel();
+      device.urlRoot = '/rest/pool/' + poolKey + '/device/' + deviceKey;
+      device.fetch({async:false})
+      console.log("Got devcie ", device)
+      $scope.deviceCache[deviceKey] = device;
+    }
+    return device.get("applicationEntityTitle") + "@" + device.get("hostName") + ":" + device.get("port")
+  }
+
+  $scope.deleteConnector = function(connector) {
+    $modal.open ({
+      templateUrl: 'partials/modal.html',
+      controller: function($scope, $modalInstance) {
+        $scope.title = "Delete connector?"
+        $scope.message = "Delete the connector: " + connector.get('name')
+        $scope.ok = function(){
+          connector.destroy({
+            success: function(model, response) {
+              console.log("Dismissing modal")
+              $modalInstance.dismiss();
+              $scope.$apply();
+            },
+            error: function(model, response) {
+              alert ( "Failed to delete Connector: " + response.message )
+            }
+          })
+        };
+        $scope.cancel = function() { $modalInstance.dismiss() };
+      }
+    });
+  };
+
+  // Devices
+  $scope.editConnector = function(connector) {
+    console.log("Edit Connector")
+    var newConnector = !connector
+    if ( !connector ) {
+      connector = new ConnectorModel()
+    }
+    $scope.connector = connector
+    $scope.model = connector.toJSON()
+    $modal.open ( {
+      templateUrl: 'partials/connector.edit.html',
+      scope: $scope,
+      controller: function($scope, $modalInstance) {
+        $scope.devices = [];
+        if ( newConnector ) {
+          $scope.title = "Create a new connector"
+        } else {
+          $scope.title = "Edit the connector"
+        }
+        $scope.queryPoolChanged = function() {
+          console.log("get devices")
+          // Grab the devices
+          var deviceCollection = new DeviceCollection();
+          deviceCollection.urlRoot = '/rest/pool/' + $scope.model.queryPoolKey + '/device';
+          deviceCollection.fetch({async:false})
+          $scope.devices = deviceCollection.toJSON()
+        }
+        $scope.getDevices = function(poolKey) {
+          return $scope.devices;
+        }
+        if ( !newConnector ) {
+          $scope.queryPoolChanged();
+        }
+        $scope.save = function(){
+          console.log("saving here!!!!", $scope, $scope.model)
+          var connector = new ConnectorModel();
+          connector.set ( $scope.model )
+          connector.save();
+          $scope.connectorCollection.fetch({
+            success: function() {
+              $scope.$apply()
+            }
+          });
+          $modalInstance.close();
+        };
+        $scope.cancel = function() { $modalInstance.dismiss() };
+      }
+    });
+  };
+
+
+
+
+});
+
 notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal) {
   $scope.poolCollection = new PoolCollection();
   // Make the first one syncrhonous
@@ -188,7 +319,9 @@ notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal
   $scope.newPoolKey = false;
 
   $scope.refresh = function() {
-    $scope.$apply (  $scope.poolCollection.fetch({remove:true, async:false}) );
+    $scope.poolCollection.fetch({remove:true, success: function() {
+      $scope.$apply();
+    }});
   };
 
 
@@ -206,21 +339,15 @@ notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal
           $scope.poolCollection.add( $scope.pool)
           $scope.pool.save ( $scope.model )
           $modalInstance.close()
-          $scope.poolCollection.fetch({remove:true, async:false})
+          $scope.poolCollection.fetch({remove:true, success: function() {
+            $scope.$apply();
+          }})
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
       }
     });
   };
 
-  (function tick() {
-    $scope.poolCollection.fetch({remove: true});
-    if ( $scope.newPoolKey ) {
-      $state.transitionTo ( 'pools.pool', { poolKey: $scope.newPoolKey} )
-      $scope.newPoolKey = false
-    }
-    $timeout(tick, 2000)
-  })();
 });
 
 notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, $state, $modal) {
@@ -418,14 +545,14 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
 
 notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateParams, $state, $modal) {
   $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
-  $scope.numberOfItems = 100;
+  $scope.numberOfItems = 1;
   $scope.pageSize = 50;
 
   $scope.reload = function(){
     console.log("Page is " + $scope.currentPage)
     var start = 0;
     if ( $scope.currentPage ) {
-      start = $scope.pageSize * $scope.currentPage;
+      start = $scope.pageSize * ($scope.currentPage - 1 );
     }
     $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies',
     {
@@ -483,24 +610,9 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   $scope.model = $scope.pool.toJSON();
   $scope.pools = $scope.$parent.poolCollection.toJSON()
 
-  $scope.deviceCollection = new DeviceCollection();
-  $scope.deviceCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/device';
-  console.log( $scope.deviceCollection )
-  $scope.deviceCollection.fetch({async:false})
-  $scope.devices = $scope.deviceCollection.toJSON()
-
-  // $.ajax({
-  //   url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1',
-  //   type: 'GET',
-  //   data: {},
-  //   success: function(data) {
-  //     $scope.$apply ( function(){
-  //       $scope.query = new QueryModel(data);
-  //       $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1';
-  //     })
-  //   }
-  // })
-
+  $scope.connectorCollection = new ConnectorCollection();
+  $scope.connectorCollection.fetch({async:false});
+  $scope.connectors = $scope.connectorCollection.toJSON();
   query = $scope.query
 
   $scope.refresh = function(){
@@ -525,8 +637,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     var formData = new FormData();
     console.log ( formData )
     formData.append('file', $('#queryFile')[0].files[0] )
-    formData.append('destinationPoolKey', $scope.receivingPool)
-    formData.append('deviceKey', $scope.queryDevice)
+    formData.append('connectorKey', $scope.connectorKey)
     console.log ( formData )
     $.ajax({
       url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',

@@ -149,13 +149,13 @@ public class PoolEndpoint {
     return deviceEndpoint;
   }
 
-  /** Series */
+  /** Studies */
   @Path("/{id: [1-9][0-9]*}/studies")
   public StudiesEndpoint studies(@PathParam("id") int id) {
-    StudiesEndpoint seriesEndpoint;
-    seriesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
-    seriesEndpoint.poolKey = id;
-    return seriesEndpoint;
+    StudiesEndpoint studiesEndpoint;
+    studiesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
+    studiesEndpoint.poolKey = id;
+    return studiesEndpoint;
   }
 
   /** Lookup */

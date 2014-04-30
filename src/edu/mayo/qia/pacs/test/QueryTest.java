@@ -29,6 +29,7 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Item;
 import edu.mayo.qia.pacs.components.Pool;
@@ -144,9 +145,16 @@ public class QueryTest extends PACSTest {
     // Let the PACS pool know about the destination pool, and vice versa
     createDevice(new Device(destinationPool.applicationEntityTitle, "localhost", DICOMPort, pacsPool));
     createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool));
-
     // The device we will use to query the "PACS" pool
-    Device queryDevice = createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool.applicationEntityTitle, pool));
+    Device queryDevice = createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool.applicationEntityTitle, destinationPool));
+
+    // create the connector
+    Connector connector = new Connector();
+    connector.name = "Connection to PACS";
+    connector.destinationPoolKey = destinationPool.poolKey;
+    connector.queryPoolKey = destinationPool.poolKey;
+    connector.queryDeviceKey = queryDevice.deviceKey;
+    connector = createConnector(connector);
 
     // Send some test data to the PACS pool
     sendDICOM(pacsPool.applicationEntityTitle, destinationPool.applicationEntityTitle, "TOF/IMAGE001.dcm");
@@ -156,8 +164,7 @@ public class QueryTest extends PACSTest {
     WebResource fileResource = client.resource(uri);
     final FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.bodyPart(new FileDataBodyPart("file", PACS.context.getResource("classpath:Query/QueryTemplate.xlsx").getFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE));
-    multiPart.field("destinationPoolKey", Integer.toString(destinationPool.poolKey));
-    multiPart.field("deviceKey", Integer.toString(queryDevice.deviceKey));
+    multiPart.field("connectorKey", Integer.toString(connector.connectorKey));
 
     ClientResponse response = fileResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, multiPart);
 

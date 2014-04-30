@@ -35,4 +35,10 @@ watch:
 	(cd Documentation && while :; do make html ; sleep 5s; done)
 
 install: dist
+	${MAKE} sync
+
+server:
+	ant jar
+
+sync:
 	rsync -arvz zip-temp/$(versionDir) qin@qia:/research/images/Notion
