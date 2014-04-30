@@ -1,0 +1,48 @@
+
+dbWeb: 8084
+
+# Database connection info
+database:
+  driverClass: org.apache.derby.jdbc.EmbeddedDriver
+  url: jdbc:derby:directory:./DB;create=true
+  validationQuery: "VALUES 1"
+  user: dogwatch
+  password: dogwatch
+
+
+# Shiro
+shiro:
+  filterUrlPattern: "/*" # The URL pattern for the Shiro servlet filter
+  iniConfigs: ["classpath:shiro.ini"]
+
+
+# How to serve our assets
+# In production, assets are bundled in the Jar
+assets:
+  overrides:
+    /: /Users/blezek/Source/Notion/ui/public
+
+
+server:
+  type: simple
+  applicationContextPath: /  # Default value*
+
+# Email configuration
+email:
+  from: quintherug@gmail.com
+  smtpHostname: smtp.googlemail.com
+  port: 465
+  username: quintherug
+  password: rta-spin-phen-lo-zi
+  ssl: true
+
+
+notion:
+  host: myst.mayo.edu:8080
+
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+  # Logger-specific levels.
+  loggers:
+    org.hibernate.SQL: ALL

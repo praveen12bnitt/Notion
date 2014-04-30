@@ -30,7 +30,6 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.json.JSONConfiguration;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.Connector;
@@ -56,7 +55,8 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
 
   static {
     ClientConfig config = new DefaultClientConfig();
-    config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+    // config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
+    // Boolean.TRUE);
     client = Client.create(config);
   }
 
