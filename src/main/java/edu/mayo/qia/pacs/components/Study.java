@@ -13,9 +13,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table

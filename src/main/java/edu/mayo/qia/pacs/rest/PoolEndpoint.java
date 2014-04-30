@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +26,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
@@ -52,9 +53,6 @@ public class PoolEndpoint {
 
   @Autowired
   PoolManager poolManager;
-
-  @Autowired
-  ObjectMapper objectMapper;
 
   @Context
   ResourceContext resourceContext;
@@ -109,10 +107,10 @@ public class PoolEndpoint {
   @PUT
   @Path("/{id: [1-9][0-9]*}/move")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response moveStudies(@PathParam("id") int id, MoveRequest request) throws JSONException {
-    JSONObject json = new JSONObject();
+  public Response moveStudies(@PathParam("id") int id, MoveRequest request) {
+    ObjectNode json = new ObjectMapper().createObjectNode();
     // Build the query
-    final JSONArray records = new JSONArray();
+    ArrayNode records = json.putArray("Status");
     PoolContainer destinationContainer = poolManager.getContainer(request.destinationPoolKey);
     PoolContainer container = poolManager.getContainer(id);
     if (destinationContainer == null || container == null) {
@@ -120,7 +118,7 @@ public class PoolEndpoint {
     }
     // Find all the files and import
     for (int studyKey : request.studyKeys) {
-      JSONObject studyResult = new JSONObject();
+      ObjectNode studyResult = records.addObject();
       try {
         List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? and STUDY.StudyKey = ?", new Object[] { id,
             studyKey }, String.class);
@@ -133,9 +131,7 @@ public class PoolEndpoint {
         studyResult.put("Status", "failed");
         studyResult.put("Message", e.getLocalizedMessage());
       }
-      records.put(studyResult);
     }
-    json.put("Status", records);
     json.put("Result", "OK");
     return Response.ok(json).build();
   }
@@ -224,6 +220,7 @@ public class PoolEndpoint {
 
   /** Create a pool. */
   @POST
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createPool(Pool pool) {
@@ -242,22 +239,16 @@ public class PoolEndpoint {
           .build();
     }
 
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      Script s;
-      s = new Script("PatientName", Script.createDefaultScript("PatientName", "PN-"));
-      pool.scripts.add(s);
-      s.setPool(pool);
-      s = new Script("PatientID", Script.createDefaultScript("PatientID", null));
-      pool.scripts.add(s);
-      s.setPool(pool);
+    Session session = sessionFactory.getCurrentSession();
+    Script s;
+    s = new Script("PatientName", Script.createDefaultScript("PatientName", "PN-"));
+    pool.scripts.add(s);
+    s.setPool(pool);
+    s = new Script("PatientID", Script.createDefaultScript("PatientID", null));
+    pool.scripts.add(s);
+    s.setPool(pool);
 
-      session.save(pool);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
-    }
+    session.save(pool);
     poolManager.newPool(pool);
     return Response.ok(pool).build();
   }

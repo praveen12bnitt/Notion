@@ -10,15 +10,16 @@ import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import edu.mayo.qia.pacs.components.PoolManager;
 
@@ -38,16 +39,15 @@ public class TableEndpoint {
 
   public int poolKey;
 
-  public JSONObject get(MultivaluedMap<String, String> queryParameters, String table, String extraWhere, String[] columnArray, final String keyColumn) throws Exception {
+  public ObjectNode get(MultivaluedMap<String, String> queryParameters, String table, String extraWhere, String[] columnArray, final String keyColumn) throws Exception {
     final Set<String> columns = new HashSet<String>(Arrays.asList(columnArray));
     final Set<String> directions = new HashSet<String>();
     directions.add("ASC");
     directions.add("DESC");
-    JSONObject json = new JSONObject();
+    ObjectNode json = new ObjectMapper().createObjectNode();
     json.put("Result", "OK");
     // Build the query
-    final JSONArray records = new JSONArray();
-    json.put("Records", records);
+    final ArrayNode records = json.putArray("Records");
 
     StringBuilder query = new StringBuilder("select * from " + table + " where PoolKey = ? " + extraWhere);
     ArrayList<Object> parameters = new ArrayList<Object>();
@@ -83,16 +83,11 @@ public class TableEndpoint {
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {
-        JSONObject row = new JSONObject();
-        try {
-          for (String column : columns) {
-            row.put(column, rs.getString(column));
-          }
-          row.put(keyColumn, rs.getInt(keyColumn));
-        } catch (JSONException e) {
-          logger.error("Error setting field", e);
+        ObjectNode row = records.addObject();
+        for (String column : columns) {
+          row.put(column, rs.getString(column));
         }
-        records.put(row);
+        row.put(keyColumn, rs.getInt(keyColumn));
       }
     });
 

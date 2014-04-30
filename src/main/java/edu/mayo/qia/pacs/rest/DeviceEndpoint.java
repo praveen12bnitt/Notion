@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -45,23 +47,18 @@ public class DeviceEndpoint {
 
   /** List all the devices. */
   @GET
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response listDevices() {
     // Look up the pool and change it
     Pool pool = null;
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      pool = (Pool) session.byId(Pool.class).load(poolKey);
-      if (pool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-      }
-      // Force load
-      pool.getDevices().size();
-      session.getTransaction().commit();
-    } finally {
-      session.close();
+    Session session = sessionFactory.getCurrentSession();
+    pool = (Pool) session.byId(Pool.class).load(poolKey);
+    if (pool == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
     }
+    // Force load
+    pool.getDevices().size();
     SimpleResponse s = new SimpleResponse("device", pool.getDevices());
     return Response.ok(s).build();
   }
@@ -69,95 +66,74 @@ public class DeviceEndpoint {
   /** Get an individual Device. */
   @GET
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response getDevice(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Device device = null;
-    try {
-      device = (Device) session.byId(Device.class).load(id);
-      if (device == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-      if (device.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-    } finally {
-      session.close();
+    device = (Device) session.byId(Device.class).load(id);
+    if (device == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+    }
+    if (device.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
     }
     return Response.ok(device).build();
   }
 
   /** Create a Device. */
   @POST
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createDevice(Device device) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
-    try {
-      session.beginTransaction();
-      Pool pool = (Pool) session.byId(Pool.class).getReference(poolKey);
-      // Ensure the device does not think it already exists!
-      device.deviceKey = -1;
-      device.setPool(pool);
-      pool.getDevices().add(device);
-      session.getTransaction().commit();
-    } catch (Exception e) {
-      logger.error("Error creating device", e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Error creating pool")).build();
-    } finally {
-      session.close();
-    }
+    Session session = sessionFactory.getCurrentSession();
+    Pool pool = (Pool) session.byId(Pool.class).getReference(poolKey);
+    // Ensure the device does not think it already exists!
+    device.deviceKey = -1;
+    device.setPool(pool);
+    pool.getDevices().add(device);
     return Response.ok(device).build();
   }
 
   /** Modify a Device. */
   @PUT
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response modifyDevice(@PathParam("id") int id, Device update) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Device device = null;
-    try {
-      session.beginTransaction();
-      device = (Device) session.byId(Device.class).load(id);
-      if (device == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-      if (device.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-      device.update(update);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
+    device = (Device) session.byId(Device.class).load(id);
+    if (device == null) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
     }
+    if (device.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+    }
+    device.update(update);
     return Response.ok(device).build();
   }
 
   /** Delete a Device. */
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
+  @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteDevice(@PathParam("id") int id) {
     // Look up the pool and change it
-    Session session = sessionFactory.openSession();
+    Session session = sessionFactory.getCurrentSession();
     Device device;
-    try {
-      session.beginTransaction();
-      device = (Device) session.byId(Device.class).getReference(id);
-      if (device.pool.poolKey != poolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
-      session.delete(device);
-      session.getTransaction().commit();
-    } finally {
-      session.close();
+    device = (Device) session.byId(Device.class).getReference(id);
+    if (device.pool.poolKey != poolKey) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
     }
+    session.delete(device);
     SimpleResponse response = new SimpleResponse();
     response.put("status", "success");
     response.put("message", "Delete device " + device.deviceKey);

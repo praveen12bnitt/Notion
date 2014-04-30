@@ -7,6 +7,8 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+import java.util.HashMap;
+
 import javax.sql.DataSource;
 
 import org.eclipse.jetty.server.Connector;
@@ -87,6 +89,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     parent.getBeanFactory().registerSingleton("configuration", configuration);
     dataSource = configuration.getDataSourceFactory().build(environment.metrics(), "Notion");
     parent.getBeanFactory().registerSingleton("dataSource", dataSource);
+
     parent.refresh();
     parent.registerShutdownHook();
     parent.start();
@@ -98,17 +101,15 @@ public class NotionApplication extends Application<NotionConfiguration> {
 
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
     context.setParent(parent);
-    context.scan("edu.mayo.qia.pacs", "edu.mayo.qia.pacs.dicom");
+    context.register(Beans.class, PoolManager.class, PoolContainer.class);
+    context.scan("edu.mayo.qia.pacs.rest");
+
     context.refresh();
     context.registerShutdownHook();
     context.start();
+    PACS.context = context;
 
-    String[] beans = parent.getBeanDefinitionNames();
-    for (String name : context.getBeanDefinitionNames()) {
-      System.out.println("Bean: " + name);
-    }
-    logger.debug(parent.getBeanDefinitionNames().toString());
-    logger.info(parent.getBean("flyway").toString());
+    environment.lifecycle().manage(context.getBean("poolManager", PoolManager.class));
 
     environment.servlets().setSessionHandler(new SessionHandler());
     environment.jersey().setUrlPattern("/rest/*");
@@ -116,5 +117,17 @@ public class NotionApplication extends Application<NotionConfiguration> {
     // Add a component
     environment.jersey().register(context.getBean(PoolEndpoint.class));
 
+  }
+
+  public static void main(String[] args) {
+    AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
+    parent.getBeanFactory().registerSingleton("map", new HashMap<String, String>());
+    parent.register(MapTest.class);
+    parent.refresh();
+    parent.start();
+
+    Object t = parent.getBean("mapTest");
+    t = parent.getBean("name");
+    System.out.println("t: " + t);
   }
 }

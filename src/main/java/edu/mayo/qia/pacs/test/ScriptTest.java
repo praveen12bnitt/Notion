@@ -14,8 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mozilla.javascript.Context;
@@ -23,6 +21,7 @@ import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 
 import edu.mayo.qia.pacs.components.Pool;
@@ -71,9 +70,9 @@ public class ScriptTest extends PACSTest {
     URI uri;
     uri = UriBuilder.fromUri(baseUri).path("/pool/").path("" + pool.poolKey).path("/script").build();
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-    JSONObject json = response.getEntity(JSONObject.class);
+    ObjectNode json = response.getEntity(ObjectNode.class);
     assertTrue("Result", json.has("script"));
-    assertEquals("Number of Scripts", 2, json.getJSONArray("script").length());
+    assertEquals("Number of Scripts", 2, json.withArray("script").size());
   }
 
   @Test
@@ -102,8 +101,10 @@ public class ScriptTest extends PACSTest {
   @Test
   public void createScript() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);

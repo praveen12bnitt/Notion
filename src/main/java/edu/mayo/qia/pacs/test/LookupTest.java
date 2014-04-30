@@ -1,18 +1,18 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
 
@@ -41,10 +41,10 @@ public class LookupTest extends PACSTest {
     assertEquals("Status", 200, response.getStatus());
     assertEquals("Count", new Integer(1), template.queryForObject("select count(*) from LOOKUP where PoolKey = " + pool.poolKey, Integer.class));
 
-    JSONObject json = response.getEntity(JSONObject.class);
-    assertEquals("Result", "OK", json.getString("Result"));
+    ObjectNode json = response.getEntity(ObjectNode.class);
+    assertEquals("Result", "OK", json.get("Result").textValue());
     assertTrue("Record", json.has("Record"));
-    int lookupKey = json.getJSONObject("Record").getInt("LookupKey");
+    int lookupKey = json.get("Record").get("LookupKey").asInt();
     assertEquals("Value", "Rikki-tikki-tavvi", template.queryForObject("select Value from LOOKUP where LookupKey = ?", new Object[] { lookupKey }, String.class));
 
     // Modify the record
@@ -59,16 +59,16 @@ public class LookupTest extends PACSTest {
     uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").build();
     response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class);
     assertEquals("Status", 200, response.getStatus());
-    json = response.getEntity(JSONObject.class);
-    assertEquals("Count", 1, json.getJSONArray("Records").length());
-    assertEquals("LookupKey", lookupKey, json.getJSONArray("Records").getJSONObject(0).getInt("LookupKey"));
+    json = response.getEntity(ObjectNode.class);
+    assertEquals("Count", 1, json.withArray("Records").size());
+    assertEquals("LookupKey", lookupKey, json.withArray("Records").get(0).get("LookupKey").intValue());
 
     // Delete
     uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").path("delete").build();
     response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, form);
     assertEquals("Status", 200, response.getStatus());
-    json = response.getEntity(JSONObject.class);
-    assertEquals("Result", "OK", json.getString("Result"));
+    json = response.getEntity(ObjectNode.class);
+    assertEquals("Result", "OK", json.get("Result").textValue());
 
     //
 

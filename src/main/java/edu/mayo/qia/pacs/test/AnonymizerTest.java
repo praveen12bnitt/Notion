@@ -1,9 +1,9 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -12,10 +12,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jettison.json.JSONObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.ClientResponse;
 
 import edu.mayo.qia.pacs.components.Device;
@@ -236,7 +236,7 @@ public class AnonymizerTest extends PACSTest {
 
     Resource resource = new ClassPathResource("csv.json");
     String jsonSource = IOUtils.toString(resource.getInputStream());
-    JSONObject csv = new JSONObject(jsonSource);
+    JsonNode csv = new ObjectMapper().reader().readTree(jsonSource);
 
     // Send it to the server
     ClientResponse clientResponse = null;

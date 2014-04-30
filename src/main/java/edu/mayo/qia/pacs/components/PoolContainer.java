@@ -35,9 +35,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -70,9 +67,6 @@ public class PoolContainer {
 
   @Autowired
   private JdbcTemplate template;
-
-  @Autowired
-  TransactionTemplate transactionTemplate;
 
   @Autowired
   SessionFactory sessionFactory;
@@ -200,26 +194,21 @@ public class PoolContainer {
       final File deleteDirectory = new File(poolDirectory, "deleted");
       deleteDirectory.mkdirs();
       final Set<File> directories = new HashSet<File>();
-      transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 
-        @Override
-        protected void doInTransactionWithoutResult(TransactionStatus status) {
-          // Collect all the files to delete
-          List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? and STUDY.StudyKey = ?", new Object[] {
-              pool.poolKey, studyKey }, String.class);
-          // Delete, should cascade!
-          template.update("delete from STUDY where PoolKey = ? and StudyKey = ?", pool.poolKey, studyKey);
-          for (String filePath : filePaths) {
-            File file = new File(poolDirectory, filePath);
-            directories.add(file.getParentFile());
-            try {
-              FileUtils.moveFile(file, new File(deleteDirectory, UUID.randomUUID().toString()));
-            } catch (IOException e) {
-              logger.error("Failed to move file", e);
-            }
-          }
+      // Collect all the files to delete
+      List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? and STUDY.StudyKey = ?", new Object[] { pool.poolKey,
+          studyKey }, String.class);
+      // Delete, should cascade!
+      template.update("delete from STUDY where PoolKey = ? and StudyKey = ?", pool.poolKey, studyKey);
+      for (String filePath : filePaths) {
+        File file = new File(poolDirectory, filePath);
+        directories.add(file.getParentFile());
+        try {
+          FileUtils.moveFile(file, new File(deleteDirectory, UUID.randomUUID().toString()));
+        } catch (IOException e) {
+          logger.error("Failed to move file", e);
         }
-      });
+      }
 
       // Delete the deleted directory
       for (File file : deleteDirectory.listFiles()) {

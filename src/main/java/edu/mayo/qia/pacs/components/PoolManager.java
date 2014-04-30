@@ -1,12 +1,11 @@
 package edu.mayo.qia.pacs.components;
 
+import io.dropwizard.lifecycle.Managed;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.net.Association;
@@ -26,7 +25,7 @@ import edu.mayo.qia.pacs.PACS;
  * 
  */
 @Component
-public class PoolManager {
+public class PoolManager implements Managed {
   static Logger logger = Logger.getLogger(PoolManager.class);
 
   ConcurrentMap<String, PoolContainer> poolContainers = new ConcurrentHashMap<String, PoolContainer>();
@@ -40,17 +39,13 @@ public class PoolManager {
   @Autowired
   SessionFactory sessionFactory;
 
-  @SuppressWarnings("unchecked")
-  @PostConstruct
-  public void startPools() {
-
-    Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
+  @Override
+  public void start() {
+    final Session session = sessionFactory.openSession();
     for (Pool pool : (List<Pool>) session.createQuery("from Pool").list()) {
       newPool(pool);
     }
-    session.getTransaction().commit();
-
+    session.close();
   }
 
   public void newPool(Pool pool) {
@@ -61,8 +56,8 @@ public class PoolManager {
 
   }
 
-  @PreDestroy
-  public void stopPools() {
+  @Override
+  public void stop() {
     for (PoolContainer poolContainer : poolContainers.values()) {
       poolContainer.stop();
     }
@@ -114,4 +109,5 @@ public class PoolManager {
       throw new RuntimeException("Could not remove pool for " + poolContainer.getPool().applicationEntityTitle);
     }
   }
+
 }

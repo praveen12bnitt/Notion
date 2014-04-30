@@ -25,12 +25,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
@@ -145,6 +146,7 @@ public class Query {
   // Implement a C-FIND and store results away...
   public void executeQuery() {
     PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+
 
 
 

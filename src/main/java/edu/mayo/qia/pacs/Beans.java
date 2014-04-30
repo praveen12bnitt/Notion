@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +21,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.flyway.core.Flyway;
 
-import edu.mayo.qia.pacs.components.PoolManager;
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
@@ -41,10 +40,10 @@ public class Beans {
   static Logger logger = Logger.getLogger(Beans.class);
 
   @Autowired
-  PoolManager poolManager;
+  NotionConfiguration configuration;
 
   @Autowired
-  NotionConfiguration configuration;
+  DataSource dataSource;
 
   @Bean
   freemarker.template.Configuration freemarker() throws IOException {
@@ -81,20 +80,15 @@ public class Beans {
   @DependsOn("flyway")
   public JdbcTemplate template() throws SQLException {
     JdbcTemplate template = new JdbcTemplate();
-    template.setDataSource(dataSource());
+    template.setDataSource(dataSource);
     return template;
-  }
-
-  @Bean
-  public DataSource dataSource() {
-    return NotionApplication.dataSource;
   }
 
   @Bean
   @DependsOn("dataSource")
   public Flyway flyway() throws Exception {
     Flyway flyway = new Flyway();
-    flyway.setDataSource(dataSource());
+    flyway.setDataSource(dataSource);
     flyway.migrate();
     return flyway;
   }

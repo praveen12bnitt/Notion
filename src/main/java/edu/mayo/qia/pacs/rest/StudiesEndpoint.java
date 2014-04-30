@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,9 +32,6 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -45,6 +41,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.components.Instance;
@@ -71,16 +70,15 @@ public class StudiesEndpoint {
 
   @POST
   @Produces(MediaType.APPLICATION_JSON)
-  public Response searchStudies(@Context UriInfo uriInfo, JSONObject qParams) throws Exception {
+  public Response searchStudies(@Context UriInfo uriInfo, ObjectNode qParams) throws Exception {
     final Set<String> columns = new HashSet<String>(Arrays.asList(new String[] { "PatientID", "PatientName", "AccessionNumber", "StudyDescription" }));
     final Set<String> directions = new HashSet<String>();
     directions.add("ASC");
     directions.add("DESC");
-    JSONObject json = new JSONObject();
+    ObjectNode json = new ObjectMapper().createObjectNode();
     json.put("Result", "OK");
     // Build the query
-    final JSONArray records = new JSONArray();
-    json.put("Records", records);
+    final ArrayNode records = json.putArray("Records");
     MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
     logger.info("query parameters\n" + queryParameters);
@@ -96,14 +94,14 @@ public class StudiesEndpoint {
     for (String column : columns) {
       if (qParams.has(column)) {
         where.append(" and " + column + " like ? ");
-        parameters.add("%" + qParams.getString(column) + "%");
+        parameters.add("%" + qParams.get(column).textValue() + "%");
       }
     }
 
     if (qParams.has("jtSorting")) {
       query.append(" ORDER BY ");
 
-      for (String clause : qParams.getString("jtSorting").split(",")) {
+      for (String clause : qParams.get("jtSorting").textValue().split(",")) {
         String[] p = clause.split("\\s+");
         if (columns.contains(p[0])) {
           where.append(p[0]);
@@ -123,26 +121,21 @@ public class StudiesEndpoint {
     // jtPageSize: Count of maximum expected records.
     if (qParams.has("jtStartIndex") && qParams.has("jtPageSize")) {
       query.append(" OFFSET ? ROWS ");
-      parameters.add(qParams.optInt("jtStartIndex", 0));
+      parameters.add(qParams.get("jtStartIndex").asInt(0));
       query.append(" FETCH NEXT ? ROWS ONLY ");
-      parameters.add(qParams.optInt("jtPageSize", 50));
+      parameters.add(qParams.get("jtPageSize").asInt(50));
     }
     template.query(query.toString(), parameters.toArray(), new RowCallbackHandler() {
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {
-        JSONObject row = new JSONObject();
-        try {
-          for (String column : columns) {
-            row.put(column, rs.getString(column));
-          }
-          for (String column : new String[] { "StudyKey" }) {
-            row.put(column, rs.getInt(column));
-          }
-        } catch (JSONException e) {
-          logger.error("Error setting field", e);
+        ObjectNode row = records.objectNode();
+        for (String column : columns) {
+          row.put(column, rs.getString(column));
         }
-        records.put(row);
+        for (String column : new String[] { "StudyKey" }) {
+          row.put(column, rs.getInt(column));
+        }
       }
     });
 
