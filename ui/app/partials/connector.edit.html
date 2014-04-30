@@ -20,11 +20,12 @@
 
     <div class="form-group">
       <label>Query Pool</label>
-      <select ng-model="model.queryPoolKey" ng-options="p.poolKey as p.name + ' / ' + p.applicationEntityTitle for p in pools" name='queryPoolKey'></select>
+      <select ng-model="model.queryPoolKey" ng-options="p.poolKey as p.name + ' / ' + p.applicationEntityTitle for p in pools" name='queryPoolKey' ng-change="queryPoolChanged()"></select>
     </div>
+
 <div class="form-group">
   <label>Query Device</label>
-  <select ng-model="model.queryDeviceKey" ng-options="d.deviceKey as d.applicationEntityTitle + '@' + d.hostname + ':' + d.port for d in getDevices(model.queryPoolKey)" name='queryDeviceKey'></select>
+  <select ng-model="model.queryDeviceKey" ng-options="d.deviceKey as d.applicationEntityTitle + '@' + d.hostname + ':' + d.port for d in getDevices()" name='queryDeviceKey'></select>
 </div>
 
 

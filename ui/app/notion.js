@@ -216,6 +216,7 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
     var pool = $scope.poolCollection.get(poolKey);
     return pool.get('name') + " / " + pool.get("applicationEntityTitle");
   }
+
   $scope.getDeviceInfo = function (poolKey, deviceKey) {
     var device = new DeviceModel();
     device.urlRoot = '/rest/pool/' + poolKey + '/device/' + deviceKey;
@@ -237,19 +238,22 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
       templateUrl: 'partials/connector.edit.html',
       scope: $scope,
       controller: function($scope, $modalInstance) {
+        $scope.devices = [];
         if ( newConnector ) {
           $scope.title = "Create a new connector"
         } else {
           $scope.title = "Edit the connector"
         }
-        $scope.getDevices = function(poolKey) {
+        $scope.queryPoolChanged = function() {
           console.log("get devices")
-          if ( !poolKey ) { return []; }
           // Grab the devices
           var deviceCollection = new DeviceCollection();
-          deviceCollection.urlRoot = '/rest/pool/' + poolKey + '/device';
+          deviceCollection.urlRoot = '/rest/pool/' + $scope.model.queryPoolKey + '/device';
           deviceCollection.fetch({async:false})
-          return deviceCollection.toJSON()
+          $scope.devices = deviceCollection.toJSON()
+        }
+        $scope.getDevices = function(poolKey) {
+          return $scope.devices;
         }
 
         $scope.save = function(){
