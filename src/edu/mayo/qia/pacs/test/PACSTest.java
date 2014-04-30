@@ -18,9 +18,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.ConfigurationException;
-import org.h2.tools.Server;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
@@ -28,7 +25,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -37,6 +33,7 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
 
 import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
@@ -136,6 +133,18 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     logger.info("Entity back: " + device);
     assertTrue("Assigned a deviceKey", device.deviceKey != 0);
     return device;
+
+  }
+
+  Connector createConnector(Connector connector) {
+    // Create a device
+    URI uri = UriBuilder.fromUri(baseUri).path("/connector").build();
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, connector);
+    assertEquals("Got result", 200, response.getStatus());
+    connector = response.getEntity(Connector.class);
+    logger.info("Entity back: " + connector);
+    assertTrue("Assigned a key", connector.connectorKey != 0);
+    return connector;
 
   }
 

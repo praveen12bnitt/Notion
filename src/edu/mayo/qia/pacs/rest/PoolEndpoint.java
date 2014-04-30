@@ -32,7 +32,6 @@ import org.springframework.stereotype.Component;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
-import edu.mayo.qia.pacs.PACS;
 import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
@@ -150,13 +149,13 @@ public class PoolEndpoint {
     return deviceEndpoint;
   }
 
-  /** Series */
+  /** Studies */
   @Path("/{id: [1-9][0-9]*}/studies")
   public StudiesEndpoint studies(@PathParam("id") int id) {
-    StudiesEndpoint seriesEndpoint;
-    seriesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
-    seriesEndpoint.poolKey = id;
-    return seriesEndpoint;
+    StudiesEndpoint studiesEndpoint;
+    studiesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
+    studiesEndpoint.poolKey = id;
+    return studiesEndpoint;
   }
 
   /** Lookup */

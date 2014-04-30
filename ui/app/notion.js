@@ -53,53 +53,72 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
     return this.indexOf(str) == 0;
   };
 
+  ConnectorModel = Backbone.Model.extend({
+    idAttribute: "connectorKey",
+    url: '/rest/connector'
+
+  });
+
+  ConnectorCollection = Backbone.Collection.extend({
+    model: ConnectorModel,
+    url: '/rest/connector',
+    parse: function(response) {
+      var m = [];
+      for(var i = 0; i < response.connector.length; i++) {
+        m.push(new ConnectorModel(response.connector[i]))
+      }
+      this.set ( m )
+      return this.models;
+    }
+  });
+
   PoolModel = Backbone.Model.extend({
     idAttribute: "poolKey",
     // urlRoot: '/rest/pool',
-    defaults: {
-      'name' : null,
-      'anonymize' : false,
-      'applicationEntityTitle' : null,
-      'description' : "This is a new Pool"
-    }
-  });
+  defaults: {
+    'name' : null,
+    'anonymize' : false,
+    'applicationEntityTitle' : null,
+    'description' : "This is a new Pool"
+  }
+});
 
-  PoolCollection = Backbone.Collection.extend({
-    model: PoolModel,
-    url: '/rest/pool',
-    parse: function(response) {
-      var m = [];
-      for(var i = 0; i < response.pool.length; i++) {
-        m.push(new PoolModel(response.pool[i]))
-      }
-      this.set ( m )
-      return this.models;
+PoolCollection = Backbone.Collection.extend({
+  model: PoolModel,
+  url: '/rest/pool',
+  parse: function(response) {
+    var m = [];
+    for(var i = 0; i < response.pool.length; i++) {
+      m.push(new PoolModel(response.pool[i]))
     }
-  });
+    this.set ( m )
+    return this.models;
+  }
+});
 
-  DeviceModel = Backbone.Model.extend({
-    idAttribute: 'deviceKey',
-    format: function() {
-      return this.get('applicationEntityTitle') + "@" + this.get('hostName') + ":" + this.get('port')
+DeviceModel = Backbone.Model.extend({
+  idAttribute: 'deviceKey',
+  format: function() {
+    return this.get('applicationEntityTitle') + "@" + this.get('hostName') + ":" + this.get('port')
+  }
+});
+DeviceCollection = Backbone.Collection.extend({
+  model: DeviceModel,
+  url: function () { return this.urlRoot; },
+  parse: function(response) {
+    var m = [];
+    for(var i = 0; i < response.device.length; i++) {
+      m.push(new DeviceModel(response.device[i]))
     }
-  });
-  DeviceCollection = Backbone.Collection.extend({
-    model: DeviceModel,
-    url: function () { return this.urlRoot; },
-    parse: function(response) {
-      var m = [];
-      for(var i = 0; i < response.device.length; i++) {
-        m.push(new DeviceModel(response.device[i]))
-      }
-      this.set ( m )
-      return this.models;
-    }
-  });
+    this.set ( m )
+    return this.models;
+  }
+});
 
-  CTPModel = Backbone.Model.extend();
-  QueryModel = Backbone.Model.extend({
-    idAttribute: 'queryKey',
-    url: function () {
+CTPModel = Backbone.Model.extend();
+QueryModel = Backbone.Model.extend({
+  idAttribute: 'queryKey',
+  url: function () {
     // return '/rest/pool/' + this.get('poolKey') + '/query/' + this.get('queryKey')
     return this.urlRoot;
   },
@@ -117,58 +136,63 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
   }
 });
 
-  ScriptModel = Backbone.Model.extend({
-    idAttribute: 'scriptKey'
-  });
-  ScriptCollection = Backbone.Collection.extend({
-    model: ScriptModel,
-    url: function () { return this.urlRoot; },
-    parse: function(response) {
-      var m = [];
-      for(var i = 0; i < response.script.length; i++) {
-        m.push(new ScriptModel(response.script[i]))
-      }
-      this.set ( m )
-      return this.models;
+ScriptModel = Backbone.Model.extend({
+  idAttribute: 'scriptKey'
+});
+ScriptCollection = Backbone.Collection.extend({
+  model: ScriptModel,
+  url: function () { return this.urlRoot; },
+  parse: function(response) {
+    var m = [];
+    for(var i = 0; i < response.script.length; i++) {
+      m.push(new ScriptModel(response.script[i]))
     }
+    this.set ( m )
+    return this.models;
+  }
 
-  });
+});
 
 
 
-  notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
+notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
 
-  notionApp.config(function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.when('', '/pools/index')
-    $urlRouterProvider.otherwise('/pools/index')
-    $stateProvider
-    .state('pools', {
-      abstract: true,
-      url: "/pools",
-      templateUrl: 'partials/pools.html',
-      controller: 'PoolsController'
-    })
-    .state('pools.index', {
-      url: "/index",
-      templateUrl: 'partials/pools.index.html',
-      controller: 'PoolsController'
-    })
-    .state('pools.pool', {
-      url: "/:poolKey",
-      templateUrl: 'partials/pool.detail.html',
-      controller: 'PoolController'
-    })
-    .state('pools.studies', {
-      url: "/:poolKey/studies",
-      templateUrl: 'partials/pool.studies.html',
-      controller: 'StudyController'
-    })
-    .state('pools.query', {
-      url: "/:poolKey/query",
-      templateUrl: 'partials/pool.query.html',
-      controller: 'QueryController'
-    })
-  });
+notionApp.config(function($stateProvider, $urlRouterProvider) {
+  $urlRouterProvider.when('', '/pools/index')
+  $urlRouterProvider.otherwise('/pools/index')
+  $stateProvider
+  .state('pools', {
+    abstract: true,
+    url: "/pools",
+    templateUrl: 'partials/pools.html',
+    controller: 'PoolsController'
+  })
+  .state('pools.index', {
+    url: "/index",
+    templateUrl: 'partials/pools.index.html',
+    controller: 'PoolsController'
+  })
+  .state('pools.pool', {
+    url: "/:poolKey",
+    templateUrl: 'partials/pool.detail.html',
+    controller: 'PoolController'
+  })
+  .state('pools.studies', {
+    url: "/:poolKey/studies",
+    templateUrl: 'partials/pool.studies.html',
+    controller: 'StudyController'
+  })
+  .state('pools.query', {
+    url: "/:poolKey/query",
+    templateUrl: 'partials/pool.query.html',
+    controller: 'QueryController'
+  })
+  .state('connectors', {
+    url: "/connectors",
+    templateUrl: 'partials/connectors.html',
+    controller: 'ConnectorsController'
+  })
+});
 
 // ['$routeProvider',
 // function($routeProvider){
@@ -178,6 +202,73 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
 //     controller: 'PoolsController'
 //   });
 // }]);
+
+
+notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal) {
+  $scope.poolCollection = new PoolCollection();
+  // Make the first one syncrhonous
+  $scope.poolCollection.fetch({remove:true, async:false})
+  $scope.connectorCollection = new ConnectorCollection();
+  $scope.connectorCollection.fetch({async:false});
+  $scope.pools = $scope.poolCollection.toJSON()
+
+  $scope.getPoolInfo = function(poolKey) {
+    var pool = $scope.poolCollection.get(poolKey);
+    return pool.get('name') + " / " + pool.get("applicationEntityTitle");
+  }
+  $scope.getDeviceInfo = function (poolKey, deviceKey) {
+    var device = new DeviceModel();
+    device.urlRoot = '/rest/pool/' + poolKey + '/device/' + deviceKey;
+    device.fetch({async:false})
+    console.log("Got devcie ", device)
+    return device.get("applicationEntityTitle") + "@" + device.get("hostName") + ":" + device.get("port")
+  }
+
+  // Devices
+  $scope.editConnector = function(connector) {
+    console.log("Edit Connector")
+    var newConnector = !connector
+    if ( !connector ) {
+      connector = new ConnectorModel()
+    }
+    $scope.connector = connector
+    $scope.model = connector.toJSON()
+    $modal.open ( {
+      templateUrl: 'partials/connector.edit.html',
+      scope: $scope,
+      controller: function($scope, $modalInstance) {
+        if ( newConnector ) {
+          $scope.title = "Create a new connector"
+        } else {
+          $scope.title = "Edit the connector"
+        }
+        $scope.getDevices = function(poolKey) {
+          console.log("get devices")
+          if ( !poolKey ) { return []; }
+          // Grab the devices
+          var deviceCollection = new DeviceCollection();
+          deviceCollection.urlRoot = '/rest/pool/' + poolKey + '/device';
+          deviceCollection.fetch({async:false})
+          return deviceCollection.toJSON()
+        }
+
+        $scope.save = function(){
+          console.log("saving here!!!!", $scope, $scope.model)
+          var connector = new ConnectorModel();
+
+          connector.set ( $scope.model )
+          connector.save();
+          $modalInstance.close();
+        };
+        $scope.cancel = function() { $modalInstance.dismiss() };
+      }
+    });
+  };
+
+
+
+
+});
 
 notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal) {
   $scope.poolCollection = new PoolCollection();
@@ -412,7 +503,7 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
         }
       }
     })
-}
+  }
 
 });
 
@@ -435,41 +526,41 @@ notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateP
       PatientName : $scope.PatientName,
       AccessionNumber : $scope.AccessionNumber
     }
-    )
-    .success(function(data,status,headers) {
-      console.log("got ", data)
-      $scope.studies = data
-      $scope.numberOfItems = data.TotalRecordCount
-    });
-  };
+  )
+  .success(function(data,status,headers) {
+    console.log("got ", data)
+    $scope.studies = data
+    $scope.numberOfItems = data.TotalRecordCount
+  });
+};
 
-  $scope.$watch('currentPage', $scope.reload);
-  $scope.clear = function() {
-    $scope.PatientID = "";
-    $scope.PatientName = "";
-    $scope.AccessionNumber = "";
-    $scope.reload()
+$scope.$watch('currentPage', $scope.reload);
+$scope.clear = function() {
+  $scope.PatientID = "";
+  $scope.PatientName = "";
+  $scope.AccessionNumber = "";
+  $scope.reload()
 
-  }
-  $scope.deleteStudy = function(study) {
-    $scope.study = study
-    $modal.open ({
-      templateUrl: 'partials/modal.html',
-      scope: $scope,
-      controller: function($scope, $modalInstance) {
-        $scope.title = "Delete study?"
-        $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber
-        $scope.ok = function(){
-          $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
-          .success(function() {
-            $scope.reload()
-            $modalInstance.dismiss()
-          })
-        };
-        $scope.cancel = function() { $modalInstance.dismiss() };
-      }
-    });
-  };
+}
+$scope.deleteStudy = function(study) {
+  $scope.study = study
+  $modal.open ({
+    templateUrl: 'partials/modal.html',
+    scope: $scope,
+    controller: function($scope, $modalInstance) {
+      $scope.title = "Delete study?"
+      $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber
+      $scope.ok = function(){
+        $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
+        .success(function() {
+          $scope.reload()
+          $modalInstance.dismiss()
+        })
+      };
+      $scope.cancel = function() { $modalInstance.dismiss() };
+    }
+  });
+};
 
 
 
@@ -483,96 +574,80 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   $scope.model = $scope.pool.toJSON();
   $scope.pools = $scope.$parent.poolCollection.toJSON()
 
-  $scope.deviceCollection = new DeviceCollection();
-  $scope.deviceCollection.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/device';
-  console.log( $scope.deviceCollection )
-  $scope.deviceCollection.fetch({async:false})
-  $scope.devices = $scope.deviceCollection.toJSON()
+  $scope.connectorCollection = new ConnectorCollection();
+  $scope.connectorCollection.fetch({async:false});
+  $scope.connectors = $scope.connectorCollection.toJSON();
+  query = $scope.query
 
-  // $.ajax({
-  //   url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1',
-  //   type: 'GET',
-  //   data: {},
-  //   success: function(data) {
-  //     $scope.$apply ( function(){
-  //       $scope.query = new QueryModel(data);
-  //       $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/1';
-  //     })
-  //   }
-  // })
+  $scope.refresh = function(){
+    console.log ( $scope.query )
+    $scope.query.fetch({'async':false});
+  };
 
-query = $scope.query
+  $scope.fetchAll = function(item){
+    $.each(item.items, function(index,value){
+      item.items[index].doFetch = true
+    })
+    $scope.query.save();
+  };
 
-$scope.refresh = function(){
-  console.log ( $scope.query )
-  $scope.query.fetch({'async':false});
-};
+  $scope.toggleFetch = function(item) {
+    item.doFetch = !item.doFetch
+    $scope.query.save();
+  }
 
-$scope.fetchAll = function(item){
-  $.each(item.items, function(index,value){
-    item.items[index].doFetch = true
-  })
-  $scope.query.save();
-};
-
-$scope.toggleFetch = function(item) {
-  item.doFetch = !item.doFetch
-  $scope.query.save();
-}
-
-$scope.submit = function() {
-  console.log ( $('#queryFile')[0].files[0])
-  var formData = new FormData();
-  console.log ( formData )
-  formData.append('file', $('#queryFile')[0].files[0] )
-  formData.append('destinationPoolKey', $scope.receivingPool)
-  formData.append('deviceKey', $scope.queryDevice)
-  console.log ( formData )
-  $.ajax({
-    url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
-    type: 'POST',
-    data: formData,
-    processData: false,
-    contentType: false,
-    success: function(data) {
-      $scope.$apply ( function(){
-        $scope.query = new QueryModel(data);
-        $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-      })
-    },
-    error: function(xhr, status, error) {
-      alert ( "Query failed: " + xhr.responseText )
-    }
-  });
-};
-
-var queryTick = function(){
-  if ( $scope.query ) {
-    console.log("queryTick")
-    $scope.query.fetch({'async':false}).done(function() {
-      console.log ("queryTick completed")
-      if ($scope.query.get('status').startsWith("Fetch Pending")) {
-        $timeout(queryTick, 2000)
+  $scope.submit = function() {
+    console.log ( $('#queryFile')[0].files[0])
+    var formData = new FormData();
+    console.log ( formData )
+    formData.append('file', $('#queryFile')[0].files[0] )
+    formData.append('connectorKey', $scope.connectorKey)
+    console.log ( formData )
+    $.ajax({
+      url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(data) {
+        $scope.$apply ( function(){
+          $scope.query = new QueryModel(data);
+          $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+        })
+      },
+      error: function(xhr, status, error) {
+        alert ( "Query failed: " + xhr.responseText )
       }
     });
+  };
+
+  var queryTick = function(){
+    if ( $scope.query ) {
+      console.log("queryTick")
+      $scope.query.fetch({'async':false}).done(function() {
+        console.log ("queryTick completed")
+        if ($scope.query.get('status').startsWith("Fetch Pending")) {
+          $timeout(queryTick, 2000)
+        }
+      });
       // console.log("query done")
       // });
-}
-};
-
-
-$scope.fetch = function(){
-  $.ajax({
-    url: $scope.query.urlRoot + "/fetch",
-    type: 'PUT',
-    data: {},
-    success: function(data){
-      queryTick();
-      console.log("started ticker")
-      $scope.refresh();
     }
-  });
-};
+  };
+
+
+  $scope.fetch = function(){
+    $.ajax({
+      url: $scope.query.urlRoot + "/fetch",
+      type: 'PUT',
+      data: {},
+      success: function(data){
+        queryTick();
+        console.log("started ticker")
+        $scope.refresh();
+      }
+    });
+  };
 
 });
 

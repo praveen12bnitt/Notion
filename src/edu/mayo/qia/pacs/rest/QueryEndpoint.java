@@ -3,7 +3,6 @@ package edu.mayo.qia.pacs.rest;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -26,6 +25,7 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import com.sun.jersey.spi.resource.PerRequest;
 
+import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Query;
@@ -97,7 +97,9 @@ public class QueryEndpoint {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createQuery(@FormDataParam("file") InputStream spreadSheetInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail, @FormDataParam("destinationPoolKey") int destinationPoolKey, @FormDataParam("deviceKey") int deviceKey) {
+  public Response createQuery(@FormDataParam("file") InputStream spreadSheetInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail, @FormDataParam("connectorKey") int connectorKey) {
+
+    ;
     logger.info("handling  " + fileDetail.getFileName());
     // Use POI or SuperCSV to parse
     fileDetail.getFileName();
@@ -108,17 +110,25 @@ public class QueryEndpoint {
     Query query;
     try {
       session.beginTransaction();
+      Connector connector = (Connector) session.byId(Connector.class).load(connectorKey);
+
+      int destinationPoolKey = connector.destinationPoolKey;
+      int deviceKey = connector.queryDeviceKey;
+      int queryPoolKey = connector.queryPoolKey;
 
       Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
       if (pool == null) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
       }
+
       Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
       if (destinationPool == null) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
       }
+
       Device device = (Device) session.byId(Device.class).load(deviceKey);
-      if (device == null || device.pool.poolKey != poolKey) {
+
+      if (device == null || device.pool.poolKey != queryPoolKey) {
         return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
       }
       query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);

@@ -19,20 +19,11 @@
       <form role="form" enctype="multipart/form-data" >
         <div class="form-group">
           <label>DICOM Destination to Query</label>
-          <select ng-model="queryDevice" ng-options="d.deviceKey as d.hostName for d in devices " name='deviceKey'></select>
-        </div>
-        <div class="form-group">
-          <label>Receiving Pool</label>
-          <select ng-model="receivingPool" ng-options="p.poolKey as p.name for p in pools" name='destinationPoolKey'></select>
-        </div>
-        <div class="form-group">
-          <label>File input</label>
-          <input type="file" name="file" id="queryFile">
-          <p class="help-block">Upload an Excel or CSV file using the templates (Excel / CSV).</p>
+          <select ng-model="connectorKey" ng-options="c.connectorKey as c.name for c in connectors " name='connectorKey'></select>
         </div>
         <button ng-click="submit()" class="btn btn-default">Submit</button>
       </form>
-    </div>    
+    </div>
   </div>
 
   <div class="panel panel-default" ng-hide="!query">
