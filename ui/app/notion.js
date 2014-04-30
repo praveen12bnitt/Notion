@@ -211,6 +211,7 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
   $scope.connectorCollection = new ConnectorCollection();
   $scope.connectorCollection.fetch({async:false});
   $scope.pools = $scope.poolCollection.toJSON()
+  $scope.deviceCache = {}
 
   $scope.getPoolInfo = function(poolKey) {
     var pool = $scope.poolCollection.get(poolKey);
@@ -218,12 +219,41 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
   }
 
   $scope.getDeviceInfo = function (poolKey, deviceKey) {
-    var device = new DeviceModel();
-    device.urlRoot = '/rest/pool/' + poolKey + '/device/' + deviceKey;
-    device.fetch({async:false})
-    console.log("Got devcie ", device)
+    var device;
+    if ( deviceKey in $scope.deviceCache ) {
+      device = $scope.deviceCache[deviceKey]
+    } else {
+      device = new DeviceModel();
+      device.urlRoot = '/rest/pool/' + poolKey + '/device/' + deviceKey;
+      device.fetch({async:false})
+      console.log("Got devcie ", device)
+      $scope.deviceCache[deviceKey] = device;
+    }
     return device.get("applicationEntityTitle") + "@" + device.get("hostName") + ":" + device.get("port")
   }
+
+  $scope.deleteConnector = function(connector) {
+    $modal.open ({
+      templateUrl: 'partials/modal.html',
+      controller: function($scope, $modalInstance) {
+        $scope.title = "Delete connector?"
+        $scope.message = "Delete the connector: " + connector.get('name')
+        $scope.ok = function(){
+          connector.destroy({
+            success: function(model, response) {
+              console.log("Dismissing modal")
+              $modalInstance.dismiss();
+              $scope.$apply();
+            },
+            error: function(model, response) {
+              alert ( "Failed to delete Connector: " + response.message )
+            }
+          })
+        };
+        $scope.cancel = function() { $modalInstance.dismiss() };
+      }
+    });
+  };
 
   // Devices
   $scope.editConnector = function(connector) {
@@ -255,13 +285,19 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
         $scope.getDevices = function(poolKey) {
           return $scope.devices;
         }
-
+        if ( !newConnector ) {
+          $scope.queryPoolChanged();
+        }
         $scope.save = function(){
           console.log("saving here!!!!", $scope, $scope.model)
           var connector = new ConnectorModel();
-
           connector.set ( $scope.model )
           connector.save();
+          $scope.connectorCollection.fetch({
+            success: function() {
+              $scope.$apply()
+            }
+          });
           $modalInstance.close();
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
@@ -283,7 +319,9 @@ notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal
   $scope.newPoolKey = false;
 
   $scope.refresh = function() {
-    $scope.$apply (  $scope.poolCollection.fetch({remove:true, async:false}) );
+    $scope.poolCollection.fetch({remove:true, success: function() {
+      $scope.$apply();
+    }});
   };
 
 
@@ -301,21 +339,15 @@ notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal
           $scope.poolCollection.add( $scope.pool)
           $scope.pool.save ( $scope.model )
           $modalInstance.close()
-          $scope.poolCollection.fetch({remove:true, async:false})
+          $scope.poolCollection.fetch({remove:true, success: function() {
+            $scope.$apply();
+          }})
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
       }
     });
   };
 
-  (function tick() {
-    $scope.poolCollection.fetch({remove: true});
-    if ( $scope.newPoolKey ) {
-      $state.transitionTo ( 'pools.pool', { poolKey: $scope.newPoolKey} )
-      $scope.newPoolKey = false
-    }
-    $timeout(tick, 2000)
-  })();
 });
 
 notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, $state, $modal) {
