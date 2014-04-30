@@ -21,6 +21,12 @@
           <label>DICOM Destination to Query</label>
           <select ng-model="connectorKey" ng-options="c.connectorKey as c.name for c in connectors " name='connectorKey'></select>
         </div>
+
+        <div class="form-group">
+          <label>File input</label>
+          <input type="file" name="file" id="queryFile">
+          <p class="help-block">Upload an Excel or CSV file using the templates (Excel / CSV).</p>
+        </div>
         <button ng-click="submit()" class="btn btn-default">Submit</button>
       </form>
     </div>

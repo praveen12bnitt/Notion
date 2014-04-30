@@ -25,7 +25,7 @@
 
 <div class="form-group">
   <label>Query Device</label>
-  <select ng-model="model.queryDeviceKey" ng-options="d.deviceKey as d.applicationEntityTitle + '@' + d.hostname + ':' + d.port for d in getDevices()" name='queryDeviceKey'></select>
+  <select ng-model="model.queryDeviceKey" ng-options="d.deviceKey as d.applicationEntityTitle + '@' + d.hostName + ':' + d.port for d in getDevices()" name='queryDeviceKey'></select>
 </div>
 
 
