@@ -105,43 +105,4 @@ public class Beans {
     return Executors.newFixedThreadPool(4);
   }
 
-  /*
-   * @Bean public HttpServer httpServer() throws IOException { // See if the
-   * html directory exists File htmlDirectory = new File(PACS.directory,
-   * "html"); if (!htmlDirectory.exists()) { htmlDirectory.mkdirs(); // Copy
-   * resources into it }
-   * 
-   * // We want to manage the server threads ourselves // The following code was
-   * extracted from ServerConfiguration and Google HttpServer server = new
-   * HttpServer(); final NetworkListener listener = new
-   * NetworkListener("grizzly", NetworkListener.DEFAULT_NETWORK_HOST,
-   * PACS.RESTPort); listener.setSecure(false);
-   * listener.getTransport().getWorkerThreadPoolConfig().setCorePoolSize(1);
-   * listener.getTransport().getWorkerThreadPoolConfig().setMaxPoolSize(10);
-   * listener.getTransport().setSelectorRunnersCount(5);
-   * server.addListener(listener); // Here's the recommended approach //
-   * http://jersey
-   * .576304.n2.nabble.com/Right-way-to-create-embedded-grizzly-with
-   * -already-instantiated-Application-tt1470802.html#a1484718 ResourceConfig rc
-   * = new PackagesResourceConfig("edu.mayo.qia.pacs.rest");
-   * rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
-   * 
-   * SpringComponentProviderFactory handler = new
-   * SpringComponentProviderFactory(rc, PACS.context); HttpHandler processor =
-   * ContainerFactory.createContainer(HttpHandler.class, rc, handler);
-   * server.getServerConfiguration().addHttpHandler(processor, "/rest");
-   * 
-   * LocalStaticHttpHandler cpHandler = new
-   * LocalStaticHttpHandler(PACS.class.getClassLoader(), "html/", "public/");
-   * cpHandler
-   * .setFileCacheEnabled(Boolean.parseBoolean(System.getProperty("NOTION_CACHE"
-   * , "true")));
-   * 
-   * StaticHttpHandler staticHandler = new
-   * StaticHttpHandler(htmlDirectory.getAbsolutePath());
-   * staticHandler.setFileCacheEnabled(false);
-   * server.getServerConfiguration().addHttpHandler(cpHandler, "/");
-   * 
-   * server.start(); return server; }
-   */
 }

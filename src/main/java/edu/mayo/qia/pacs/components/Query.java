@@ -33,7 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DcmMoveException;
 import edu.mayo.qia.pacs.dicom.DcmQR;
@@ -82,17 +82,15 @@ public class Query {
     }
 
     Map<String, Integer> headerMap = new HashMap<String, Integer>();
-    PACS.checkAssertion(workbook.getNumberOfSheets() > 0, "Could not find a sheet in the workbook");
+    Notion.checkAssertion(workbook.getNumberOfSheets() > 0, "Could not find a sheet in the workbook");
     Sheet sheet = workbook.getSheetAt(0);
-    PACS.checkAssertion(sheet.getPhysicalNumberOfRows() > 0, "Expecting a header row");
+    Notion.checkAssertion(sheet.getPhysicalNumberOfRows() > 0, "Expecting a header row");
     Iterator<Cell> headerIterator = sheet.getRow(0).cellIterator();
     while (headerIterator.hasNext()) {
       Cell headerCell = headerIterator.next();
       headerMap.put(headerCell.getStringCellValue(), headerCell.getColumnIndex());
     }
-    // PACS.checkAssertion(headerMap.containsKey("PatientName"),
-    // "Could not find PatientName column");
-    PACS.checkAssertion(headerMap.containsKey("PatientID"), "Could not find PatientID column");
+    Notion.checkAssertion(headerMap.containsKey("PatientID"), "Could not find PatientID column");
 
     query.status = "Created";
 
@@ -104,9 +102,7 @@ public class Query {
       Row row = rowIterator.next();
       Item item = new Item();
 
-      // PACS.checkAssertion(row.getCell(headerMap.get("PatientName")) != null,
-      // "Row " + row.getRowNum() + " does not contain a PatientName");
-      PACS.checkAssertion(row.getCell(headerMap.get("PatientID")) != null, "Row " + row.getRowNum() + " does not contain a PatientID");
+      Notion.checkAssertion(row.getCell(headerMap.get("PatientID")) != null, "Row " + row.getRowNum() + " does not contain a PatientID");
       item.status = "created";
       item.patientName = getColumn(headerMap, row, "PatientName");
       item.patientID = getColumn(headerMap, row, "PatientID");
@@ -145,7 +141,9 @@ public class Query {
 
   // Implement a C-FIND and store results away...
   public void executeQuery() {
-    PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+    Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
+
+
 
 
 
@@ -157,7 +155,7 @@ public class Query {
 
         public void run() {
           Thread.currentThread().setName ( "Query " + device );
-          JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+          JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
           template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
           for (final Item item : items) {
 
@@ -224,7 +222,7 @@ public class Query {
   /** Update the query, by triggering a fetch on each query result */
   public void update(Query update) {
     if (update.queryKey == this.queryKey) {
-      JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+      JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
       for (Item updateItem : update.items) {
         // Find this item...
         for (Item item : items) {
@@ -248,15 +246,15 @@ public class Query {
 
   public void doFetch() {
     logger.debug("Queuing fetch");
-    PACS.context.getBean("executor", Executor.class).execute(new Runnable() {
+    Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
       public void run() {
-        final JdbcTemplate template = PACS.context.getBean(JdbcTemplate.class);
+        final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "pending fetch", queryKey);
         Thread.currentThread().setName("Fetch " + device);
-        PoolManager poolManager = PACS.context.getBean(PoolManager.class);
+        PoolManager poolManager = Notion.context.getBean(PoolManager.class);
         PoolContainer poolContainer = poolManager.getContainer(pool.poolKey);
-        Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
+        Anonymizer anonymizer = Notion.context.getBean("anonymizer", Anonymizer.class);
         anonymizer.setPool(poolContainer.getPool());
 
         for (final Item item : items) {

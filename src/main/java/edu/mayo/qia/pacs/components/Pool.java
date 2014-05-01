@@ -11,12 +11,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import edu.mayo.qia.pacs.PACS;
 
 @Entity
 @Table
@@ -33,9 +30,6 @@ public final class Pool {
   @Column(columnDefinition = "INTEGER")
   public boolean anonymize;
 
-  @Transient
-  public int port = PACS.DICOMPort;
-
   @JsonIgnore
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
@@ -51,11 +45,9 @@ public final class Pool {
     this.description = path;
     this.applicationEntityTitle = applicationEntityTitle;
     this.anonymize = anonymize;
-    this.port = PACS.DICOMPort;
   }
 
   public Pool() {
-    this.port = PACS.DICOMPort;
   }
 
   public String toString() {

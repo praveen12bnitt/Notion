@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.ConfigurationException;
+import org.junit.ClassRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
@@ -31,7 +33,9 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
+import edu.mayo.qia.pacs.NotionApplication;
+import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
@@ -42,7 +46,6 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
   static Logger logger = Logger.getLogger(PACSTest.class);
-  static PACS pacs = null;
   static int DICOMPort = findFreePort();
   static int RESTPort = findFreePort();
   static Client client;
@@ -52,6 +55,9 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
 
   @Autowired
   JdbcTemplate template;
+
+  @ClassRule
+  public static final DropwizardAppRule<NotionConfiguration> RULE = new DropwizardAppRule<NotionConfiguration>(NotionApplication.class, "notion.test.yml");
 
   static {
     ClientConfig config = new DefaultClientConfig();
@@ -109,7 +115,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
       args.add(temp.getAbsolutePath());
       pacs = new PACS(args);
     }
-    applicationContext.setParent(PACS.context);
+    applicationContext.setParent(Notion.context);
 
   }
 

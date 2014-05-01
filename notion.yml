@@ -4,7 +4,7 @@ dbWeb: 8084
 # Database connection info
 database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
-  url: jdbc:derby:directory:./DB;create=true
+  url: jdbc:derby:directory:./LocalPACS/DB;create=true
   validationQuery: "VALUES 1"
   user: dogwatch
   password: dogwatch
@@ -39,6 +39,8 @@ email:
 
 notion:
   host: myst.mayo.edu:8080
+  dicomPort: 11117
+  imageDirectory: ./LocalPACS/Images
 
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.

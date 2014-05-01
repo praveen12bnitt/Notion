@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.spi.resource.PerRequest;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 
@@ -88,7 +88,7 @@ public class LookupEndpoint extends TableEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createRecord(@Context UriInfo uriInfo, @FormParam("Type") String type, @FormParam("Name") String name, @FormParam("Value") String value) throws Exception {
     logger.info("Create: " + type + "/" + name + "/" + value);
-    Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
+    Anonymizer anonymizer = Notion.context.getBean("anonymizer", Anonymizer.class);
     anonymizer.setPool(poolManager.getContainer(poolKey).getPool());
     ObjectNode json;
     // Does it already exist?
@@ -115,7 +115,7 @@ public class LookupEndpoint extends TableEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response createRecord(@Context UriInfo uriInfo, @FormParam("LookupKey") final Integer lookupKey, @FormParam("Type") final String type, @FormParam("Name") final String name, @FormParam("Value") final String value) throws Exception {
     logger.info("Update: " + lookupKey + "/" + type + "/" + name + "/" + value);
-    Anonymizer anonymizer = PACS.context.getBean("anonymizer", Anonymizer.class);
+    Anonymizer anonymizer = Notion.context.getBean("anonymizer", Anonymizer.class);
     anonymizer.setPool(poolManager.getContainer(poolKey).getPool());
     SimpleResponse json = new SimpleResponse();
     // Does it already exist?

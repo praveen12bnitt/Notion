@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 
 /**
  * Manages the pools, starting them up, shutdown, etc.
@@ -49,7 +49,7 @@ public class PoolManager implements Managed {
   }
 
   public void newPool(Pool pool) {
-    PoolContainer poolContainer = PACS.context.getBean(PoolContainer.class);
+    PoolContainer poolContainer = Notion.context.getBean(PoolContainer.class);
     poolContainers.put(pool.applicationEntityTitle, poolContainer);
     logger.info("Starting pool: " + pool);
     poolContainer.start(pool);

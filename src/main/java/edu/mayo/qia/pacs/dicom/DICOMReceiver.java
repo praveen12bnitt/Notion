@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.dicom;
 
+import io.dropwizard.lifecycle.Managed;
+
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,8 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
 
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
@@ -29,7 +29,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.PoolManager;
 
 /**
@@ -41,7 +41,7 @@ import edu.mayo.qia.pacs.components.PoolManager;
  */
 @Component("dicomReceiver")
 @DependsOn("flyway")
-public class DICOMReceiver implements AssociationListener {
+public class DICOMReceiver implements AssociationListener, Managed {
   static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
   private ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
 
@@ -59,6 +59,9 @@ public class DICOMReceiver implements AssociationListener {
   PoolManager poolManager;
 
   @Autowired
+  NotionConfiguration configuration;
+
+  @Autowired
   FindSCP findSCP;
 
   @Autowired
@@ -72,6 +75,7 @@ public class DICOMReceiver implements AssociationListener {
   public DICOMReceiver() {
   }
 
+  @Override
   public synchronized void stop() {
     device.stopListening();
   }
@@ -80,12 +84,12 @@ public class DICOMReceiver implements AssociationListener {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *         if could not start database
+   *           if could not start database
    */
-  @PostConstruct
+  @Override
   public synchronized void start() throws Exception {
     logger.info("Starting");
-    nc.setPort(PACS.DICOMPort);
+    nc.setPort(configuration.notion.dicomPort);
     device.setNetworkApplicationEntity(ae);
     device.setNetworkConnection(nc);
     ae.setNetworkConnection(nc);
@@ -132,7 +136,7 @@ public class DICOMReceiver implements AssociationListener {
     final AssociationInfo info = new AssociationInfo();
     final Association association = event.getAssociation();
     associationMap.put(association, info);
-    File incoming = new File(PACS.directory, "incoming");
+    File incoming = new File(configuration.notion.imageDirectory, "incoming");
     info.incomingRootDirectory = new File(incoming, event.getAssociation().getCalledAET());
     info.incomingRootDirectory.mkdirs();
 

@@ -21,7 +21,6 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VRMap;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.mozilla.javascript.Context;
@@ -42,7 +41,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.Script;
@@ -269,9 +268,9 @@ public class Anonymizer {
   }
 
   public static FileObject process(PoolContainer poolContainer, FileObject fileObject, DicomObject originalTags) throws Exception {
-    JdbcTemplate template = PACS.context.getBean("template", JdbcTemplate.class);
+    JdbcTemplate template = Notion.context.getBean("template", JdbcTemplate.class);
 
-    Anonymizer function = PACS.context.getBean("anonymizer", Anonymizer.class);
+    Anonymizer function = Notion.context.getBean("anonymizer", Anonymizer.class);
     function.setPool(poolContainer.getPool());
     DicomInputStream dis = new DicomInputStream(fileObject.getFile());
     final DicomObject dcm = dis.readDicomObject();

@@ -28,7 +28,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Item;
@@ -46,7 +46,7 @@ public class QueryTest extends PACSTest {
   JdbcTemplate template;
 
   InputStream getResource(String fileName) throws Exception {
-    Resource resource = PACS.context.getResource("classpath:" + fileName);
+    Resource resource = Notion.context.getResource("classpath:" + fileName);
     return resource.getInputStream();
   }
 
@@ -163,7 +163,7 @@ public class QueryTest extends PACSTest {
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").build();
     WebResource fileResource = client.resource(uri);
     final FormDataMultiPart multiPart = new FormDataMultiPart();
-    multiPart.bodyPart(new FileDataBodyPart("file", PACS.context.getResource("classpath:Query/QueryTemplate.xlsx").getFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE));
+    multiPart.bodyPart(new FileDataBodyPart("file", Notion.context.getResource("classpath:Query/QueryTemplate.xlsx").getFile(), MediaType.APPLICATION_OCTET_STREAM_TYPE));
     multiPart.field("connectorKey", Integer.toString(connector.connectorKey));
 
     ClientResponse response = fileResource.type(MediaType.MULTIPART_FORM_DATA_TYPE).post(ClientResponse.class, multiPart);

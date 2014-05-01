@@ -15,6 +15,16 @@ public class ServerConfiguration {
   @JsonProperty
   public String templatePath;
 
+  @Valid
+  @JsonProperty
+  @NotNull
+  public int dicomPort;
+
+  @Valid
+  @JsonProperty
+  @NotNull
+  public String imageDirectory;
+
   public String getHost() {
     return host;
   }

@@ -35,6 +35,8 @@ import edu.mayo.qia.pacs.components.Result;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
+import edu.mayo.qia.pacs.dicom.DICOMReceiver;
+import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 
 public class NotionApplication extends Application<NotionConfiguration> {
@@ -108,9 +110,14 @@ public class NotionApplication extends Application<NotionConfiguration> {
     context.refresh();
     context.registerShutdownHook();
     context.start();
-    PACS.context = context;
+    Notion.context = context;
+
+    if (configuration.dbWeb != null) {
+      environment.lifecycle().manage(new DBWebServer(configuration.dbWeb));
+    }
 
     environment.lifecycle().manage(context.getBean("poolManager", PoolManager.class));
+    environment.lifecycle().manage(context.getBean(DICOMReceiver.class));
 
     environment.servlets().setSessionHandler(new SessionHandler());
     environment.jersey().setUrlPattern("/rest/*");

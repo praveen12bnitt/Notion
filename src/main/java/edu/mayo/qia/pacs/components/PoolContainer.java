@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
 
 import com.google.common.io.Files;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
@@ -74,6 +74,9 @@ public class PoolContainer {
   @Autowired
   PoolManager poolManager;
 
+  @Autowired
+  NotionConfiguration configuration;
+
   private String sequenceName;
 
   public PoolContainer() {
@@ -104,7 +107,7 @@ public class PoolContainer {
     }
 
     // See if the directory exists
-    File poolBase = new File(PACS.directory, "ImageStorage");
+    File poolBase = new File(configuration.notion.imageDirectory, "ImageStorage");
     poolDirectory = new File(poolBase, Integer.toString(pool.poolKey));
     if (!poolDirectory.exists()) {
       poolDirectory.mkdirs();

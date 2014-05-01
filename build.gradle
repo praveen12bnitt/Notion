@@ -48,7 +48,8 @@ dependencies {
     'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
     'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
     'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
-    'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+'io.dropwizard:dropwizard-testing:' + dropwizardVersion,
 
 
     "javax.activation:activation:1.1",
