@@ -4,6 +4,8 @@
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
 	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src/test/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry sourcepath="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-core/0.7.0/4b0f7b5609d748fa835d6f93b8260c5815230529/dropwizard-core-0.7.0-sources.jar" kind="lib" path="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-core/0.7.0/1bdf635d27892eb6ad084269a1b44d6dbed82470/dropwizard-core-0.7.0.jar" exported="true"/>
 	<classpathentry sourcepath="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-hibernate/0.7.0/cf327cca74286f96c1bc204fb93d687636ff4c22/dropwizard-hibernate-0.7.0-sources.jar" kind="lib" path="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-hibernate/0.7.0/ebd01e87e20705a707ab1b92c436d685e6cb1d3d/dropwizard-hibernate-0.7.0.jar" exported="true"/>
 	<classpathentry sourcepath="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-jdbi/0.7.0/67e85c5527c0353b8e26325dc8c10cc61abb2920/dropwizard-jdbi-0.7.0-sources.jar" kind="lib" path="/Users/blezek/.gradle/caches/modules-2/files-2.1/io.dropwizard/dropwizard-jdbi/0.7.0/da3c452f7d9dfe0fca2f092d44b7c34fa02c6368/dropwizard-jdbi-0.7.0.jar" exported="true"/>

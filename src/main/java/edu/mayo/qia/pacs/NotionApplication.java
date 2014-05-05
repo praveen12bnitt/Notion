@@ -31,17 +31,20 @@ import edu.mayo.qia.pacs.components.Result;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
+import edu.mayo.qia.pacs.components.User;
+import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
+import edu.mayo.qia.pacs.rest.UserEndpoint;
 
 public class NotionApplication extends Application<NotionConfiguration> {
   static Logger logger = LoggerFactory.getLogger(NotionApplication.class);
   static int HashIterations = 100;
 
-  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Connector.class, Device.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class, PoolManager.class, Query.class,
-      Result.class, Script.class, Series.class, Study.class, Connector.class) {
+  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Connector.class, Device.class, User.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class, PoolManager.class,
+      Query.class, Result.class, Script.class, Series.class, Study.class, Connector.class) {
     @Override
     public DataSourceFactory getDataSourceFactory(NotionConfiguration configuration) {
       return configuration.getDataSourceFactory();
@@ -85,6 +88,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
     parent.getBeanFactory().registerSingleton("dropwizardEnvironment", environment);
     parent.getBeanFactory().registerSingleton("sessionFactory", hibernate.getSessionFactory());
     parent.getBeanFactory().registerSingleton("configuration", configuration);
+    parent.getBeanFactory().registerSingleton("objectMapper", environment.getObjectMapper());
+    parent.getBeanFactory().registerSingleton("userDAO", new UserDAO(hibernate.getSessionFactory()));
 
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setUrl(configuration.getDataSourceFactory().getUrl());
@@ -104,7 +109,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     context.setParent(parent);
     context.register(Beans.class, PoolManager.class, PoolContainer.class);
     context.scan("edu.mayo.qia.pacs.dicom");
-    context.scan("edu.mayo.qia.pacs");
+    context.scan("edu.mayo.qia.pacs.rest");
 
     context.refresh();
     context.registerShutdownHook();
@@ -124,6 +129,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     // Add a component
     environment.jersey().register(context.getBean(PoolEndpoint.class));
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
+    environment.jersey().register(context.getBean(UserEndpoint.class));
 
   }
 

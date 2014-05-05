@@ -153,8 +153,6 @@ ScriptCollection = Backbone.Collection.extend({
 
 });
 
-
-
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
@@ -191,20 +189,56 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
     url: "/connectors",
     templateUrl: 'partials/connectors.html',
     controller: 'ConnectorsController'
-  })
+  });
+
+  $stateProvider
+    .state('anonymous', {
+      abstract: true,
+      template: "<ui-view/>"
+    })
+    .state('anonymous.login', {
+      url: '/login',
+      templateUrl: 'partials/login.html',
+      controller: 'LoginController'
+    })
+
 });
 
-// ['$routeProvider',
-// function($routeProvider){
-//   $routeProvider.
-//   when('/', {
-//     templateUrl: 'partials/pools.html',
-//     controller: 'PoolsController'
-//   });
-// }]);
+notionApp.factory ( 'authorization', function($http) {
+  var user;
+  return {
+    isLoggedIn: function() {
+      if ( user === undefined ) {
+        return false;
+      }
+      if ( user.get("isRemembered") ) {
+        return true;
+      }
+    },
+    login: function(credentials, success, error) {
+      $http.post('/rest/user/login', credentials ).success(success).error(error)
+    }
+  }
+})
+
+notionApp.run(['$rootScope', '$state', 'authorization', function( $rootScope, $state, authorization ) {
+  console.log ( "run from notionApp", authorization.isLoggedIn() )
+  $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
+    console.log("Checking state!" )
+    console.log("toState", toState, "fromState", fromState)
+
+  });
+}]);
 
 
-notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal) {
+notionApp.controller ( "LoginController", function ( $scope, $state, authorization) {
+  $scope.login = function() {
+    authorization.login($scope.user, function() { $state.transitionTo('pools')}, function() { $scope.error = "Error logging in."})
+  }
+});
+
+notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal,authorization) {
+  console.log("is logged in: ", authorization.isLoggedIn() )
   $scope.poolCollection = new PoolCollection();
   // Make the first one syncrhonous
   $scope.poolCollection.fetch({remove:true, async:false})

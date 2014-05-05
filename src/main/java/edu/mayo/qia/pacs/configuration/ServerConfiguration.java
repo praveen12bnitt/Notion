@@ -22,6 +22,14 @@ public class ServerConfiguration {
 
   @Valid
   @JsonProperty
+  public String hashAlgorithm = "SHA-512";
+
+  @Valid
+  @JsonProperty
+  public int hashIterations = 10000;
+
+  @Valid
+  @JsonProperty
   @NotNull
   public String imageDirectory;
 
