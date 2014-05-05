@@ -17,7 +17,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -80,7 +79,6 @@ public class StudiesEndpoint {
     ObjectNode json = new ObjectMapper().createObjectNode();
     json.put("Result", "OK");
     // Build the query
-    final ArrayNode records = json.putArray("Records");
     MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
     logger.info("query parameters\n" + queryParameters);
@@ -127,11 +125,12 @@ public class StudiesEndpoint {
       query.append(" FETCH NEXT ? ROWS ONLY ");
       parameters.add(qParams.get("jtPageSize").asInt(50));
     }
+    final ArrayNode records = json.putArray("Records");
     template.query(query.toString(), parameters.toArray(), new RowCallbackHandler() {
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {
-        ObjectNode row = records.objectNode();
+        ObjectNode row = records.addObject();
         for (String column : columns) {
           row.put(column, rs.getString(column));
         }
@@ -204,23 +203,15 @@ public class StudiesEndpoint {
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   public Response deleteScript(@PathParam("id") int id) {
     if (poolManager.getContainer(poolKey) != null) {
-      poolManager.getContainer(poolKey).deleteStudy(id);
+      if (poolManager.getContainer(poolKey).deleteStudy(id)) {
+        return Response.ok().build();
+      } else {
+        return Response.status(Status.NOT_FOUND).build();
+      }
     }
-    SimpleResponse response = new SimpleResponse();
-    response.put("status", "success");
-    response.put("message", "Delete study " + id);
-    return Response.ok(response).build();
+    return Response.status(Status.NOT_FOUND).build();
   }
 
-  @POST
-  @Path("/delete")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteRecord(MultivaluedMap<String, String> formParams, @FormParam("StudyKey") int studyKey) {
-    logger.info("Form Parameters: " + formParams);
-    poolManager.getContainer(poolKey).deleteStudy(studyKey);
-    return Response.ok(new SimpleResponse("Result", "OK")).build();
-  }
 }

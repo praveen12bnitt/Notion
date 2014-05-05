@@ -37,7 +37,7 @@ public class LookupTest extends PACSTest {
     form.add("Type", "PatientName");
     form.add("Name", "Mr. Magoo");
     form.add("Value", "Rikki-tikki-tavvi");
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, form);
+    response = client.resource(uri).post(ClientResponse.class, form);
     assertEquals("Status", 200, response.getStatus());
     assertEquals("Count", new Integer(1), template.queryForObject("select count(*) from LOOKUP where PoolKey = " + pool.poolKey, Integer.class));
 
@@ -51,13 +51,13 @@ public class LookupTest extends PACSTest {
     form.putSingle("LookupKey", lookupKey);
     form.putSingle("Value", "Darth Vader");
     uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").path("update").build();
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, form);
+    response = client.resource(uri).post(ClientResponse.class, form);
     assertEquals("Status", 200, response.getStatus());
     assertEquals("Value", "Darth Vader", template.queryForObject("select Value from LOOKUP where LookupKey = ?", new Object[] { lookupKey }, String.class));
 
     // Query
     uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").build();
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class);
+    response = client.resource(uri).post(ClientResponse.class);
     assertEquals("Status", 200, response.getStatus());
     json = response.getEntity(ObjectNode.class);
     assertEquals("Count", 1, json.withArray("Records").size());
@@ -65,12 +65,10 @@ public class LookupTest extends PACSTest {
 
     // Delete
     uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").path("delete").build();
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, form);
+    response = client.resource(uri).post(ClientResponse.class, form);
     assertEquals("Status", 200, response.getStatus());
     json = response.getEntity(ObjectNode.class);
     assertEquals("Result", "OK", json.get("Result").textValue());
-
-    //
 
   }
 }

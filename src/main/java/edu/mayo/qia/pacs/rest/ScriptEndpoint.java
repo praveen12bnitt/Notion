@@ -117,7 +117,7 @@ public class ScriptEndpoint {
     Script script = inScript;
     script = (Script) session.byId(Script.class).load(id);
     if (!inScript.tag.equals(script.tag)) {
-      return Response.serverError().entity(new SimpleResponse("message", "Script tags must not change")).build();
+      return Response.status(Status.FORBIDDEN).entity(new SimpleResponse("message", "Script tags must not change")).build();
     }
     script.update(inScript);
     return Response.ok(script).build();

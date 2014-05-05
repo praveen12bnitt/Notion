@@ -40,15 +40,6 @@ public class PoolTest extends PACSTest {
   PoolManager poolManager;
 
   @Test
-  public void base() {
-    ClientResponse response = null;
-    URI uri = UriBuilder.fromUri(baseUri).path("/").build();
-    logger.debug("Loading: " + uri);
-    response = client.resource(uri).get(ClientResponse.class);
-    assertEquals("Got result", 200, response.getStatus());
-  }
-
-  @Test
   public void listPools() {
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
@@ -60,8 +51,10 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
@@ -116,7 +109,7 @@ public class PoolTest extends PACSTest {
     form.add("Type", "PatientName");
     form.add("Name", "Mr. Magoo");
     form.add("Value", "Rikki-tikki-tavvi");
-    ClientResponse response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, form);
+    ClientResponse response = client.resource(uri).post(ClientResponse.class, form);
     assertEquals("Status", 200, response.getStatus());
     assertEquals("Lookup", new Integer(1), template.queryForObject("select count(*) from LOOKUP where PoolKey = " + pool.poolKey, Integer.class));
 

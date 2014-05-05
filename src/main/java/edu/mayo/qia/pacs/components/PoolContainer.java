@@ -191,7 +191,12 @@ public class PoolContainer {
     }
   }
 
-  public void deleteStudy(final int studyKey) {
+  public boolean deleteStudy(final int studyKey) {
+    Integer count = template.queryForObject("select count(*) from STUDY where PoolKey = ? and StudyKey = ?", new Object[] { pool.poolKey, studyKey }, Integer.class);
+    if (count.intValue() != 1) {
+      return false;
+    }
+
     // Delete the study, series and instances
     synchronized (this) {
       final File deleteDirectory = new File(poolDirectory, "deleted");
@@ -222,7 +227,7 @@ public class PoolContainer {
       for (File dir : directories) {
         dir.delete();
       }
-
+      return true;
     }
   }
 
