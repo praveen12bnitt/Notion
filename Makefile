@@ -1,5 +1,3 @@
-
-
 include BuildProperties.properties
 build=$(build.major).$(build.minor).$(build.patch)
 versionDir=Notion-$(build)
@@ -11,15 +9,13 @@ dir=zip-temp/$(versionDir)
 dist:
 	(cd Documentation && make html)
 	(cd Documentation && make epub)
-	(cd ui/ && gulp build)
-	ant clean 
-	ant resolve
-	ant jar
+	(cd ui/ && make install)
+	./gradlew jar
 	rm -rf zip-temp
 	mkdir -p $(dir)
-	cp -r lib $(dir)
+	cp -r build/libs/lib $(dir)
 	cp notion $(dir)
-	cp Notion.jar $(dir)/Notion.jar
+	cp build/libs/Notion.jar $(dir)/Notion.jar
 	cp Readme.md $(dir)
 	mkdir -p $(dir)/Documentation
 	cp -r Documentation/_build/html $(dir)/Documentation
@@ -38,7 +34,7 @@ install: dist
 	${MAKE} sync
 
 server:
-	ant jar
+	./gradlew jar
 
 sync:
 	rsync -arvz zip-temp/$(versionDir) qin@qia:/research/images/Notion
