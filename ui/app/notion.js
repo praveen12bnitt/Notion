@@ -613,7 +613,6 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   $scope.connectorCollection = new ConnectorCollection();
   $scope.connectorCollection.fetch({async:false});
   $scope.connectors = $scope.connectorCollection.toJSON();
-  query = $scope.query
 
   $scope.refresh = function(){
     console.log ( $scope.query )
@@ -624,12 +623,10 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     $.each(item.items, function(index,value){
       item.items[index].doFetch = true
     })
-    $scope.query.save();
   };
 
   $scope.toggleFetch = function(item) {
     item.doFetch = !item.doFetch
-    $scope.query.save();
   }
 
   $scope.submit = function() {
@@ -639,6 +636,8 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     formData.append('file', $('#queryFile')[0].files[0] )
     formData.append('connectorKey', $scope.connectorKey)
     console.log ( formData )
+
+
     $.ajax({
       url: '/rest/pool/' + $scope.pool.get('poolKey') + '/query',
       type: 'POST',
@@ -647,8 +646,10 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       contentType: false,
       success: function(data) {
         $scope.$apply ( function(){
+          console.log("Create query")
           $scope.query = new QueryModel(data);
           $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+          queryTick();
         })
       },
       error: function(xhr, status, error) {
@@ -662,7 +663,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       console.log("queryTick")
       $scope.query.fetch({'async':false}).done(function() {
         console.log ("queryTick completed")
-        if ($scope.query.get('status').startsWith("Fetch Pending")) {
+        if ($scope.query.get('status').match("Pending")) {
           $timeout(queryTick, 2000)
         }
       });
@@ -673,6 +674,8 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
 
 
   $scope.fetch = function(){
+    $scope.query.save({async:false});
+    console.log("Saved query", $scope.query)
     $.ajax({
       url: $scope.query.urlRoot + "/fetch",
       type: 'PUT',
