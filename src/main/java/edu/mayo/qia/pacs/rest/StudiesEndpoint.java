@@ -1,5 +1,7 @@
 package edu.mayo.qia.pacs.rest;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -145,15 +147,13 @@ public class StudiesEndpoint {
 
   // Get as a ZIP file
   @GET
+  @UnitOfWork
   @Path("/{id: [1-9][0-9]*}/zip")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getZip(@PathParam("id") int id) throws Exception {
+  public Response getZip(@PathParam("id") final int id) throws Exception {
     Query query;
     final String regex = "[^0-9a-zA-Z_-]";
     Session session = sessionFactory.getCurrentSession();
-    if (!session.getTransaction().isActive()) {
-      session.getTransaction().begin();
-    }
     query = session.createQuery("from Study where PoolKey = :poolkey and StudyKey = :id");
     query.setInteger("poolkey", poolKey);
     query.setInteger("id", id);
@@ -164,35 +164,45 @@ public class StudiesEndpoint {
     StreamingOutput stream = new StreamingOutput() {
       @Override
       public void write(OutputStream output) throws IOException {
-        byte[] buffer = new byte[1024];
-        ZipOutputStream zip = new ZipOutputStream(output);
-        File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
-        String path = study.PatientName.replaceAll(regex, "_");
-        // zip.putNextEntry(new ZipEntry(path));
+        Session session = sessionFactory.openSession();
+        try {
+          Query query = session.createQuery("from Study where PoolKey = :poolkey and StudyKey = :id");
+          query.setInteger("poolkey", poolKey);
+          query.setInteger("id", id);
+          final Study study = (Study) query.uniqueResult();
 
-        String sub = study.StudyID == null ? "" : study.StudyID.replaceAll(regex, "_") + "-";
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        path = path + "/" + sub + format.format(study.StudyDate);
-        // zip.putNextEntry(new ZipEntry(path));
-        for (Series series : study.series) {
-          String seriesPath = path + "/" + series.SeriesDescription.replaceAll(regex, "_");
-          // zip.putNextEntry(new ZipEntry(seriesPath));
-          for (Instance instance : series.instances) {
-            String instancePath = seriesPath + "/" + instance.SOPInstanceUID + ".dcm";
-            zip.putNextEntry(new ZipEntry(instancePath));
-            File f = new File(poolRootDir, instance.FilePath);
-            // Read into the zip file
-            FileInputStream in = new FileInputStream(f);
-            int len;
-            while ((len = in.read(buffer)) > 0) {
-              zip.write(buffer, 0, len);
+          byte[] buffer = new byte[1024];
+          ZipOutputStream zip = new ZipOutputStream(output);
+          File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
+          String path = study.PatientName.replaceAll(regex, "_");
+          // zip.putNextEntry(new ZipEntry(path));
+
+          String sub = study.StudyID == null ? "" : study.StudyID.replaceAll(regex, "_") + "-";
+          DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+          path = path + "/" + sub + format.format(study.StudyDate);
+          // zip.putNextEntry(new ZipEntry(path));
+          for (Series series : study.series) {
+            String seriesPath = path + "/" + series.SeriesDescription.replaceAll(regex, "_");
+            // zip.putNextEntry(new ZipEntry(seriesPath));
+            for (Instance instance : series.instances) {
+              String instancePath = seriesPath + "/" + instance.SOPInstanceUID + ".dcm";
+              zip.putNextEntry(new ZipEntry(instancePath));
+              File f = new File(poolRootDir, instance.FilePath);
+              // Read into the zip file
+              FileInputStream in = new FileInputStream(f);
+              int len;
+              while ((len = in.read(buffer)) > 0) {
+                zip.write(buffer, 0, len);
+              }
+              in.close();
+              zip.closeEntry();
             }
-            in.close();
-            zip.closeEntry();
           }
+          zip.closeEntry();
+          zip.close();
+        } finally {
+          session.close();
         }
-        zip.closeEntry();
-        zip.close();
       }
     };
     String fn = study.PatientName.replaceAll(regex, "_") + ".zip";
