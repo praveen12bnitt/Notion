@@ -1,5 +1,3 @@
-
-
 include BuildProperties.properties
 build=$(build.major).$(build.minor).$(build.patch)
 versionDir=Notion-$(build)
@@ -11,7 +9,7 @@ dir=zip-temp/$(versionDir)
 dist:
 	(cd Documentation && make html)
 	(cd Documentation && make epub)
-	(cd ui/ && gulp build)
+	(cd ui/ && make install)
 	./gradlew jar
 	rm -rf zip-temp
 	mkdir -p $(dir)

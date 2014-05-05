@@ -16,7 +16,7 @@ then
   . /etc/notion.conf
 else
   USER=qin
-  NOTION_HOME=/research/images/Notion/Notion
+  NOTION_HOME=/research/images/Notion/
   NOTION_CONFIG=$NOTION_HOME/notion.yml
   JAVA_ARGS="$JAVA_ARGS -Xmx1048m -Xdebug -Xrunjdwp:transport=dt_socket,address=8050,server=y,suspend=n"
   JAVA_HOME=/usr/java/default
@@ -30,11 +30,10 @@ export PATH=$PATH:/usr/local/sbin
 
 start() {
   echo -n $"Starting $desc: "
-  mkdir -p ${PACS_DIR}
   touch /var/log/$prog.error
   chown $USER /var/log/$prog.error ${PACS_DIR}
 
-  daemonize -e /var/log/$prog.error -c $NOTION_HOME -p /var/run/$prog.pid -l /var/lock/subsys/$prog -u $USER $JAVA_HOME/bin/java $JAVA_ARGS -jar $NOTION_HOME/Notion.jar server $NOTION_CONFIG
+  daemonize -e /var/log/$prog.error -c $NOTION_HOME -p /var/run/$prog.pid -l /var/lock/subsys/$prog -u $USER $JAVA_HOME/bin/java $JAVA_ARGS -jar Notion/Notion.jar server $NOTION_CONFIG
   RETVAL=$?
   [ $RETVAL -eq 0 ] && success || failure
   echo
