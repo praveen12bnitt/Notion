@@ -20,5 +20,6 @@ public class Notion {
   }
 
   public static AnnotationConfigApplicationContext context;
+  public static String version = "1.2.0";
 
 }

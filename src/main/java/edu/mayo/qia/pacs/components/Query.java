@@ -12,6 +12,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -45,7 +46,7 @@ public class Query {
   static Logger logger = Logger.getLogger(Query.class);
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   public int queryKey;
 
   public String status;
@@ -142,16 +143,6 @@ public class Query {
   // Implement a C-FIND and store results away...
   public void executeQuery() {
     Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
-
-
-
-
-
-
-
-
-
-
 
         public void run() {
           Thread.currentThread().setName ( "Query " + device );

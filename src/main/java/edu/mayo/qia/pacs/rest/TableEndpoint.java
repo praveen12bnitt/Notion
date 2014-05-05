@@ -26,7 +26,7 @@ import edu.mayo.qia.pacs.components.PoolManager;
 @Scope("prototype")
 @Component
 public class TableEndpoint {
-  static Logger logger = Logger.getLogger(LookupEndpoint.class);
+  static Logger logger = Logger.getLogger(TableEndpoint.class);
 
   @Autowired
   SessionFactory sessionFactory;

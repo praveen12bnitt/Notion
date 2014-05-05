@@ -6,9 +6,9 @@ database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
   url: jdbc:derby:directory:./LocalPACS/DB;create=true
   validationQuery: "VALUES 1"
-  user: dogwatch
-  password: dogwatch
-  autoCommitByDefault: true
+  user: notion
+  password: notion
+
 
 # Shiro
 shiro:
@@ -18,9 +18,9 @@ shiro:
 
 # How to serve our assets
 # In production, assets are bundled in the Jar
-assets:
-  overrides:
-    /: /Users/blezek/Source/Notion/ui/public
+# assets:
+#   overrides:
+#     /: /Users/blezek/Source/Notion/ui/public
 
 
 server:
@@ -30,7 +30,7 @@ server:
     type: http
     port: 11118
 
-
+  
 # Email configuration
 email:
   from: quintherug@gmail.com

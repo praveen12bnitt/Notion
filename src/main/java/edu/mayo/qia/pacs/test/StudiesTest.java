@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
@@ -37,9 +38,10 @@ public class StudiesTest extends PACSTest {
 
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/studies").build();
-    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, new SimpleResponse());
+    ObjectNode json = new ObjectMapper().createObjectNode();
+    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, json);
     assertEquals("Got result", 200, response.getStatus());
-    ObjectNode json = response.getEntity(ObjectNode.class);
+    json = response.getEntity(ObjectNode.class);
     assertTrue("Result", json.has("Result"));
     assertTrue("Records", json.has("Records"));
     assertEquals("Count", 1, json.withArray("Records").size());

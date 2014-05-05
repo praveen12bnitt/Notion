@@ -263,7 +263,7 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Insert
-      Session session = sessionFactory.getCurrentSession();
+      Session session = sessionFactory.openSession();
       session.beginTransaction();
 
       try {
@@ -317,11 +317,11 @@ public class PoolContainer {
         if (originalFile.exists()) {
           originalFile.delete();
         }
-
+        session.getTransaction().commit();
       } catch (Exception e) {
         logger.error("Caught exception", e);
       } finally {
-        session.getTransaction().commit();
+        session.close();
       }
     }
   }

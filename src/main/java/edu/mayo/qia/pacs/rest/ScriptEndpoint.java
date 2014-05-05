@@ -50,15 +50,14 @@ public class ScriptEndpoint {
 
   /** List all the Scripts. */
   @GET
+  @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response listScripts() {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
-    session.beginTransaction();
     Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
     // Force load
     pool.getScripts().size();
-    session.getTransaction().commit();
     SimpleResponse s = new SimpleResponse("script", pool.getScripts());
     return Response.ok(s).build();
   }

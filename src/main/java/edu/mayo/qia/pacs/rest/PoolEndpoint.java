@@ -42,7 +42,7 @@ import edu.mayo.qia.pacs.components.Script;
 @Component
 @Path("/pool")
 @Scope("singleton")
-public class PoolEndpoint {
+public class PoolEndpoint extends Endpoint {
   static Logger logger = Logger.getLogger(PoolEndpoint.class);
 
   @Autowired
@@ -53,9 +53,6 @@ public class PoolEndpoint {
 
   @Autowired
   PoolManager poolManager;
-
-  @Context
-  ResourceContext resourceContext;
 
   /** List all the pools */
   @SuppressWarnings("unchecked")
@@ -130,7 +127,7 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}/device")
   public DeviceEndpoint devices(@PathParam("id") int id) {
     DeviceEndpoint deviceEndpoint;
-    deviceEndpoint = resourceContext.getResource(DeviceEndpoint.class);
+    deviceEndpoint = getResource(DeviceEndpoint.class);
     deviceEndpoint.poolKey = id;
     return deviceEndpoint;
   }
@@ -139,7 +136,7 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}/studies")
   public StudiesEndpoint studies(@PathParam("id") int id) {
     StudiesEndpoint studiesEndpoint;
-    studiesEndpoint = resourceContext.getResource(StudiesEndpoint.class);
+    studiesEndpoint = getResource(StudiesEndpoint.class);
     studiesEndpoint.poolKey = id;
     return studiesEndpoint;
   }
@@ -148,7 +145,7 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}/lookup")
   public LookupEndpoint lookup(@PathParam("id") int id) {
     LookupEndpoint endpoint;
-    endpoint = resourceContext.getResource(LookupEndpoint.class);
+    endpoint = getResource(LookupEndpoint.class);
     endpoint.poolKey = id;
     return endpoint;
   }
@@ -157,7 +154,7 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}/script")
   public ScriptEndpoint scripts(@PathParam("id") int id) {
     ScriptEndpoint scriptEndpoint;
-    scriptEndpoint = resourceContext.getResource(ScriptEndpoint.class);
+    scriptEndpoint = getResource(ScriptEndpoint.class);
     scriptEndpoint.poolKey = id;
     return scriptEndpoint;
   }
@@ -166,7 +163,7 @@ public class PoolEndpoint {
   @Path("/{id: [1-9][0-9]*}/query")
   public QueryEndpoint query(@PathParam("id") int id) {
     QueryEndpoint queryEndpoint;
-    queryEndpoint = resourceContext.getResource(QueryEndpoint.class);
+    queryEndpoint = getResource(QueryEndpoint.class);
     queryEndpoint.poolKey = id;
     return queryEndpoint;
   }

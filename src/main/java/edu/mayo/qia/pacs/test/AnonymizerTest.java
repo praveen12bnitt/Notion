@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.File;
 import java.net.URI;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.IOUtils;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.ClientResponse;
 
+import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
@@ -220,55 +223,4 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
   }
 
-  @Test
-  public void populateWithCSV() throws Exception {
-    UUID uid = UUID.randomUUID();
-    String aet = uid.toString().substring(0, 10);
-    Pool pool = new Pool(aet, aet, aet, true);
-    pool = createPool(pool);
-    Device device = new Device(".*", ".*", 1234, pool);
-    device = createDevice(device);
-
-    // 1. Construct a 'CSV' JSON object
-    // 2. Send it to our server
-    // 3. Verify the entries
-    // 4. Anonymize using the pre-populated values
-
-    Resource resource = new ClassPathResource("csv.json");
-    String jsonSource = IOUtils.toString(resource.getInputStream());
-    JsonNode csv = new ObjectMapper().reader().readTree(jsonSource);
-
-    // Send it to the server
-    ClientResponse clientResponse = null;
-    URI uri = UriBuilder.fromUri(baseUri).path("/pool").path("/" + pool.poolKey + "/lookup/csv").build();
-    clientResponse = client.resource(uri).type(JSON).accept(JSON).put(ClientResponse.class, csv);
-    assertEquals("Put succeeded", Status.OK.getStatusCode(), clientResponse.getStatus());
-
-    // Anonymize with the data
-    String script;
-    for (String tag : new String[] { "PatientName", "PatientID", "AccessionNumber" }) {
-      script = "anonymizer.info ( 'starting to anonymize' )\n" + "anonymizer.lookup ( '" + tag + "', tags." + tag + ")\n";
-      template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, tag, script);
-    }
-    // @formatter:on
-    List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
-
-    DcmQR dcmQR = new DcmQR();
-    dcmQR.setRemoteHost("localhost");
-    dcmQR.setRemotePort(DICOMPort);
-    dcmQR.setCalledAET(aet);
-    dcmQR.setCalling(aet);
-    dcmQR.open();
-
-    DicomObject response = dcmQR.query();
-    dcmQR.close();
-
-    logger.info("Got response: " + response);
-    assertTrue("Response was null", response != null);
-    assertEquals("PatientName", "PN-68", response.getString(Tag.PatientName));
-    assertEquals("PatientID", "PID-68", response.getString(Tag.PatientID));
-    assertEquals("AccessionNumber", "12345", response.getString(Tag.AccessionNumber));
-    assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
-    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
-  }
 }

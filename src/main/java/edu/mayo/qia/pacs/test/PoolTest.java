@@ -44,7 +44,7 @@ public class PoolTest extends PACSTest {
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/").build();
     logger.debug("Loading: " + uri);
-    response = client.resource(uri).accept(JSON).get(ClientResponse.class);
+    response = client.resource(uri).get(ClientResponse.class);
     assertEquals("Got result", 200, response.getStatus());
   }
 
@@ -60,10 +60,8 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);

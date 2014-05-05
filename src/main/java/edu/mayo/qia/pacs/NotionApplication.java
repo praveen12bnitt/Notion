@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 import javax.sql.DataSource;
 
-import org.eclipse.jetty.server.Connector;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.secnod.dropwizard.shiro.ShiroBundle;
 import org.secnod.dropwizard.shiro.ShiroConfiguration;
@@ -23,6 +23,7 @@ import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
+import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Instance;
 import edu.mayo.qia.pacs.components.Item;
@@ -37,6 +38,7 @@ import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 import edu.mayo.qia.pacs.managed.DBWebServer;
+import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 
 public class NotionApplication extends Application<NotionConfiguration> {
@@ -44,7 +46,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
   static int HashIterations = 100;
 
   private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Connector.class, Device.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class, PoolManager.class, Query.class,
-      Result.class, Script.class, Series.class, Study.class) {
+      Result.class, Script.class, Series.class, Study.class, Connector.class) {
     @Override
     public DataSourceFactory getDataSourceFactory(NotionConfiguration configuration) {
       return configuration.getDataSourceFactory();
@@ -65,7 +67,6 @@ public class NotionApplication extends Application<NotionConfiguration> {
       return configuration.shiro;
     }
   };
-  public static ManagedDataSource dataSource;
 
   @Override
   public void initialize(Bootstrap<NotionConfiguration> bootstrap) {
@@ -89,7 +90,12 @@ public class NotionApplication extends Application<NotionConfiguration> {
     parent.getBeanFactory().registerSingleton("dropwizardEnvironment", environment);
     parent.getBeanFactory().registerSingleton("sessionFactory", hibernate.getSessionFactory());
     parent.getBeanFactory().registerSingleton("configuration", configuration);
-    dataSource = configuration.getDataSourceFactory().build(environment.metrics(), "Notion");
+
+    BasicDataSource dataSource = new BasicDataSource();
+    dataSource.setUrl(configuration.getDataSourceFactory().getUrl());
+    dataSource.setUsername(configuration.getDataSourceFactory().getUser());
+    dataSource.setPassword(configuration.getDataSourceFactory().getPassword());
+    dataSource.setDefaultAutoCommit(true);
     parent.getBeanFactory().registerSingleton("dataSource", dataSource);
 
     parent.refresh();
@@ -99,13 +105,11 @@ public class NotionApplication extends Application<NotionConfiguration> {
       System.out.println("Bean: " + name);
     }
 
-    Object ds = parent.getBean("dataSource", DataSource.class);
-
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
     context.setParent(parent);
     context.register(Beans.class, PoolManager.class, PoolContainer.class);
     context.scan("edu.mayo.qia.pacs.dicom");
-    context.scan("edu.mayo.qia.pacs.rest");
+    context.scan("edu.mayo.qia.pacs");
 
     context.refresh();
     context.registerShutdownHook();
@@ -124,18 +128,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
 
     // Add a component
     environment.jersey().register(context.getBean(PoolEndpoint.class));
+    environment.jersey().register(context.getBean(ConnectorEndpoint.class));
 
   }
 
-  public static void main(String[] args) {
-    AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
-    parent.getBeanFactory().registerSingleton("map", new HashMap<String, String>());
-    parent.register(MapTest.class);
-    parent.refresh();
-    parent.start();
-
-    Object t = parent.getBean("mapTest");
-    t = parent.getBean("name");
-    System.out.println("t: " + t);
-  }
 }

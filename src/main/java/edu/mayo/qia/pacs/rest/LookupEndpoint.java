@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,9 +37,6 @@ import edu.mayo.qia.pacs.ctp.Anonymizer;
 @PerRequest
 public class LookupEndpoint extends TableEndpoint {
   static Logger logger = Logger.getLogger(LookupEndpoint.class);
-
-  @Autowired
-  TransactionTemplate transactionTemplate;
 
   @Autowired
   JdbcTemplate template;

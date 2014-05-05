@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 
 import org.springframework.stereotype.Component;
 
-import edu.mayo.qia.pacs.PACS;
+import edu.mayo.qia.pacs.Notion;
 
 @Path("/")
 @Component
@@ -18,7 +18,7 @@ public class Root {
   public Response status() {
     SimpleResponse response = new SimpleResponse();
     response.put("status", "ok");
-    response.put("version", PACS.version);
+    response.put("version", Notion.version);
     return Response.ok(response).build();
   }
 }

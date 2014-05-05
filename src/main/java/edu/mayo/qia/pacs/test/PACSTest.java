@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import io.dropwizard.testing.junit.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import org.junit.ClassRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,6 +44,7 @@ import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
 import edu.mayo.qia.pacs.dicom.TagLoader;
+import static io.dropwizard.testing.junit.ConfigOverride.config;
 
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
@@ -56,11 +59,9 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   @Autowired
   JdbcTemplate template;
 
-  @ClassRule
-  public static final DropwizardAppRule<NotionConfiguration> RULE = new DropwizardAppRule<NotionConfiguration>(NotionApplication.class, "notion.test.yml");
-
   static {
     ClientConfig config = new DefaultClientConfig();
+    // config.register(new JacksonFeature());
     // config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
     // Boolean.TRUE);
     client = Client.create(config);
@@ -91,32 +92,13 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     return testPort;
   }
 
+  public static ApplicationFixture<NotionConfiguration> NotionTestApp = new ApplicationFixture<NotionConfiguration>(NotionApplication.class, "notion.yml", config("dbWeb", "8088"), config("database.url", "jdbc:derby:memory:notion;create=true"), config(
+      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)));
+
   @Override
   public synchronized void initialize(GenericApplicationContext applicationContext) {
-    if (pacs == null) {
-      // Clean out the temp directory
-      File temp = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
-      try {
-        FileUtils.deleteDirectory(temp);
-      } catch (IOException e) {
-        logger.error("Error cleaning up directory", e);
-      }
-      List<String> args = new ArrayList<String>();
-      if (System.getenv("bamboo.buildKey") == null) {
-        args.add("-db");
-        args.add("8084");
-      }
-      args.add("-port");
-      args.add(Integer.toString(DICOMPort));
-      args.add("-rest");
-      args.add(Integer.toString(RESTPort));
-      // Specify an in memory DB for testing
-      args.add("-m");
-      args.add(temp.getAbsolutePath());
-      pacs = new PACS(args);
-    }
     applicationContext.setParent(Notion.context);
-
+    NotionTestApp.startIfRequired();
   }
 
   Pool createPool(Pool pool) {

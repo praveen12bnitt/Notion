@@ -41,6 +41,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -69,8 +70,9 @@ public class StudiesEndpoint {
   public int poolKey;
 
   @POST
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response searchStudies(@Context UriInfo uriInfo, ObjectNode qParams) throws Exception {
+  public Response searchStudies(@Context UriInfo uriInfo, JsonNode qParams) throws Exception {
     final Set<String> columns = new HashSet<String>(Arrays.asList(new String[] { "PatientID", "PatientName", "AccessionNumber", "StudyDescription" }));
     final Set<String> directions = new HashSet<String>();
     directions.add("ASC");

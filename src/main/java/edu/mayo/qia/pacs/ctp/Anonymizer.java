@@ -36,10 +36,6 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
@@ -55,9 +51,6 @@ public class Anonymizer {
 
   @Autowired
   JdbcTemplate template;
-
-  @Autowired
-  TransactionTemplate transactionTemplate;
 
   static Map<Integer, String> fieldMap = new HashMap<Integer, String>();
   static {
@@ -137,18 +130,12 @@ public class Anonymizer {
 
   public Object[] lookupValueAndKey(final String type, final String name) {
     final Object[] out = new Object[] { null, null };
-    transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+    template.query("select Value, LookupKey from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
 
       @Override
-      protected void doInTransactionWithoutResult(TransactionStatus status) {
-        template.query("select Value, LookupKey from LOOKUP where PoolKey = ? and Type = ? and Name = ?", new Object[] { pool.poolKey, type, name }, new RowCallbackHandler() {
-
-          @Override
-          public void processRow(ResultSet rs) throws SQLException {
-            out[0] = rs.getString("Value");
-            out[1] = rs.getInt("LookupKey");
-          }
-        });
+      public void processRow(ResultSet rs) throws SQLException {
+        out[0] = rs.getString("Value");
+        out[1] = rs.getInt("LookupKey");
       }
     });
 
@@ -160,76 +147,58 @@ public class Anonymizer {
   }
 
   Integer setValue(final String type, final String name, final String value, final Boolean visible) {
-    return transactionTemplate.execute(new TransactionCallback<Integer>() {
+    Object[] k = lookupValueAndKey(type, name);
+    if (k[1] != null) {
+      // Update it
+      template.update("update LOOKUP set Value = ? where LookupKey = ?", value, k[1]);
+      return (Integer) k[1];
+    } else {
+      KeyHolder keyHolder = new GeneratedKeyHolder();
+      template.update(new PreparedStatementCreator() {
 
-      @Override
-      public Integer doInTransaction(TransactionStatus status) {
-        Object[] k = lookupValueAndKey(type, name);
-        if (k[1] != null) {
-          // Update it
-          template.update("update LOOKUP set Value = ? where LookupKey = ?", value, k[1]);
-          return (Integer) k[1];
-        } else {
-          KeyHolder keyHolder = new GeneratedKeyHolder();
-          template.update(new PreparedStatementCreator() {
-
-            @Override
-            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-              PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value, Visible ) VALUES ( ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-              statement.setInt(1, pool.poolKey);
-              statement.setString(2, type);
-              statement.setString(3, name);
-              statement.setString(4, value);
-              statement.setBoolean(5, visible);
-              return statement;
-            }
-          }, keyHolder);
-          return keyHolder.getKey().intValue();
+        @Override
+        public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+          PreparedStatement statement = con.prepareStatement("insert into LOOKUP ( PoolKey, Type, Name, Value, Visible ) VALUES ( ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+          statement.setInt(1, pool.poolKey);
+          statement.setString(2, type);
+          statement.setString(3, name);
+          statement.setString(4, value);
+          statement.setBoolean(5, visible);
+          return statement;
         }
+      }, keyHolder);
+      return keyHolder.getKey().intValue();
+    }
 
-      }
-    });
   }
 
   String getSequence(final String type) {
     final String internalType = "Sequence." + type;
-    return transactionTemplate.execute(new TransactionCallback<String>() {
-
-      @Override
-      public String doInTransaction(TransactionStatus status) {
-        Object[] k = lookupValueAndKey("Pool", internalType);
-        String sequenceName = null;
-        if (k[0] == null) {
-          // Create an empty, grab a sequence from the POOL UID
-          Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
-          sequenceName = "pool_sequence_" + pool.poolKey + "_" + i;
-          template.update("create sequence " + sequenceName + " AS INT START WITH 1");
-          setValue("Pool", internalType, sequenceName, false);
-        } else {
-          sequenceName = (String) k[0];
-        }
-        return sequenceName;
-      }
-    });
+    Object[] k = lookupValueAndKey("Pool", internalType);
+    String sequenceName = null;
+    if (k[0] == null) {
+      // Create an empty, grab a sequence from the POOL UID
+      Integer i = template.queryForObject("VALUES( NEXT VALUE FOR UID" + pool.poolKey + ")", Integer.class);
+      sequenceName = "pool_sequence_" + pool.poolKey + "_" + i;
+      template.update("create sequence " + sequenceName + " AS INT START WITH 1");
+      setValue("Pool", internalType, sequenceName, false);
+    } else {
+      sequenceName = (String) k[0];
+    }
+    return sequenceName;
   }
 
   public int sequenceNumber(final String type, final String name) {
-    return transactionTemplate.execute(new TransactionCallback<Integer>() {
-
-      @Override
-      public Integer doInTransaction(TransactionStatus status) {
-        String internalType = "Sequence." + type;
-        String v = lookup(internalType, name);
-        if (v != null) {
-          return Integer.decode(v);
-        } else {
-          String sequence = getSequence(internalType);
-          Integer i = template.queryForObject("VALUES( NEXT VALUE FOR " + sequence + ")", Integer.class);
-          setValue(internalType, name, i.toString(), false);
-          return i;
-        }
-      }
-    });
+    String internalType = "Sequence." + type;
+    String v = lookup(internalType, name);
+    if (v != null) {
+      return Integer.decode(v);
+    } else {
+      String sequence = getSequence(internalType);
+      Integer i = template.queryForObject("VALUES( NEXT VALUE FOR " + sequence + ")", Integer.class);
+      setValue(internalType, name, i.toString(), false);
+      return i;
+    }
   }
 
   public String hash(String value, int length) {
