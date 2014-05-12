@@ -33,6 +33,10 @@ public class ServerConfiguration {
   @NotNull
   public String imageDirectory;
 
+  @Valid
+  @JsonProperty
+  public Boolean allowRegistration = Boolean.TRUE;
+
   public String getHost() {
     return host;
   }

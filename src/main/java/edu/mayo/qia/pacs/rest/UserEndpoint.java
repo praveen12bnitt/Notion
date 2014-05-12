@@ -60,6 +60,7 @@ public class UserEndpoint {
     json.putPOJO("user", user);
     json.put("isAuthenticated", subject.isAuthenticated());
     json.put("isRemembered", subject.isRemembered());
+    json.put("allowRegistration", configuration.notion.allowRegistration);
     return Response.ok(json).build();
   }
 
