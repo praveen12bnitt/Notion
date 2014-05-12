@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs.rest;
 import io.dropwizard.hibernate.UnitOfWork;
 
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import edu.mayo.qia.pacs.NotionConfiguration;
@@ -56,6 +58,12 @@ public class UserEndpoint {
   @UnitOfWork
   public Response checkLogin(@Auth Subject subject) {
     User user = userDAO.getFromSubject(subject);
+    if (user == null) {
+      user = new User();
+    }
+    user.roles = new HashSet<String>();
+    user.roles.add("admin");
+    user.roles.add("user");
     ObjectNode json = objectMapper.createObjectNode();
     json.putPOJO("user", user);
     json.put("isAuthenticated", subject.isAuthenticated());
@@ -96,7 +104,7 @@ public class UserEndpoint {
       user.username = subject.getPrincipal().toString();
       userDAO.create(user);
     }
-    return Response.ok(user).build();
+    return checkLogin(subject);
   }
 
   @UnitOfWork
@@ -137,7 +145,7 @@ public class UserEndpoint {
       logger.error("Error registering in", e);
     }
 
-    return Response.ok().build();
+    return checkLogin(subject);
   }
 
 }

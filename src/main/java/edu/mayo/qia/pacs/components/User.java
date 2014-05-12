@@ -1,7 +1,9 @@
 package edu.mayo.qia.pacs.components;
 
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -10,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.shiro.crypto.hash.Sha512Hash;
 import org.apache.shiro.util.ByteSource;
@@ -37,6 +40,14 @@ public class User {
   public String password;
   @JsonIgnore
   public String salt;
+
+  @Transient
+  public Set<String> roles = new HashSet<String>();
+
+  public User() {
+    roles.add("admin");
+    roles.add("user");
+  }
 
   public void setPassword(String password, int hashIterations) {
     Random rng = new SecureRandom();

@@ -156,86 +156,223 @@ ScriptCollection = Backbone.Collection.extend({
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.when('', '/pools/index')
   $urlRouterProvider.otherwise('/pools/index')
-  $stateProvider
-  .state('pools', {
-    abstract: true,
-    url: "/pools",
-    templateUrl: 'partials/pools.html',
-    controller: 'PoolsController'
-  })
-  .state('pools.index', {
-    url: "/index",
-    templateUrl: 'partials/pools.index.html',
-    controller: 'PoolsController'
-  })
-  .state('pools.pool', {
-    url: "/:poolKey",
-    templateUrl: 'partials/pool.detail.html',
-    controller: 'PoolController'
-  })
-  .state('pools.studies', {
-    url: "/:poolKey/studies",
-    templateUrl: 'partials/pool.studies.html',
-    controller: 'StudyController'
-  })
-  .state('pools.query', {
-    url: "/:poolKey/query",
-    templateUrl: 'partials/pool.query.html',
-    controller: 'QueryController'
-  })
-  .state('connectors', {
-    url: "/connectors",
-    templateUrl: 'partials/connectors.html',
-    controller: 'ConnectorsController'
-  });
+    $urlRouterProvider.when('', '/pools/index')
 
   $stateProvider
-    .state('anonymous', {
-      abstract: true,
-      template: "<ui-view/>"
-    })
-    .state('anonymous.login', {
-      url: '/login',
-      templateUrl: 'partials/login.html',
-      controller: 'LoginController'
-    })
+  .state('root', {
+    abstract: true,
+    url: '',
+    templateUrl: 'partials/root.html',
+    controller: 'RootController'
+  })
+  .state('root.pools', {
+    abstract: true,
+    url: '/pools',
+    templateUrl: 'partials/pools.html',
+    controller: 'PoolsController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.index', {
+    url: "/index",
+    templateUrl: 'partials/pools.index.html',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.pool', {
+    url: "/:poolKey",
+    templateUrl: 'partials/pool.detail.html',
+    controller: 'PoolController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.studies', {
+    url: "/:poolKey/studies",
+    templateUrl: 'partials/pool.studies.html',
+    controller: 'StudyController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.query', {
+    url: "/:poolKey/query",
+    templateUrl: 'partials/pool.query.html',
+    controller: 'QueryController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.connectors', {
+    url: "/connectors",
+    templateUrl: 'partials/connectors.html',
+    controller: 'ConnectorsController',
+    data: {
+      access: ['admin']
+    }
+  })
+	.state('root.loggedout', {
+	    templateUrl: 'partials/loggedout.html',
+	});
 
 });
 
+
+notionApp.config(function ($httpProvider) {
+  $httpProvider.interceptors.push([
+    '$injector',
+    function ($injector) {
+      return $injector.get('AuthInterceptor');
+    }
+  ]);
+});
+
+notionApp.constant('EVENTS', {
+  loginSuccess: 'auth-login-success',
+  loginFailed: 'auth-login-failed',
+  logoutSuccess: 'auth-logout-success',
+  sessionTimeout: 'auth-session-timeout',
+  notAuthenticated: 'auth-not-authenticated',
+  notAuthorized: 'auth-not-authorized'
+});
+
+notionApp.factory('AuthInterceptor', function ($rootScope, $q,EVENTS) {
+  return {
+    responseError: function (response) {
+      if (response.status === 401) {
+        $rootScope.$broadcast(EVENTS.notAuthenticated,
+                              response);
+      }
+      if (response.status === 403) {
+        $rootScope.$broadcast(EVENTS.notAuthorized,
+                              response);
+      }
+      if (response.status === 419 || response.status === 440) {
+        $rootScope.$broadcast(EVENTS.sessionTimeout,
+                              response);
+      }
+      return $q.reject(response);
+    }
+  };
+})
+
+
+
+// authorization works by checking to see if the user can access certain routes.
+// The check is done by role.
 notionApp.factory ( 'authorization', function($http) {
-  var user;
+  var u = { username: null, roles: [] };
+  function changeUser(newUser) {
+    console.log("Changing user to ", newUser, 'from ', u)
+    angular.extend(u,newUser.user);
+  }
   return {
     isLoggedIn: function() {
-      if ( user === undefined ) {
+      if ( u === undefined ) {
         return false;
       }
-      if ( user.get("isRemembered") ) {
-        return true;
-      }
+	var r = u.username != null;
+	console.log("isLoggedIn:", u, r);
+      return u.username != null;
+    },
+    logout: function(success, error) {
+      $http.post("/rest/user/logout")
+      .success( function() {
+        changeUser({username: null, roles:[]});
+        success();
+      }).error(error);
+    },
+    checkLogin: function(success,error) {
+      $http.get("/rest/user/").success(function(result){
+	  console.log("checkLogin: ", result );
+          changeUser(result);
+	  if ( success ) { success(); }
+      }).error(error);
     },
     login: function(credentials, success, error) {
-      $http.post('/rest/user/login', credentials ).success(success).error(error)
-    }
+      $http.post('/rest/user/login', credentials ).success(function(result) {
+        u = result;
+        changeUser(u);
+        success();
+      }).error(error);
+    },
+    isPermitted: function(expectedRoles) {
+      console.log("isPermitted: ", expectedRoles, " for user ", u)
+      if ( u === undefined  ) { 
+        console.log("undefined or no roles")
+        return false; }
+      for ( var i = 0; i < expectedRoles.length; i++ ) {
+        console.log("jquery:", $.inArray(String(expectedRoles[i]), u.roles))
+        console.log("jquery #2:", $.inArray('admin', u.roles))
+        console.log("looking at ", expectedRoles[i], u.roles.indexOf(expectedRoles[i]) )
+        for ( var j = 0; j < u.roles.length; j++ ) {
+          if ( String(u.roles[j]) === String(expectedRoles[i])) {
+            return true;
+          }
+        }
+
+      }
+      return false;
+    },
+    user: u
   }
 })
 
 notionApp.run(['$rootScope', '$state', 'authorization', function( $rootScope, $state, authorization ) {
   console.log ( "run from notionApp", authorization.isLoggedIn() )
-  $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
-    console.log("Checking state!" )
-    console.log("toState", toState, "fromState", fromState)
 
+  $rootScope.$on("$stateChangeStart", function(e, toState, toParams, fromState, fromParams) {
+      return;
+    if ( !toState.data ) {
+      console.log("No authorization data...", toState)
+      return;
+    }
+    if ( !authorization.isPermitted(toState.data.access)) {
+      e.preventDefault(); 
+      console.log ("not logged in")
+      // return $state.transitionTo('root.login')
+    } else {
+      console.log ("User", authorization, " is permitted to ", toState)
+    }
   });
 }]);
 
 
-notionApp.controller ( "LoginController", function ( $scope, $state, authorization) {
-  $scope.login = function() {
-    authorization.login($scope.user, function() { $state.transitionTo('pools')}, function() { $scope.error = "Error logging in."})
-  }
-});
+    notionApp.controller("RootController", function($scope, $state, authorization,$timeout,$http,$window) {
+
+	var heartbeat = function() {
+	    authorization.checkLogin( function() {
+		if ( authorization.isLoggedIn() ) {
+		    console.log ( "Logged in, all is well!" );
+		    $scope.user = authorization.user
+		    $timeout(heartbeat,5000);
+		} else {
+		    console.log ( "Not logged in, something is amiss" );
+		    $state.transitonTo("root.loggedout");
+		}
+	    });
+	};
+	heartbeat();
+	console.log("Creating RootController")
+	$scope.name = "RootController"
+	$scope.loggedIn = true;
+	$scope.user = authorization.user
+	$scope.logout = function() {
+	    
+	    console.log("Starting logout");
+	    $http.post("/rest/user/logout")
+		.success( function() {
+		    console.log("Logout completed" );
+		    $window.location.href = "login.html";
+		}).error(function() {
+		    // $window.location.href = "login.html";
+		});
+	}
+    })
+
 
 notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal,authorization) {
   console.log("is logged in: ", authorization.isLoggedIn() )
@@ -344,10 +481,13 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
 
 });
 
-notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal) {
+notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization) {
+  console.log("Creating PoolsController")
+  $scope.name = "PoolsController"
   $scope.poolCollection = new PoolCollection();
   // Make the first one syncrhonous
   $scope.poolCollection.fetch({remove:true, async:false})
+  // $scope.user = authorization.user;
 
   p = $scope.poolCollection;
   $scope.newPoolKey = false;
