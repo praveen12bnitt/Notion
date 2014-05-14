@@ -125,6 +125,19 @@ run {
 
 }
 
+sourceSets {
+  test {
+    resources {
+      srcDir "DICOMTestData"
+      srcDir "ui"
+    }
+  }
+}
+test {
+  useJUnit();
+  
+}
+
 task wrapper(type: Wrapper) {
   gradleVersion = '1.11'
 }
