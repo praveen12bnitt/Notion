@@ -11,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -105,6 +106,16 @@ public class UserEndpoint {
       userDAO.create(user);
     }
     return checkLogin(subject);
+  }
+
+  @UnitOfWork
+  @PUT
+  @Path("/update")
+  public Response update(@Auth Subject subject, User update) {
+    User user = userDAO.getFromSubject(subject);
+    user.email = update.email;
+    userDAO.update(user);
+    return Response.ok(user).build();
   }
 
   @UnitOfWork

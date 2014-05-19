@@ -28,7 +28,7 @@ public class DICOMReceiverTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
 
     int studyCount = template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class);
     assertEquals("StudyCount", 1, studyCount);

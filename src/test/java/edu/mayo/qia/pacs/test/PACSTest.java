@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -21,6 +22,9 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.ConfigurationException;
 import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
@@ -44,6 +48,7 @@ import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
 import edu.mayo.qia.pacs.dicom.TagLoader;
+import edu.mayo.qia.pacs.managed.DBWebServer;
 import static io.dropwizard.testing.junit.ConfigOverride.config;
 
 @ContextConfiguration(initializers = { PACSTest.class })
@@ -51,6 +56,8 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   static Logger logger = Logger.getLogger(PACSTest.class);
   static int DICOMPort = findFreePort();
   static int RESTPort = findFreePort();
+  static int DBPort = findFreePort();
+  static File tempDirectory = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
   static Client client;
 
   static URI baseUri = UriBuilder.fromUri("http://localhost/").port(RESTPort).path("rest").build();
@@ -66,6 +73,37 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     // Boolean.TRUE);
     client = Client.create(config);
   }
+
+  @Rule
+  public TestWatcher watchman = new TestWatcher() {
+    @Override
+    protected void failed(Throwable e, Description description) {
+      logger.error(description);
+      logger.error(e.getMessage());
+      logger.error("", e);
+      System.out.println("\n=======================================================================");
+      System.err.println(description.getMethodName() + " - TEST FAILED!");
+      System.out.println(description.getMethodName() + " - TEST FAILED!");
+      System.out.println("=======================================================================\n");
+    }
+
+    @Override
+    protected void succeeded(Description description) {
+      logger.error(description);
+      System.out.println("\n=======================================================================");
+      System.out.println(description.getMethodName() + " - TEST PASSED");
+      System.out.println("=======================================================================\n");
+    }
+
+    @Override
+    protected void starting(Description description) {
+      logger.error(description);
+      System.out.println("\n=======================================================================");
+      System.out.println("Starting Test:  " + description.getMethodName());
+      System.out.println("   Class Name:  " + description.getClassName());
+      System.out.println("=======================================================================\n");
+    }
+  };
 
   protected static int findFreePort() {
     // Find a random number between 49152 and 65535
@@ -93,7 +131,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   }
 
   public static ApplicationFixture<NotionConfiguration> NotionTestApp = new ApplicationFixture<NotionConfiguration>(NotionApplication.class, "notion.yml", config("dbWeb", "8088"), config("database.url", "jdbc:derby:memory:notion;create=true"), config(
-      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)));
+      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)), config("dbWeb", Integer.toString(DBPort)), config("notion.imageDirectory", tempDirectory.toString()));
 
   @Override
   public synchronized void initialize(GenericApplicationContext applicationContext) {

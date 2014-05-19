@@ -110,6 +110,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     context.register(Beans.class, PoolManager.class, PoolContainer.class);
     context.scan("edu.mayo.qia.pacs.dicom");
     context.scan("edu.mayo.qia.pacs.rest");
+    context.scan("edu.mayo.qia.pacs.ctp");
 
     context.refresh();
     context.registerShutdownHook();
@@ -131,6 +132,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
     environment.jersey().register(context.getBean(UserEndpoint.class));
 
-  }
+    logger.info("\n\n=====\nStarted Notion Test:\nImageDirectory: \n" + configuration.notion.imageDirectory + "\nDBWeb:\nhttp://localhost:" + configuration.dbWeb + "\n\nDICOMPort: " + configuration.notion.dicomPort + "\n=====\n\n");
 
+  }
 }

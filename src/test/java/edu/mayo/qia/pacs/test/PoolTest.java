@@ -51,10 +51,8 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
@@ -90,16 +88,16 @@ public class PoolTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    sendDICOM(aet, aet, "TOF/*.dcm");
+    sendDICOM(aet, aet, "TOF/*001.dcm");
 
     List<Integer> studyKeys = template.queryForList("select StudyKey from STUDY where STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, Integer.class);
     assertEquals("Study", 1, studyKeys.size());
     List<Integer> seriesKeys = template.queryForList("select SERIES.SeriesKey from SERIES, STUDY where SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, Integer.class);
     assertEquals("Series", 2, seriesKeys.size());
     List<Integer> instanceKeys = template.queryForList("select InstanceKey from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, Integer.class);
-    assertEquals("Instance", 164, instanceKeys.size());
+    assertEquals("Instance", 2, instanceKeys.size());
     List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, String.class);
-    assertEquals("Files", 164, filePaths.size());
+    assertEquals("Files", 2, filePaths.size());
     assertEquals("Device", new Integer(1), template.queryForObject("select count(*) from DEVICE where PoolKey = " + pool.poolKey, Integer.class));
     assertEquals("Script", new Integer(2), template.queryForObject("select count(*) from SCRIPT where PoolKey = " + pool.poolKey, Integer.class));
 

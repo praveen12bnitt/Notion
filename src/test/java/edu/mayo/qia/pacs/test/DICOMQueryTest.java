@@ -28,7 +28,7 @@ public class DICOMQueryTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
     DicomObject tags = TagLoader.loadTags(testSeries.get(0));
 
     DcmQR dcmQR = new DcmQR();

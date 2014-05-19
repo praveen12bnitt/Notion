@@ -33,7 +33,7 @@ public class StudiesTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    sendDICOM(aet, aet, "TOF/*.dcm");
+    sendDICOM(aet, aet, "TOF/*001.dcm");
     assertEquals("DB", new Integer(1), template.queryForObject("select count(*) from STUDY where PoolKey = " + pool.poolKey, Integer.class));
 
     ClientResponse response = null;
@@ -66,7 +66,7 @@ public class StudiesTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    sendDICOM(aet, aet, "TOF/*.dcm");
+    sendDICOM(aet, aet, "TOF/*001.dcm");
 
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/studies").build();
@@ -83,7 +83,7 @@ public class StudiesTest extends PACSTest {
     ZipInputStream unzip = new ZipInputStream(response.getEntityInputStream());
     ZipEntry dir = unzip.getNextEntry();
     assertTrue(dir != null);
-    assertTrue(dir.getName().startsWith("MRA-0068/23274-2008-06-18/PJN/"));
+    assertTrue(dir.getName().startsWith("MRA-0068/23274-2008-06-18/"));
     unzip.close();
   }
 }

@@ -294,6 +294,7 @@ public class Anonymizer {
     DicomOutputStream dos = new DicomOutputStream(bos);
     dos.writeDicomFile(dcm);
     dos.close();
+    fos.close();
 
     fileObject.getFile().delete();
     FileUtils.moveFile(output, fileObject.getFile());
