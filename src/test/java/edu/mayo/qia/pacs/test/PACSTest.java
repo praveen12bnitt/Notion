@@ -131,8 +131,8 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   }
 
   public static ApplicationFixture<NotionConfiguration> NotionTestApp = new ApplicationFixture<NotionConfiguration>(NotionApplication.class, "notion.yml", config("dbWeb", "8088"), config("database.url", "jdbc:derby:memory:notion;create=true"), config(
-      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)), config("dbWeb", Integer.toString(DBPort)), config("notion.imageDirectory", tempDirectory.toString()), config("shiro.iniconfigs",
-      "[\"classpath:shiro.ini\"]"));
+      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)), config("dbWeb", Integer.toString(DBPort)), config("notion.imageDirectory", tempDirectory.toString()), config("shiro.iniConfigs",
+      "classpath:shiro.ini"));
 
   @Override
   public synchronized void initialize(GenericApplicationContext applicationContext) {
