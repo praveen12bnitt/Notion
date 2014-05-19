@@ -341,37 +341,59 @@ notionApp.run(['$rootScope', '$state', 'authorization', function( $rootScope, $s
 }]);
 
 
-    notionApp.controller("RootController", function($scope, $state, authorization,$timeout,$http,$window) {
+notionApp.controller("RootController", function($scope, $state, authorization,$timeout,$http,$modal,$window) {
 
 	var heartbeat = function() {
-	    authorization.checkLogin( function() {
-		if ( authorization.isLoggedIn() ) {
-		    console.log ( "Logged in, all is well!" );
-		    $scope.user = authorization.user
-		    $timeout(heartbeat,5000);
-		} else {
-		    console.log ( "Not logged in, something is amiss" );
-		    $state.transitonTo("root.loggedout");
-		}
-	    });
-	};
-	heartbeat();
-	console.log("Creating RootController")
-	$scope.name = "RootController"
-	$scope.loggedIn = true;
-	$scope.user = authorization.user
-	$scope.logout = function() {
-	    
-	    console.log("Starting logout");
-	    $http.post("/rest/user/logout")
-		.success( function() {
-		    console.log("Logout completed" );
-		    $window.location.href = "login.html";
-		}).error(function() {
+    authorization.checkLogin( function() {
+      if ( authorization.isLoggedIn() ) {
+        console.log ( "Logged in, all is well!" );
+        // $scope.user = authorization.user
+        $scope.user = $.extend(true, {}, authorization.user)
+
+        $timeout(heartbeat,5000);
+      } else {
+        console.log ( "Not logged in, something is amiss" );
+      $window.location.href = "login.html";
+      }
+    });
+  };
+  heartbeat();
+  console.log("Creating RootController")
+  $scope.name = "RootController"
+  $scope.loggedIn = true;
+
+
+    $scope.settings = function(){
+      $modal.open({
+        templateUrl: 'partials/settings.html',
+        scope: $scope,
+        controller: function($scope,$modalInstance) {
+          $scope.updateUser = $.extend(true,{},$scope.user)
+          $scope.save = function() {
+            $http.put("/rest/user/update", $scope.updateUser)
+            .success(function() {
+              $.extend(true, $scope.user, $scope.updateUser);
+              $modalInstance.dismiss();
+            }
+              );
+          };
+          $scope.close = function() { $modalInstance.dismiss() }
+        }
+      })
+    };
+
+  $scope.logout = function() {
+
+    console.log("Starting logout");
+    $http.post("/rest/user/logout")
+    .success( function() {
+      console.log("Logout completed" );
+      $window.location.href = "login.html";
+    }).error(function() {
 		    // $window.location.href = "login.html";
-		});
-	}
-    })
+      });
+  }
+})
 
 
 notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$modal,authorization) {
