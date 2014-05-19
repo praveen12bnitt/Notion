@@ -41,7 +41,7 @@ gulp.task("watch", ['lr-server', 'build'], function() {
 gulp.task('app', function() {
 
   // Just for backbone
-  gulp.src('app/notion.js')
+  gulp.src('app/*.js')
   .pipe(gulp.dest('public/js'));
 
   gulp.src('app/*.html')
@@ -86,7 +86,6 @@ gulp.task('vendor', function() {
     'bower_components/angular-route/angular-route.js',
     'bower_components/underscore/underscore.js',
     'bower_components/handlebars/handlebars.js',
-    'bower_components/ember/ember.js',
     'vendor/scripts/console-polyfill.js',
     ])
   .pipe(uglify({outSourceMap: true}))

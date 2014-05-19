@@ -36,7 +36,7 @@ public class DeleteTest extends PACSTest {
     Device device = new Device(".*", ".*", 1234, pool);
     device = createDevice(device);
 
-    List<File> testSeries = sendDICOM(aet, aet, "TOF/*.dcm");
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
     PoolContainer container = poolManager.getContainer(pool.poolKey);
     // See how many series we have, and check the images on disk
     List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ?", new Object[] { pool.poolKey }, String.class);

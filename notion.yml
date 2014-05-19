@@ -6,14 +6,14 @@ database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
   url: jdbc:derby:directory:./LocalPACS/DB;create=true
   validationQuery: "VALUES 1"
-  user: dogwatch
-  password: dogwatch
+  user: 
+  password: 
   autoCommitByDefault: true
 
 # Shiro
 shiro:
   filterUrlPattern: "/*" # The URL pattern for the Shiro servlet filter
-  iniConfigs: ["classpath:shiro.ini"]
+  iniConfigs: ["file:shiro.ini"]
 
 
 # How to serve our assets
@@ -33,12 +33,12 @@ server:
 
 # Email configuration
 email:
-  from: quintherug@gmail.com
-  smtpHostname: smtp.googlemail.com
-  port: 465
-  username: quintherug
-  password: rta-spin-phen-lo-zi
-  ssl: true
+  from: 
+  smtpHostname:
+  port: 
+  username:
+  password:
+  ssl:
 
 
 notion:
@@ -50,5 +50,5 @@ logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
   level: INFO
   # Logger-specific levels.
-  loggers:
-    org.hibernate.SQL: ALL
+#  loggers:
+    # org.hibernate.SQL: ALL

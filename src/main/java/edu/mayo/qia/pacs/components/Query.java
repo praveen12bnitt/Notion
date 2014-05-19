@@ -144,11 +144,11 @@ public class Query {
   public void executeQuery() {
     Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
 
-        public void run() {
-          Thread.currentThread().setName ( "Query " + device );
-          JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
-          template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
-          for (final Item item : items) {
+      public void run() {
+        Thread.currentThread().setName("Query " + device);
+        JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
+        for (final Item item : items) {
 
           DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
           dcmQR.setRemoteHost(device.hostName);
@@ -164,12 +164,12 @@ public class Query {
           try {
             dcmQR.open();
             DimseRSP response = dcmQR.queryAll();
-            while ( response.next()) {
+            while (response.next()) {
               DicomObject command = response.getCommand();
-              if ( CommandUtils.isPending(command)) {
+              if (CommandUtils.isPending(command)) {
                 DicomObject ds = response.getDataset();
                 String status = ds.contains(Tag.StudyInstanceUID) ? "success" : "fail";
-                // @formatter:off
+                //@formatter:off
                 template.update("insert into QUERYRESULT ( "
                     + "QueryItemKey,"
                     + "Status,"
@@ -195,7 +195,7 @@ public class Query {
                     ds.getString(Tag.ModalitiesInStudy, (String)null),
                     ds.getString(Tag.StudyDescription, (String)null)
                     );
-                // @formatter:on
+                //@formatter:on
               }
             }
             dcmQR.close();

@@ -53,8 +53,4 @@ public class NotionConfiguration extends Configuration implements AssetsBundleCo
   public DataSourceFactory getDataSourceFactory() {
     return database;
   }
-  //
-  // public ServerConfiguration getDogwatch() {
-  // return dogwatch;
-  // }
 }

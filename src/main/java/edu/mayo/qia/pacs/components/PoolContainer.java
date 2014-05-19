@@ -208,6 +208,9 @@ public class PoolContainer {
           studyKey }, String.class);
       // Delete, should cascade!
       template.update("delete from STUDY where PoolKey = ? and StudyKey = ?", pool.poolKey, studyKey);
+
+      logger.error("\n\n\t=====\n\n\tDeleting STUDY " + studyKey + " from POOL " + pool.poolKey + "\n\n\t=====\n\n");
+
       for (String filePath : filePaths) {
         File file = new File(poolDirectory, filePath);
         directories.add(file.getParentFile());
@@ -389,7 +392,8 @@ public class PoolContainer {
 
   public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination) {
     final AtomicBoolean successful = new AtomicBoolean(true);
-    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { studyInstanceUID }, new RowCallbackHandler() {
+    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
+        studyInstanceUID }, new RowCallbackHandler() {
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {

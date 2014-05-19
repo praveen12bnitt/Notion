@@ -6,8 +6,10 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.UUID;
 
+import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -48,6 +50,9 @@ public class QueryTest extends PACSTest {
   @Autowired
   JdbcTemplate template;
 
+  @Autowired
+  DataSource dataSource;
+
   InputStream getResource(String fileName) throws Exception {
     Resource resource = Notion.context.getResource("classpath:" + fileName);
     return resource.getInputStream();
@@ -72,6 +77,12 @@ public class QueryTest extends PACSTest {
     assertEquals("PatientName", sheet.getRow(0).getCell(0).getStringCellValue());
     assertEquals("Hurt John", sheet.getRow(1).getCell(0).getStringCellValue());
     is.close();
+  }
+
+  @Test
+  public void autoCommit() throws Exception {
+    assertTrue("Autocommit on dataSource", dataSource.getConnection().getAutoCommit());
+    assertTrue("Autocommit on template", template.getDataSource().getConnection().getAutoCommit());
   }
 
   @Test
@@ -216,24 +227,25 @@ public class QueryTest extends PACSTest {
 
     // Wait for things to finish
     uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path(Integer.toString(query.queryKey)).build();
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 15; i++) {
       logger.debug("Loading: " + uri);
       response = client.resource(uri).accept(JSON).get(ClientResponse.class);
       assertEquals("Got result", 200, response.getStatus());
       query = response.getEntity(Query.class);
+      logger.info("Got response: " + query.status);
       if (query.status.startsWith("Fetch Completed")) {
         break;
       } else {
         // Ugly, but it works
-        Thread.sleep(500);
+        Thread.sleep(1000);
       }
     }
-    assertTrue(query.status.startsWith("Fetch Completed"));
+    assertTrue("Waiting for fetch to be completed -- " + query.status, query.status.startsWith("Fetch Completed"));
 
     // The pool should have 1
     assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class));
     // The destination pool should not have any studies
-    assertEquals(0, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { destinationPool.poolKey }, Integer.class));
+    assertEquals("is study deleted from the destination pool?", 0, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { destinationPool.poolKey }, Integer.class));
     // The PACS pool should have 1
     assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pacsPool.poolKey }, Integer.class));
 

@@ -20,3 +20,5 @@ Demo
 ui/bower_components
 ui/public.brunch
 /bin
+build
+TEST-NOTION
