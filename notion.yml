@@ -6,14 +6,14 @@ database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
   url: jdbc:derby:directory:./LocalPACS/DB;create=true
   validationQuery: "VALUES 1"
-  user: 
-  password: 
+  user:
+  password:
   autoCommitByDefault: true
 
 # Shiro
 shiro:
   filterUrlPattern: "/*" # The URL pattern for the Shiro servlet filter
-  iniConfigs: ["file:shiro.ini"]
+  iniConfigs: ["classpath:shiro.ini"]
 
 
 # How to serve our assets
@@ -33,9 +33,9 @@ server:
 
 # Email configuration
 email:
-  from: 
+  from:
   smtpHostname:
-  port: 
+  port:
   username:
   password:
   ssl:
