@@ -144,11 +144,20 @@ public class Query {
   public void executeQuery() {
     Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
 
+
+
+
+
+
+
+
       public void run() {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
+        template.update("update QUERYITEM set Status = ? where QueryKey = ?", "query pending", queryKey);
         for (final Item item : items) {
+          template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "working", item.queryItemKey);
 
           DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
           dcmQR.setRemoteHost(device.hostName);
@@ -198,11 +207,17 @@ public class Query {
                 //@formatter:on
               }
             }
-            dcmQR.close();
+            template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "query complete", item.queryItemKey);
           } catch (Exception e) {
             logger.error("Caught error in query", e);
+            template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "query failed", item.queryItemKey);
+          } finally {
+            try {
+              dcmQR.close();
+            } catch (Exception e) {
+              logger.error("Error closing query connection", e);
+            }
           }
-          template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "complete", item.queryItemKey);
         }
         template.update("update QUERY set Status = ? where QueryKey = ?", "Query Completed", queryKey);
         Thread.currentThread().setName("Idle");

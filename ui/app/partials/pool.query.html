@@ -39,7 +39,8 @@
           <div class="panel-body">
             <b>Status:</b> {{query.get('status')}}<p/>
             <b>DICOM Server:</b> {{query.get('device').applicationEntityTitle}}@{{query.get('device').hostName}}:{{query.get('device').port}}<p/>
-            <button ng-click="fetch()" class="btn btn-default">Fetch Studies</button>
+            <button ng-disabled="query.get('status') != 'Query Completed'" ng-click="fetch()" class="btn btn-default">Fetch Studies</button>
+            <button ng-click="reset()" class="btn btn-default">Reset Query</button>
             <table class="table table-striped table-hover table-condensed">
               <thead>
                 <tr>
@@ -53,10 +54,11 @@
                   <td><i class="fa fa-check-square-o" ng-click="fetchAll(item)"></i></td>
                   <td>{{item.patientID || "N/A"}}</td>
                   <td>{{item.patientName || "N/A"}}</td>
+                  <td>{{item.status}}</td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td colspan="2">
+                  <td colspan="3">
                     <table class="table table-striped table-hover table-condensed">
                       <thead>
                         <tr>

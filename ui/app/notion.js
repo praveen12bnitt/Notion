@@ -54,9 +54,7 @@ require(['angular', 'angularAMD', "backbone", 'angular-ui-router', 'ui-bootstrap
   };
 
   ConnectorModel = Backbone.Model.extend({
-    idAttribute: "connectorKey",
-    url: '/rest/connector'
-
+    idAttribute: "connectorKey"
   });
 
   ConnectorCollection = Backbone.Collection.extend({
@@ -266,7 +264,7 @@ notionApp.factory('AuthInterceptor', function ($rootScope, $q,EVENTS) {
 notionApp.factory ( 'authorization', function($http) {
   var u = { username: null, roles: [] };
   function changeUser(newUser) {
-    console.log("Changing user to ", newUser, 'from ', u)
+    // console.log("Changing user to ", newUser, 'from ', u)
     angular.extend(u,newUser.user);
   }
   return {
@@ -274,8 +272,8 @@ notionApp.factory ( 'authorization', function($http) {
       if ( u === undefined ) {
         return false;
       }
-	var r = u.username != null;
-	console.log("isLoggedIn:", u, r);
+	     var r = u.username != null;
+	// console.log("isLoggedIn:", u, r);
       return u.username != null;
     },
     logout: function(success, error) {
@@ -287,7 +285,7 @@ notionApp.factory ( 'authorization', function($http) {
     },
     checkLogin: function(success,error) {
       $http.get("/rest/user/").success(function(result){
-	  console.log("checkLogin: ", result );
+	  // console.log("checkLogin: ", result );
           changeUser(result);
 	  if ( success ) { success(); }
       }).error(error);
@@ -300,14 +298,14 @@ notionApp.factory ( 'authorization', function($http) {
       }).error(error);
     },
     isPermitted: function(expectedRoles) {
-      console.log("isPermitted: ", expectedRoles, " for user ", u)
-      if ( u === undefined  ) { 
-        console.log("undefined or no roles")
+      // console.log("isPermitted: ", expectedRoles, " for user ", u)
+      if ( u === undefined  ) {
+        // console.log("undefined or no roles")
         return false; }
       for ( var i = 0; i < expectedRoles.length; i++ ) {
-        console.log("jquery:", $.inArray(String(expectedRoles[i]), u.roles))
-        console.log("jquery #2:", $.inArray('admin', u.roles))
-        console.log("looking at ", expectedRoles[i], u.roles.indexOf(expectedRoles[i]) )
+        // console.log("jquery:", $.inArray(String(expectedRoles[i]), u.roles))
+        // console.log("jquery #2:", $.inArray('admin', u.roles))
+        // console.log("looking at ", expectedRoles[i], u.roles.indexOf(expectedRoles[i]) )
         for ( var j = 0; j < u.roles.length; j++ ) {
           if ( String(u.roles[j]) === String(expectedRoles[i])) {
             return true;
@@ -331,7 +329,7 @@ notionApp.run(['$rootScope', '$state', 'authorization', function( $rootScope, $s
       return;
     }
     if ( !authorization.isPermitted(toState.data.access)) {
-      e.preventDefault(); 
+      e.preventDefault();
       console.log ("not logged in")
       // return $state.transitionTo('root.login')
     } else {
@@ -350,7 +348,7 @@ notionApp.controller("RootController", function($scope, $state, authorization,$t
         // $scope.user = authorization.user
         $scope.user = $.extend(true, {}, authorization.user)
 
-        $timeout(heartbeat,5000);
+        $timeout(heartbeat,60000);
       } else {
         console.log ( "Not logged in, something is amiss" );
       $window.location.href = "login.html";
@@ -482,15 +480,10 @@ notionApp.controller ( 'ConnectorsController', function($scope,$timeout,$state,$
           $scope.queryPoolChanged();
         }
         $scope.save = function(){
-          console.log("saving here!!!!", $scope, $scope.model)
-          var connector = new ConnectorModel();
           connector.set ( $scope.model )
-          connector.save();
-          $scope.connectorCollection.fetch({
-            success: function() {
-              $scope.$apply()
-            }
-          });
+          $scope.connectorCollection.add(connector);
+          console.log("saving here!!!!", $scope, $scope.model, connector )
+          $scope.connector.save();
           $modalInstance.close();
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
@@ -856,9 +849,9 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
 
   var queryTick = function(){
     if ( $scope.query ) {
-      console.log("queryTick")
-      $scope.query.fetch({'async':false}).done(function() {
-        console.log ("queryTick completed")
+      // console.log("queryTick")
+      $scope.query.fetch().done(function() {
+        // console.log ("queryTick completed")
         if ($scope.query.get('status').match("Pending")) {
           $timeout(queryTick, 2000)
         }
@@ -867,8 +860,9 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       // });
     }
   };
-
-
+  $scope.reset = function() {
+    $scope.query = null;
+  }
   $scope.fetch = function(){
     $scope.query.save({async:false});
     console.log("Saved query", $scope.query)
