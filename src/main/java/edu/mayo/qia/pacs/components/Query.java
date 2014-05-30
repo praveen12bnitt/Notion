@@ -151,6 +151,8 @@ public class Query {
 
 
 
+
+
       public void run() {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
@@ -252,6 +254,8 @@ public class Query {
 
   public void doFetch() {
     logger.debug("Queuing fetch");
+    final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
+    template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
     Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
       public void run() {
         final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
