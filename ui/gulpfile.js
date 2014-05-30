@@ -34,7 +34,7 @@ gulp.task("build", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], fun
 
 gulp.task("watch", ['lr-server', 'build'], function() {
   console.log("\nStarting webserver and watching files\n")
-  gulp.watch ( ['app/*.js', 'app/partials/**', 'app/*.html'], ['app'])
+  gulp.watch ( ['app/*.js', 'app/partials/**', 'app/assets/*.html', 'app/*.html'], ['app'])
 })
 
 // Handlebars / ember / all the rest
@@ -71,7 +71,7 @@ gulp.task('vendor', function() {
   gulp.src([
     'vendor/scripts/moment.js',
     'vendor/scripts/showdown.js',
-    'bower_components/jquery/jquery.js',
+    'bower_components/jquery/dist/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/vex/js/vex.dialog.js',
