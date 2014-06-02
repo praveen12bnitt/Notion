@@ -4,7 +4,7 @@ dbWeb: 8084
 # Database connection info
 database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
-  url: jdbc:derby:directory:./LocalPACS/DB;create=true
+  url: jdbc:derby:directory:../Working/LocalPACS/DB;create=true
   validationQuery: "VALUES 1"
   user:
   password:

@@ -224,6 +224,15 @@ public class Anonymizer {
         logger.error("Failed to process the script correctly: " + script, e);
         return "Failed to process the script correctly: " + e.getMessage();
       }
+      if (result instanceof NativeObject) {
+        NativeObject no = (NativeObject) result;
+        for (Object propId : NativeObject.getPropertyIds(no)) {
+          String key = propId.toString();
+          String value = NativeObject.getProperty(no, key).toString();
+          logger.info(key + ": " + value);
+        }
+      }
+
       try {
         result = Context.jsToJava(result, String.class);
       } catch (Exception e) {
