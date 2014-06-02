@@ -178,7 +178,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   Script createScript(Script script) {
     // Create a device
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + script.getPool().poolKey + "/script").build();
-    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, script);
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).put(ClientResponse.class, script);
     assertEquals("Got result", 200, response.getStatus());
     script = response.getEntity(Script.class);
     logger.info("Entity back: " + script);

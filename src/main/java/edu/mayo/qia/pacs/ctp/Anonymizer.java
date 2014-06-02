@@ -24,6 +24,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.rsna.ctp.objects.FileObject;
@@ -216,7 +217,7 @@ public class Anonymizer {
     function.setPool(poolContainer.getPool());
     final Context context = Context.enter();
     final ScriptableObject scope = function.setBindings(context.initStandardObjects(), null);
-    Object result = script.tag;
+    Object result = null;
     try {
       try {
         result = context.evaluateString(scope, script.script, "inline", 1, null);
@@ -255,44 +256,41 @@ public class Anonymizer {
     dis.close();
 
     final Context context = Context.enter();
-    final Map<String, String> scripts = new HashMap<String, String>();
     // Run through all the stored bindings
-    template.query("select Tag, Script from SCRIPT where PoolKey = ?", new Object[] { poolContainer.getPool().poolKey }, new RowCallbackHandler() {
-
-      @Override
-      public void processRow(ResultSet rs) throws SQLException {
-        String tag = rs.getString("Tag");
-        String script = rs.getString("Script");
-        scripts.put(tag, script);
-      }
-    });
+    String script = template.queryForObject("select Script from SCRIPT where PoolKey = ?", new Object[] { poolContainer.getPool().poolKey }, String.class);
     final ScriptableObject scope = function.setBindings(context.initStandardObjects(), originalTags);
     try {
-      for (String tag : scripts.keySet()) {
-        String script = scripts.get(tag);
-        int tagValue = Tag.toTag(tag);
-        logger.info("Processing tag: " + tag + " with script: " + script);
-        Object result = dcm.getString(tagValue);
-        try {
-          result = context.evaluateString(scope, script, "inline", 1, null);
-        } catch (Exception e) {
-          logger.error("Failed to process the script correctly: " + script, e);
-          throw e;
-        }
-        try {
-          result = Context.jsToJava(result, String.class);
-        } catch (Exception e) {
-          logger.error("Expected a string back from script, but instead got: " + result.toString());
-          throw new Exception("Expected a string back from script, but instead got: " + result.toString());
-        }
-        try {
-          dcm.putString(tagValue, null, (String) result);
-        } catch (Exception e) {
-          logger.error("Could not put the value (" + result + ") back into the DICOM image for tag: " + tag, e);
-          throw new Exception("Could not put the value (" + result + ") back into the DICOM image for tag: " + tag + " error: " + e.getMessage());
+      Object result = null;
+      try {
+        result = context.evaluateString(scope, script, "inline", 1, null);
+      } catch (Exception e) {
+        logger.error("Failed to process the script correctly: " + script, e);
+        throw e;
+      }
+      if (result instanceof NativeObject) {
+        NativeObject no = (NativeObject) result;
+        for (Object id : NativeObject.getPropertyIds(no)) {
+          String tagName = id.toString();
+
+          Object o = NativeObject.getProperty(no, tagName);
+          String value = o.toString();
+          if (o instanceof NativeJavaObject) {
+            value = ((NativeJavaObject) o).unwrap().toString();
+          }
+
+          try {
+            dcm.putString(Tag.toTag(tagName), null, (String) value);
+          } catch (Exception e) {
+            logger.error("Could not put the value (" + result + ") back into the DICOM image for tag: " + tagName, e);
+            throw new Exception("Could not put the value (" + result + ") back into the DICOM image for tag: " + tagName + " error: " + e.getMessage());
+          }
         }
 
+      } else {
+        logger.error("Expected a map back from script, but instead got: " + result.toString());
+        throw new Exception("Expected a string back from script, but instead got: " + result.toString());
       }
+
     } finally {
       Context.exit();
     }

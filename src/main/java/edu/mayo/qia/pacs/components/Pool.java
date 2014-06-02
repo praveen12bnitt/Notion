@@ -6,10 +6,12 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,9 +38,14 @@ public final class Pool {
   public Set<Device> devices = new HashSet<Device>();
 
   @JsonIgnore
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "pool")
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
-  public Set<Script> scripts = new HashSet<Script>();
+  public Script script;
+
+  @JsonIgnore
+  public Script getScript() {
+    return script;
+  }
 
   public Pool(String name, String path, String applicationEntityTitle, boolean anonymize) {
     this.name = name;
@@ -57,11 +64,6 @@ public final class Pool {
   @JsonIgnore
   public Set<Device> getDevices() {
     return devices;
-  }
-
-  @JsonIgnore
-  public Set<Script> getScripts() {
-    return scripts;
   }
 
   // Set my values from somewhere else, but not the key!

@@ -1,8 +1,6 @@
 package edu.mayo.qia.pacs.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.util.UUID;
@@ -72,7 +70,8 @@ public class ScriptTest extends PACSTest {
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
     ObjectNode json = response.getEntity(ObjectNode.class);
     assertTrue("Result", json.has("script"));
-    assertEquals("Number of Scripts", 2, json.withArray("script").size());
+    assertTrue("Has Script", json.has("script"));
+    assertFalse("Has Script content", json.get("script").asText().isEmpty());
   }
 
   @Test
@@ -101,32 +100,23 @@ public class ScriptTest extends PACSTest {
   @Test
   public void createScript() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     UUID uid = UUID.randomUUID();
     String aet = uid.toString().substring(0, 10);
 
     Pool pool = createPool(new Pool(aet, aet, aet, false));
-    Script script = createScript(new Script(pool, "StationName", "foo"));
+    Script script = createScript(new Script(pool, "foo"));
 
     // Query it back
     URI uri;
-    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/" + script.scriptKey).build();
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/").build();
     response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
     assertEquals("Got result", Status.OK.getStatusCode(), response.getStatus());
     Script serverScript = response.getEntity(Script.class);
     logger.info("Entity back: " + serverScript);
-    assertEquals("Tag is the same", script.tag, serverScript.tag);
     assertEquals("Script is the same", script.script, serverScript.script);
-
-    // Catch if we modify the tag
-    script.tag = "PatientID";
-    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("script/" + script.scriptKey).build();
-    response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).put(ClientResponse.class, script);
-    assertEquals("Got result", Status.FORBIDDEN.getStatusCode(), response.getStatus());
 
   }
 
