@@ -212,6 +212,22 @@ public class Anonymizer {
     return result.substring(0, length);
   }
 
+  public static Map<String, String> unwrapResult(NativeObject no) {
+    Map<String, String> map = new HashMap<String, String>();
+
+    for (Object id : NativeObject.getPropertyIds(no)) {
+      String key = id.toString();
+
+      Object o = NativeObject.getProperty(no, key);
+      String value = o.toString();
+      if (o instanceof NativeJavaObject) {
+        value = ((NativeJavaObject) o).unwrap().toString();
+      }
+      map.put(key, value);
+    }
+    return map;
+  }
+
   public static String tryScript(PoolContainer poolContainer, Script script) {
     Anonymizer function = new MockAnonymizer();
     function.setPool(poolContainer.getPool());
@@ -226,24 +242,14 @@ public class Anonymizer {
         return "Failed to process the script correctly: " + e.getMessage();
       }
       if (result instanceof NativeObject) {
-        NativeObject no = (NativeObject) result;
-        for (Object propId : NativeObject.getPropertyIds(no)) {
-          String key = propId.toString();
-          String value = NativeObject.getProperty(no, key).toString();
-          logger.info(key + ": " + value);
-        }
+        return unwrapResult(((NativeObject) result)).toString();
+      } else {
+        return "Error: result must be a Javascript hash or object";
       }
 
-      try {
-        result = Context.jsToJava(result, String.class);
-      } catch (Exception e) {
-        logger.error("Expected a string back from script, but instead got: " + result.toString());
-        return "Expected a string from the script but got: " + result.toString() + "\nError was: " + e.getMessage();
-      }
     } finally {
       Context.exit();
     }
-    return (String) result;
   }
 
   public static FileObject process(PoolContainer poolContainer, FileObject fileObject, DicomObject originalTags) throws Exception {
@@ -268,16 +274,11 @@ public class Anonymizer {
         throw e;
       }
       if (result instanceof NativeObject) {
+
         NativeObject no = (NativeObject) result;
-        for (Object id : NativeObject.getPropertyIds(no)) {
-          String tagName = id.toString();
-
-          Object o = NativeObject.getProperty(no, tagName);
-          String value = o.toString();
-          if (o instanceof NativeJavaObject) {
-            value = ((NativeJavaObject) o).unwrap().toString();
-          }
-
+        Map<String, String> map = unwrapResult(no);
+        for (String tagName : map.keySet()) {
+          String value = map.get(tagName);
           try {
             dcm.putString(Tag.toTag(tagName), null, (String) value);
           } catch (Exception e) {

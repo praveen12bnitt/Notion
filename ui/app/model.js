@@ -80,7 +80,6 @@ parse: function(response) {
 });
 
 ScriptModel = Backbone.Model.extend({
-idAttribute: 'scriptKey'
 });
 ScriptCollection = Backbone.Collection.extend({
 model: ScriptModel,
