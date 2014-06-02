@@ -1,5 +1,12 @@
 package edu.mayo.qia.pacs;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -7,9 +14,16 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.web.env.IniWebEnvironment;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.mgt.WebSecurityManager;
+import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.secnod.dropwizard.shiro.ShiroBundle;
 import org.secnod.dropwizard.shiro.ShiroConfiguration;
+import org.secnod.shiro.jersey.ShiroResourceFilterFactory;
+import org.secnod.shiro.jersey.SubjectInjectableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -17,6 +31,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.sun.jersey.api.core.ResourceConfig;
+import com.sun.jersey.spi.container.ResourceFilterFactory;
 
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
@@ -69,7 +85,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
   @Override
   public void initialize(Bootstrap<NotionConfiguration> bootstrap) {
     bootstrap.addBundle(hibernate);
-    bootstrap.addBundle(shiro);
+    // bootstrap.addBundle(shiro);
     bootstrap.addBundle(new ConfiguredAssetsBundle("/public", "/", "index.html"));
   }
 
@@ -116,6 +132,27 @@ public class NotionApplication extends Application<NotionConfiguration> {
     context.registerShutdownHook();
     context.start();
     Notion.context = context;
+
+    // Configure shiro with the help of org.secnod.dropwizard.shiro
+    ShiroConfiguration shiroConfig = configuration.shiro;
+    final IniWebEnvironment shiroEnv = new IniWebEnvironment();
+    shiroEnv.setConfigLocations(shiroConfig.getIniConfigs());
+    shiroEnv.init();
+
+    AbstractShiroFilter shiroFilter = new AbstractShiroFilter() {
+      @Override
+      public void init() throws Exception {
+        WebSecurityManager securityManager = shiroEnv.getWebSecurityManager();
+        setSecurityManager(securityManager);
+        setFilterChainResolver(shiroEnv.getFilterChainResolver());
+      }
+    };
+    ResourceConfig resourceConfig = environment.jersey().getResourceConfig();
+    @SuppressWarnings("unchecked")
+    List<ResourceFilterFactory> resourceFilterFactories = resourceConfig.getResourceFilterFactories();
+    resourceFilterFactories.add(new ShiroResourceFilterFactory());
+    environment.jersey().register(new SubjectInjectableProvider());
+    environment.servlets().addFilter("ShiroFilter", shiroFilter).addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, shiroConfig.getFilterUrlPattern());
 
     if (configuration.dbWeb != null) {
       environment.lifecycle().manage(new DBWebServer(configuration.dbWeb));
