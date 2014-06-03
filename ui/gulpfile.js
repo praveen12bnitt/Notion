@@ -60,8 +60,6 @@ gulp.task('style', function() {
     'app/styles/*.css',
     'bower_components/font-awesome/css/font-awesome*.css'
     ])
-//  .pipe(styl({compress : true }))
-//  .pipe(stylus)
   .pipe(gulp.dest('public/css'));
 
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
@@ -90,11 +88,6 @@ gulp.task('vendor', function() {
     'bower_components/handlebars/handlebars.js',
     'vendor/scripts/console-polyfill.js',
     ])
-  .pipe(uglify({outSourceMap: true}))
-  .pipe(gulp.dest('public/js'))
-
-  gulp.src(['bower_components/dropzone/downloads/dropzone-amd-module.js'])
-  .pipe(rename('dropzone.js'))
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))
 
