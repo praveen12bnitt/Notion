@@ -62,7 +62,9 @@ gulp.task('style', function() {
     ])
 //  .pipe(styl({compress : true }))
 //  .pipe(stylus)
-  .pipe(gulp.dest('public/css'))
+  .pipe(gulp.dest('public/css'));
+
+  gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 })
 
 
@@ -71,7 +73,7 @@ gulp.task('vendor', function() {
   gulp.src([
     'vendor/scripts/moment.js',
     'vendor/scripts/showdown.js',
-    'bower_components/jquery/dist/jquery.js',
+    'bower_components/jquery/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/vex/js/vex.dialog.js',
