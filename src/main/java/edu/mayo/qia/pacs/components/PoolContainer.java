@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,8 +41,10 @@ import org.w3c.dom.Element;
 
 import com.google.common.io.Files;
 
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
+import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
 /**
@@ -249,6 +252,8 @@ public class PoolContainer {
     synchronized (this) {
       // Handle one per container
       // Have the container process!
+      DicomObject originalTags = TagLoader.loadTags(incoming);
+
       org.rsna.ctp.objects.DicomObject fileObject = new org.rsna.ctp.objects.DicomObject(incoming);
       FileObject outObject = this.executePipeline(fileObject);
       File inFile = outObject.getFile();
@@ -326,6 +331,16 @@ public class PoolContainer {
           originalFile.delete();
         }
         session.getTransaction().commit();
+
+        if (pool.anonymize) {
+
+          // Save the association info for later
+          template
+              .update(
+                  "insert into ANONYMIZATIONMAPTEMP ( PoolKey, OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ? )",
+                  pool.poolKey, originalTags.getString(Tag.PatientName), tags.getString(Tag.PatientName), originalTags.getString(Tag.PatientID), tags.getString(Tag.PatientID), originalTags.getString(Tag.AccessionNumber),
+                  tags.getString(Tag.AccessionNumber), originalTags.getString(Tag.PatientBirthDate), tags.getString(Tag.PatientBirthDate));
+        }
       } catch (Exception e) {
         logger.error("Caught exception", e);
       } finally {
@@ -410,7 +425,57 @@ public class PoolContainer {
         }
       }
     });
+    destination.processAnonymizationMap();
     return successful.get();
   }
 
+  public void processAnonymizationMap() {
+    Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
+
+      @Override
+      public void run() {
+        synchronized (this) {
+          template.query("select distinct OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate"
+              + " from ANONYMIZATIONMAPTEMP where PoolKey = ?", new Object[] { pool.poolKey }, new RowCallbackHandler() {
+
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+              String opn, apn, opi, api, oan, aan, opbd, apdb;
+              opn = rs.getString(1);
+              apn = rs.getString(2);
+              opi = rs.getString(3);
+              api = rs.getString(4);
+              oan = rs.getString(5);
+              aan = rs.getString(6);
+              opbd = rs.getString(7);
+              apdb = rs.getString(8);
+
+              int count = template
+                  .queryForObject(
+                      "select count(*) from ANONYMIZATIONMAP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb }, Integer.class);
+
+              if (count == 0) {
+                template
+                    .update(
+                        "insert into ANONYMIZATIONMAP ( PoolKey, OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ? )",
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+              } else {
+                template
+                    .update(
+                        "update ANONYMIZATIONMAP set UpdatedTimestamp = current_timestamp where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+
+              }
+              template
+                  .update(
+                      "delete from ANONYMIZATIONMAPTEMP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+
+            }
+          });
+        }
+      }
+    });
+  }
 }

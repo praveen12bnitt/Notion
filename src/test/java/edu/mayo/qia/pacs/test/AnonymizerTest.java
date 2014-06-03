@@ -52,19 +52,10 @@ public class AnonymizerTest extends PACSTest {
     device = createDevice(device);
 
     String accessionNumber = "AccessionNumber-1234";
-    String script = "'" + accessionNumber + "'";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "AccessionNumber", script);
-
     String patientName = "PN-1234";
-    script = "'" + patientName + "'";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
-
     String patientID = "MRA-0068-MRA-0068";
-    script = "tags.PatientID + '-' + tags.PatientName";
-    // + '-' +
-    // tags.PatientName";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientID", script);
-
+    String script = "var tags = {AccessionNumber: '" + accessionNumber + "', PatientName: '" + patientName + "', PatientID: '" + patientID + "' }; tags;";
+    createScript(new Script(pool, script));
     List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
 
     DcmQR dcmQR = new DcmQR();
@@ -155,18 +146,19 @@ public class AnonymizerTest extends PACSTest {
     anonymizer.setValue("PatientName", tags.getString(Tag.PatientName), patientName);
 
     // @formatter:off
-    script = "anonymizer.info ( 'starting to anonymize' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n" + "  // Generate a new name using a sequence\n"
-        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n" + "// Be sure the last thing is our return value\n"
-        + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
-    
-    template.update("update SCRIPT set Script = ? where PoolKey = ? and Tag = ?", script, pool.poolKey, "PatientName");
-
-    script = "anonymizer.info ( 'starting to anonymize PatientID' )\n" + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n" + "if ( ! pn ) { \n" + "  anonymizer.info ( 'did not find an entry' )\n"
-        + "  // Generate a new name using a sequence\n" + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n" + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n" + "}\n"
-        + "// Be sure the last thing is our return value\n" + "anonymizer.info ( 'returning: ' + pn )\n" + "pn\n";
-    template.update("update SCRIPT set Script = ? where PoolKey = ? and Tag = ?", script, pool.poolKey, "PatientID");
-
+    script = "anonymizer.info ( 'starting to anonymize' )\n" 
+        + "var pn = anonymizer.lookup ( 'PatientName', tags.PatientName)\n"
+        + "if ( ! pn ) { \n"
+        + "  anonymizer.info ( 'did not find an entry' )\n"
+        + "  // Generate a new name using a sequence\n"
+        + "  pn = 'Patient-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName )\n"
+        + "  anonymizer.setValue ( 'PatientName', tags.PatientName, pn )\n"
+        + "}\n"
+        + "var tags = { PatientName: pn, PatientID: pn }; \n"
+        + "tags;\n";
+    createScript(new Script(pool,script));
     // @formatter:on
+
     List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
     testSeries.addAll(sendDICOM(aet, aet, "TOF/MIP00001.dcm"));
 
@@ -200,8 +192,7 @@ public class AnonymizerTest extends PACSTest {
     List<DicomObject> tagList = getTags("TOF/IMAGE001.dcm");
     DicomObject tags = tagList.get(0);
     anonymizer.setPool(pool);
-    createScript(new Script(pool, "SeriesDescription", "tags.SeriesDescription"));
-    createScript(new Script(pool, "StudyDescription", "tags.StudyDescription"));
+    createScript(new Script(pool, "var tags = {SeriesDescription: tags.SeriesDescription}; tags;"));
 
     List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
 

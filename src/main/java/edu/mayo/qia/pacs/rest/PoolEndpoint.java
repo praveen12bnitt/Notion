@@ -228,11 +228,8 @@ public class PoolEndpoint extends Endpoint {
 
     Session session = sessionFactory.getCurrentSession();
     Script s;
-    s = new Script("PatientName", Script.createDefaultScript("PatientName", "PN-"));
-    pool.scripts.add(s);
-    s.setPool(pool);
-    s = new Script("PatientID", Script.createDefaultScript("PatientID", null));
-    pool.scripts.add(s);
+    s = new Script(Script.createDefaultScript());
+    pool.script = s;
     s.setPool(pool);
 
     session.save(pool);

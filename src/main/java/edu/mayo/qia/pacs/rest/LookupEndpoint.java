@@ -53,18 +53,20 @@ public class LookupEndpoint extends TableEndpoint {
       @Override
       public void write(OutputStream output) throws IOException {
         final PrintWriter writer = new PrintWriter(output);
-        writer.println("Tag,Original,Anonymized");
-        template.query("select Type, Name, Value from LOOKUP where Visible = true and PoolKey = ?", new Object[] { poolKey }, new RowCallbackHandler() {
+        writer.println("OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate");
+        template.query(
+            "select OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate from ANONYMIZATIONMAP where PoolKey = ?",
+            new Object[] { poolKey }, new RowCallbackHandler() {
 
-          @Override
-          public void processRow(ResultSet rs) throws SQLException {
-            writer.print(rs.getString("Type"));
-            writer.print(",");
-            writer.print(rs.getString("Name"));
-            writer.print(",");
-            writer.println(rs.getString("Value"));
-          }
-        });
+              @Override
+              public void processRow(ResultSet rs) throws SQLException {
+                String delim = "";
+                for (int i = 1; i <= 8; i++) {
+                  writer.print(delim + rs.getString(i));
+                  delim = ",";
+                }
+              }
+            });
         writer.close();
       }
     };

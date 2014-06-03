@@ -1,0 +1,33 @@
+<div class="modal-header">{{title}}</div>
+
+<div class="modal-body">
+<form>
+
+    <div class="form-group">
+      <label class="control-label">AE Title:</label>
+      <input type="text" placeholder="AE Title" class="form-control" ng-model="deviceModel.applicationEntityTitle"></input>
+    </div>
+
+    <div class="form-group">
+      <label for="formname" class="control-label">Hostname:</label>
+      <input type="text" placeholder="Hostname" id="formname" ng-model="deviceModel.hostName" class="form-control"></input>
+    </div>
+
+    <div class="form-group">
+      <label for="formname" class="control-label">Port:</label>
+      <input type="text" placeholder="Port" id="formname" ng-model="deviceModel.port" class="form-control"></input>
+    </div>
+
+
+    <div class="form-group">
+      <label class="control-label">Description:</label>
+      <textarea class="form-control" ng-model="deviceModel.description" ></textArea>
+    </div>
+
+
+</form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="save()">Save</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

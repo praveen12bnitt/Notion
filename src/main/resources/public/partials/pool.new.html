@@ -1,0 +1,24 @@
+<div>
+  <form>
+    <h3>Create a new Pool</h3>
+
+    <div class="form-group">
+      <label for="formname" class="control-label">Name:</label>
+      <input type="text" placeholder="Name" id="formname" ng-model="model.name" class="form-control"></input>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label">AE Title:</label>
+      <input type="text" placeholder="AE Title" class="form-control" ng-model="model.applicationEntityTitle"></input>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label">Description:</label>
+      <input class="form-control" ng-model="model.description" ></input>
+    </div>
+    <!--    <button type="submit" class="btn btn-default">Submit</button>
+  -->
+  </form>
+  <button type="submit" class="btn btn-primary" ng-click="save()">Save</button>
+  <a ng-href="#/pools/index">Cancel</a>
+</div>

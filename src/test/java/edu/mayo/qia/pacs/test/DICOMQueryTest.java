@@ -10,12 +10,15 @@ import java.util.UUID;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 public class DICOMQueryTest extends PACSTest {
 
   @Test

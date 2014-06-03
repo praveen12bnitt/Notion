@@ -57,21 +57,12 @@ public class ScriptEndpoint {
     Session session = sessionFactory.getCurrentSession();
     Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
     // Force load
-    pool.getScripts().size();
-    SimpleResponse s = new SimpleResponse("script", pool.getScripts());
-    return Response.ok(s).build();
-  }
-
-  @GET
-  @Path("/{id: [1-9][0-9]*}")
-  @UnitOfWork
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getScript(@PathParam("id") int id) {
-    // Look up the pool and change it
-    Script script = null;
-    Session session = sessionFactory.getCurrentSession();
-    script = (Script) session.byId(Script.class).load(id);
-    return Response.ok(script).build();
+    if (pool.getScript() == null) {
+      pool.script = new Script(Script.createDefaultScript());
+      pool.script.setPool(pool);
+      session.save(pool);
+    }
+    return Response.ok(pool.getScript()).build();
   }
 
   /** Try a Script. */
@@ -84,63 +75,20 @@ public class ScriptEndpoint {
     return Response.ok(new SimpleResponse("result", Anonymizer.tryScript(container, script))).build();
   }
 
-  /** Create a Script. */
-  @POST
+  /** Update a Script. */
+  @PUT
+  @Path("/")
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createScript(Script script) {
-    // Ensure this Script does not already exist
-    int count = template.queryForObject("select count(*) from SCRIPT where PoolKey = ? and Tag = ?", Integer.class, poolKey, script.tag);
-    if (count != 0) {
-      return Response.status(Status.FORBIDDEN).entity(new SimpleResponse("message", "Script tag (" + script.tag + ") must be unique for this pool")).build();
-    }
+  public Response modifyScript(Script inScript) {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
     Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
-    // Ensure the Script does not think it already exists!
-    script.scriptKey = -1;
-    script.setPool(pool);
-    pool.getScripts().add(script);
-    return Response.ok(script).build();
-  }
-
-  /** Update a Script. */
-  @PUT
-  @Path("/{id: [1-9][0-9]*}")
-  @UnitOfWork
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response modifyScript(@PathParam("id") int id, Script inScript) {
-    // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    Script script = inScript;
-    script = (Script) session.byId(Script.class).load(id);
-    if (!inScript.tag.equals(script.tag)) {
-      return Response.status(Status.FORBIDDEN).entity(new SimpleResponse("message", "Script tags must not change")).build();
-    }
-    script.update(inScript);
-    return Response.ok(script).build();
-  }
-
-  /** Delete a Script. */
-  @DELETE
-  @Path("/{id: [1-9][0-9]*}")
-  @UnitOfWork
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteScript(@PathParam("id") int id) {
-    // Look up the pool and change it
-    Session session = sessionFactory.getCurrentSession();
-    Script script = (Script) session.byId(Script.class).getReference(id);
-    if (script.getPool().poolKey != poolKey) {
-      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not find the script")).build();
-    }
-    session.delete(script);
-    SimpleResponse response = new SimpleResponse();
-    response.put("status", "success");
-    response.put("message", "Delete Script " + script.scriptKey);
-    return Response.ok(response).build();
+    pool.getScript().update(inScript);
+    // session.save(pool);
+    session.save(pool.getScript());
+    return Response.ok(pool.getScript()).build();
   }
 
 }

@@ -29,6 +29,7 @@ import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmQR;
 
 @Component
@@ -99,7 +100,7 @@ public class PoolTest extends PACSTest {
     List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, String.class);
     assertEquals("Files", 2, filePaths.size());
     assertEquals("Device", new Integer(1), template.queryForObject("select count(*) from DEVICE where PoolKey = " + pool.poolKey, Integer.class));
-    assertEquals("Script", new Integer(2), template.queryForObject("select count(*) from SCRIPT where PoolKey = " + pool.poolKey, Integer.class));
+    assertEquals("Script", new Integer(1), template.queryForObject("select count(*) from SCRIPT where PoolKey = " + pool.poolKey, Integer.class));
 
     // Create
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/lookup").path("create").build();
@@ -139,19 +140,11 @@ public class PoolTest extends PACSTest {
     device = createDevice(device);
 
     String accessionNumber = "AccessionNumber-1234";
-    String script;
-    script = "'" + accessionNumber + "'";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "AccessionNumber", script);
-
     String patientName = "PN-1234";
-    script = "'" + patientName + "'";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
-
     String patientID = "MRA-0068-MRA-0068";
-    script = "tags.PatientID + '-' + tags.PatientName";
-    // + '-' +
-    // tags.PatientName";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientID", script);
+
+    String script = "var tags = {AccessionNumber: '" + accessionNumber + "', PatientName: '" + patientName + "', PatientID: '" + patientID + "' }; tags;";
+    createScript(new Script(pool, script));
 
     List<File> testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");
 
@@ -172,11 +165,8 @@ public class PoolTest extends PACSTest {
     assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
 
-    template.update("delete from SCRIPT where PoolKey = ?", pool.poolKey);
-    script = "'42'";
-    template.update("insert into SCRIPT ( PoolKey,  Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "AccessionNumber", script);
-    script = "'Gone'";
-    template.update("insert into SCRIPT ( PoolKey, Tag, Script ) values ( ?, ?, ? )", pool.poolKey, "PatientName", script);
+    script = "var tags = {AccessionNumber: '42', PatientName: 'Gone', PatientID: '" + patientID + "' }; tags;";
+    createScript(new Script(pool, script));
 
     // Send again and query
     testSeries = sendDICOM(aet, aet, "TOF/IMAGE001.dcm");

@@ -54,9 +54,9 @@ import static io.dropwizard.testing.junit.ConfigOverride.config;
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
   static Logger logger = Logger.getLogger(PACSTest.class);
-  static int DICOMPort = findFreePort();
-  static int RESTPort = findFreePort();
-  static int DBPort = findFreePort();
+  static int DICOMPort = findFreePort(51117);
+  static int RESTPort = findFreePort(51118);
+  static int DBPort = findFreePort(58084);
   static File tempDirectory = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
   static Client client;
 
@@ -105,13 +105,13 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     }
   };
 
-  protected static int findFreePort() {
+  protected static int findFreePort(int start) {
     // Find a random number between 49152 and 65535
     Random random = new Random();
     boolean found = false;
-    int testPort = 0;
+    int testPort = start - 1;
     while (!found) {
-      testPort = 49152 + random.nextInt(65535 - 49152);
+      testPort = testPort + 1;
       Socket socket = null;
       try {
         socket = new Socket("localhost", testPort);
@@ -178,7 +178,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   Script createScript(Script script) {
     // Create a device
     URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + script.getPool().poolKey + "/script").build();
-    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(ClientResponse.class, script);
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).put(ClientResponse.class, script);
     assertEquals("Got result", 200, response.getStatus());
     script = response.getEntity(Script.class);
     logger.info("Entity back: " + script);
