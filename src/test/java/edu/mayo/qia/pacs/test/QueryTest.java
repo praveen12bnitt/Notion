@@ -240,7 +240,7 @@ public class QueryTest extends PACSTest {
         Thread.sleep(1000);
       }
     }
-    assertTrue("Waiting for fetch to be completed -- " + query.status, query.status.startsWith("Fetch Completed"));
+    assertTrue("Waiting for fetch to be completed -- " + query.status, query.status.startsWith("fetch completed"));
 
     // The pool should have 1
     assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class));

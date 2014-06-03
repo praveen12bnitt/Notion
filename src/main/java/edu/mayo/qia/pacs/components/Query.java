@@ -153,6 +153,7 @@ public class Query {
 
 
 
+
       public void run() {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
@@ -306,7 +307,7 @@ public class Query {
             }
           }
         }
-        template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Completed", queryKey);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "fetch completed", queryKey);
         logger.debug("Fetch Compeleted");
         Thread.currentThread().setName("Idle");
       }

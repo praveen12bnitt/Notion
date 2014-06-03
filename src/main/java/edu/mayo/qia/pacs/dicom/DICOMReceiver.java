@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -30,6 +31,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.NotionConfiguration;
+import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 
 /**
@@ -84,7 +86,7 @@ public class DICOMReceiver implements AssociationListener, Managed {
    * Starts the receiver listening.
    * 
    * @throws Exception
-   *           if could not start database
+   *         if could not start database
    */
   @Override
   public synchronized void start() throws Exception {
@@ -169,10 +171,16 @@ public class DICOMReceiver implements AssociationListener, Managed {
 
   @Override
   public void associationClosed(AssociationCloseEvent event) {
+    AssociationInfo info = associationMap.get(event.getAssociation());
+    PoolContainer container = poolManager.getContainer(info.poolKey);
+    if (container != null) {
+      container.processAnonymizationMap();
+    }
     associationMap.remove(event.getAssociation());
   }
 
-  static class AssociationInfo {
+  public static class AssociationInfo {
+    public String uuid = UUID.randomUUID().toString();
     public boolean canConnect = false;
     public String failureMessage = "Failed to connect";
     File incomingRootDirectory;

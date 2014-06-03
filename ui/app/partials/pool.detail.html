@@ -50,6 +50,7 @@
           <div class="panel-body">
             <div ui-ace="{theme:'twilight'}" ng-model="ctpScript">
             </div>
+            <button class="btn btn-primary" ng-click="saveCTP()">Save</button>            
           </div>
         </div>
 
@@ -60,8 +61,9 @@
             </div>
             <div class="panel-body">
               <div ui-ace="{mode:'javascript', onLoad : aceLoaded}" ng-model="script"></div>
-<p class="form-control-static">{{tryResult.trunc(250)}}</p>
-<button class="btn btn-primary" ng-click="tryScript()">Try Script</button>
+              <p class="form-control-static">{{tryResult.trunc(250)}}</p>
+              <button class="btn btn-primary" ng-click="tryScript()">Try Script</button>
+              <button class="btn btn-primary" ng-click="saveScript()">Save</button>
             </div>
 
           </div>

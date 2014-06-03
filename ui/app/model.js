@@ -81,6 +81,7 @@ parse: function(response) {
 
 ScriptModel = Backbone.Model.extend({
 });
+
 ScriptCollection = Backbone.Collection.extend({
 model: ScriptModel,
 url: function () { return this.urlRoot; },

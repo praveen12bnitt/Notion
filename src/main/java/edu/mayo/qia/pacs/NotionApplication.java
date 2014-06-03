@@ -1,5 +1,9 @@
 package edu.mayo.qia.pacs;
 
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -20,6 +24,10 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 import org.secnod.dropwizard.shiro.ShiroBundle;
 import org.secnod.dropwizard.shiro.ShiroConfiguration;
 import org.secnod.shiro.jersey.ShiroResourceFilterFactory;
@@ -34,6 +42,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
 
+import edu.mayo.qia.pacs.components.AnonymizationMapProcessor;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Instance;
@@ -51,6 +60,7 @@ import edu.mayo.qia.pacs.components.User;
 import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 import edu.mayo.qia.pacs.managed.DBWebServer;
+import edu.mayo.qia.pacs.managed.QuartzManager;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 import edu.mayo.qia.pacs.rest.UserEndpoint;
@@ -168,6 +178,18 @@ public class NotionApplication extends Application<NotionConfiguration> {
     environment.jersey().register(context.getBean(PoolEndpoint.class));
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
     environment.jersey().register(context.getBean(UserEndpoint.class));
+
+    QuartzManager manager = new QuartzManager(StdSchedulerFactory.getDefaultScheduler());
+    environment.lifecycle().manage(manager);
+
+    Scheduler scheduler = manager.scheduler;
+
+    // Trigger the job to run now, and then repeat every 60 seconds
+    JobDetail job = newJob(AnonymizationMapProcessor.class).withIdentity("cleanup", "alpha").build();
+    Trigger trigger = newTrigger().withIdentity("trigger1", "group1").startNow().withSchedule(simpleSchedule().withIntervalInSeconds(60).repeatForever()).build();
+
+    // Tell quartz to schedule the job using our trigger
+    scheduler.scheduleJob(job, trigger);
 
     logger.info("\n\n=====\nStarted Notion Test:\nImageDirectory: \n" + configuration.notion.imageDirectory + "\nDBWeb:\nhttp://localhost:" + configuration.dbWeb + "\n\nDICOMPort: " + configuration.notion.dicomPort + "\n=====\n\n");
 

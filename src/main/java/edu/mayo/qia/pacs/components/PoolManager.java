@@ -11,12 +11,16 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.net.Association;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.Notion;
+import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 
 /**
  * Manages the pools, starting them up, shutdown, etc.
@@ -38,6 +42,9 @@ public class PoolManager implements Managed {
 
   @Autowired
   SessionFactory sessionFactory;
+
+  @Autowired
+  DICOMReceiver dicomReceiver;
 
   @Override
   public void start() {
@@ -109,5 +116,4 @@ public class PoolManager implements Managed {
       throw new RuntimeException("Could not remove pool for " + poolContainer.getPool().applicationEntityTitle);
     }
   }
-
 }

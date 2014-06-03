@@ -13,6 +13,12 @@ function (str){
 };
 
 
+String.prototype.contains = String.prototype.contains ||
+function (str){
+  return this.indexOf(str) != -1;
+};
+
+
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
