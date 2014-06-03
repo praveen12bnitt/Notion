@@ -60,9 +60,9 @@ gulp.task('style', function() {
     'app/styles/*.css',
     'bower_components/font-awesome/css/font-awesome*.css'
     ])
-//  .pipe(styl({compress : true }))
-//  .pipe(stylus)
-  .pipe(gulp.dest('public/css'))
+  .pipe(gulp.dest('public/css'));
+
+  gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 })
 
 
@@ -71,7 +71,7 @@ gulp.task('vendor', function() {
   gulp.src([
     'vendor/scripts/moment.js',
     'vendor/scripts/showdown.js',
-    'bower_components/jquery/dist/jquery.js',
+    'bower_components/jquery/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/vex/js/vex.dialog.js',
@@ -88,11 +88,6 @@ gulp.task('vendor', function() {
     'bower_components/handlebars/handlebars.js',
     'vendor/scripts/console-polyfill.js',
     ])
-  .pipe(uglify({outSourceMap: true}))
-  .pipe(gulp.dest('public/js'))
-
-  gulp.src(['bower_components/dropzone/downloads/dropzone-amd-module.js'])
-  .pipe(rename('dropzone.js'))
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))
 

@@ -54,6 +54,7 @@ public class Script {
 
   public static String createDefaultScript() {
     return "// Default anonymization script\n" + " var tags = {\n" + "   PatientName: anonymizer.lookup('PatientName', tags.PatientName ) || 'PN-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName),\n"
-        + "   PatientID: anonymizer.lookup('PatientID', tags.PatientName ) || anonymizer.sequenceNumber ( 'PatientName', tags.PatientName),\n" + " };\n" + " \n" + "tags;\n";
+        + "   PatientID: anonymizer.lookup('PatientID', tags.PatientID ) || anonymizer.sequenceNumber ( 'PatientID', tags.PatientID),\n"
+        + "   AccessionNumber: anonymizer.lookup('AccessionNumber', tags.AccessionNumber ) || anonymizer.sequenceNumber ( 'AccessionNumber', tags.AccessionNumber),\n" + " };\n" + " // 1234\n" + "tags;\n";
   }
 }

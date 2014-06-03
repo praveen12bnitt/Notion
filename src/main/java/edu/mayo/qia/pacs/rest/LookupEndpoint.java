@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -65,12 +67,14 @@ public class LookupEndpoint extends TableEndpoint {
                   writer.print(delim + rs.getString(i));
                   delim = ",";
                 }
+                writer.println();
               }
             });
         writer.close();
       }
     };
-    String fn = poolManager.getContainer(poolKey).getPool().applicationEntityTitle + "-Lookup.csv";
+
+    String fn = poolManager.getContainer(poolKey).getPool().applicationEntityTitle + "-Lookup-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()) + ".csv";
     return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
   }
 
