@@ -1,0 +1,1 @@
+{"version":3,"file":"console-polyfill.js.map","sources":["console-polyfill.js"],"names":["con","method","dummy","methods","split","pop","window","console"],"mappings":"CAGA,SAAWA,GAMT,IALA,GAAIC,GACAC,EAAQ,aACRC,EAAU,+IAEgBC,MAAM,KAC7BH,EAASE,EAAQE,OACtBL,EAAIC,GAAUD,EAAIC,IAAWC,GAE9BI,OAAOC,QAAUD,OAAOC"}
