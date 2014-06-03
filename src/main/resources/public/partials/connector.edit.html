@@ -1,0 +1,39 @@
+<div class="modal-header">{{title}}</div>
+
+<div class="modal-body">
+  <form>
+
+    <div class="form-group">
+      <label for="formname" class="control-label">Name:</label>
+      <input type="text" placeholder="Name" id="formname" ng-model="model.name" class="form-control"></input>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label">Description:</label>
+      <textarea class="form-control" placeholder="Description" ng-model="model.description" ></textarea>
+    </div>
+
+<div class="form-group">
+  <label>Receiving Pool</label>
+  <select ng-model="model.destinationPoolKey" ng-options="p.poolKey as p.name + ' / ' + p.applicationEntityTitle for p in pools" name='destinationPoolKey'></select>
+</div>
+
+    <div class="form-group">
+      <label>Query Pool</label>
+      <select ng-model="model.queryPoolKey" ng-options="p.poolKey as p.name + ' / ' + p.applicationEntityTitle for p in pools" name='queryPoolKey' ng-change="queryPoolChanged()"></select>
+    </div>
+
+<div class="form-group">
+  <label>Query Device</label>
+  <select ng-model="model.queryDeviceKey" ng-options="d.deviceKey as d.applicationEntityTitle + '@' + d.hostName + ':' + d.port for d in getDevices()" name='queryDeviceKey'></select>
+</div>
+
+
+
+
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="save()">Save</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

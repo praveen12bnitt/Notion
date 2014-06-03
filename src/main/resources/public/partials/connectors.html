@@ -1,0 +1,39 @@
+<div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6 panel-title">
+            Connectors <i class="fa fa-plus-circle" ng-click="editConnector(null)"></i>
+          </div>
+        </div>
+
+
+        <div  class="panel-body">
+
+          <table class="table table-striped table-hover table-condensed">
+            <thead>
+              <tr>
+                <td>Name</td>
+                <td>Description</td>
+                <td>Destination Pool</td>
+                <td>Query Pool</td>
+                <td>Query Device</td>
+<td></td>
+              </tr>
+            </thead>
+            <tr ng-repeat="connector in connectorCollection.models | orderBy:'id'">
+              <td>{{connector.get('name')}}</td>
+              <td>{{connector.get('description')}}</td>
+<td>{{getPoolInfo(connector.get('destinationPoolKey'))}}
+<td>{{getPoolInfo(connector.get('queryPoolKey'))}}
+<td>{{getDeviceInfo(connector.get('queryPoolKey'), connector.get('queryDeviceKey'))}}</td>
+<td><i class="fa fa-edit" ng-click="editConnector(connector)"></i> <i class="fa fa-times-circle" ng-click="deleteConnector(connector)"></i></td>
+            </tr>
+          </table>
+
+        </div>
+      </div>
+    </div>
+  </div>

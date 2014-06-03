@@ -1,0 +1,43 @@
+<div id="container">
+
+  <form class="form-inline" role="form">
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputEmail2">Patient ID</label>
+      <input type="text" ng-model="PatientID" ng-change="reload()" class="form-control" id="exampleInputEmail2" placeholder="PatientID">
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputPassword2">Patient Name</label>
+      <input type="text" ng-model="PatientName"  ng-change="reload()" class="form-control" id="exampleInputPassword2" placeholder="PatientName">
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputPassword2">Accession Number</label>
+      <input type="text" ng-model="AccessionNumber" ng-change="reload()" class="form-control" id="exampleInputPassword2" placeholder="AccessionNumber">
+    </div>
+    <button type="submit" class="btn btn-default" ng-click="clear()">Clear</button>
+  </form>
+
+  <table class="table table-striped table-hover table-condensed">
+    <thead>
+      <tr>
+        <td>PatientID</td>
+        <td>Patient Name</td>
+        <td>Accession Number</td>
+        <td>Study Description</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="study in studies.Records | orderBy:'StudyKey'">
+        <td>{{study.PatientID}}</td>
+        <td>{{study.PatientName}}</td>
+        <td>{{study.AccessionNumber}}</td>
+        <td>{{study.StudyDescription}}</td>
+        <td><i class="fa fa-times-circle" ng-click="deleteStudy(study)"></i></td>
+        <td><a  ng-href="/rest/pool/{{pool.get('poolKey')}}/studies/{{study.StudyKey}}/zip"><i class="fa fa-download"></i></a>
+      </tr>
+    </tbody>
+  </table>
+
+  <pagination total-items="numberOfItems" items-per-page="pageSize" ng-model="pg" page="currentPage"  ng-change="pageChanged()"></pagination>
+</div>
