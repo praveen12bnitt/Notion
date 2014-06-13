@@ -7,6 +7,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -24,6 +25,8 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
+import com.codahale.metrics.MetricFilter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.sun.jersey.api.core.ResourceConfig;
@@ -61,6 +65,7 @@ import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.managed.QuartzManager;
+import edu.mayo.qia.pacs.metrics.InfluxdbReporter;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 import edu.mayo.qia.pacs.rest.UserEndpoint;
@@ -190,6 +195,11 @@ public class NotionApplication extends Application<NotionConfiguration> {
 
     // Tell quartz to schedule the job using our trigger
     scheduler.scheduleJob(job, trigger);
+
+    // Report Metrics to InfluxDB
+    final InfluxDB influxdb = InfluxDBFactory.connect("http://qia-couchdb.mayo.edu:8086", "notion", "notion");
+    final InfluxdbReporter reporter = InfluxdbReporter.forRegistry(environment.metrics()).prefixedWith("test").withDB("notion").convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS).filter(MetricFilter.ALL).build(influxdb);
+    reporter.start(10, TimeUnit.SECONDS);
 
     logger.info("\n\n=====\nStarted Notion Test:\nImageDirectory: \n" + configuration.notion.imageDirectory + "\nDBWeb:\nhttp://localhost:" + configuration.dbWeb + "\n\nDICOMPort: " + configuration.notion.dicomPort + "\n=====\n\n");
 
