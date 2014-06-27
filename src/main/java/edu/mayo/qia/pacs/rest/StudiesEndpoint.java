@@ -205,10 +205,10 @@ public class StudiesEndpoint {
         }
       }
     };
-    String fn = study.PatientName.replaceAll(regex, "_");
-    fn = fn + "-" + study.StudyDate == null ? "empty" : study.StudyDate.toString().replaceAll(regex, "_");
-    fn = fn + "-" + study.StudyDescription == null ? "empty" : study.StudyDescription.replaceAll(regex, "_");
-    fn = fn + ".zip";
+    StringBuilder fn = new StringBuilder(study.PatientName.replaceAll(regex, "_"));
+    fn.append("-" + study.StudyDate == null ? "empty" : study.StudyDate.toString().replaceAll(regex, "_"));
+    fn.append("-" + study.StudyDescription == null ? "empty" : study.StudyDescription.replaceAll(regex, "_"));
+    fn.append(".zip");
     return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
   }
 
