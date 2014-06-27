@@ -170,7 +170,7 @@ public class Query {
       public void run() {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
-        template.update("update QUERY set Status = ? where QueryKey = ?", "Query Pending", queryKey);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "query pending", queryKey);
         template.update("update QUERYITEM set Status = ? where QueryKey = ?", "query pending", queryKey);
         for (final Item item : items) {
           template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "working", item.queryItemKey);
@@ -235,7 +235,7 @@ public class Query {
             }
           }
         }
-        template.update("update QUERY set Status = ? where QueryKey = ?", "Query Completed", queryKey);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "query completed", queryKey);
         Thread.currentThread().setName("Idle");
       }
     });
@@ -269,12 +269,12 @@ public class Query {
   public void doFetch() {
     logger.debug("Queuing fetch");
     final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
-    template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
+    template.update("update QUERY set Status = ? where QueryKey = ?", "fetch pending", queryKey);
     Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
       public void run() {
         final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
-        template.update("update QUERY set Status = ? where QueryKey = ?", "Fetch Pending", queryKey);
-        template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "pending fetch", queryKey);
+        template.update("update QUERY set Status = ? where QueryKey = ?", "fetch pending", queryKey);
+        template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "fetch pending", queryKey);
         Thread.currentThread().setName("Fetch " + device);
         PoolManager poolManager = Notion.context.getBean(PoolManager.class);
         PoolContainer poolContainer = poolManager.getContainer(pool.poolKey);
