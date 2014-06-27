@@ -81,12 +81,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       // console.log("queryTick")
       $scope.query.fetch().done(function() {
         // console.log ("queryTick completed")
-if ($scope.query.get('status').match("query completed")) {
-  $scope.mode = 'query-done'
-}
-if ($scope.query.get('status').match("fetch completed")) {
-  $scope.mode = 'fetch-done'
-}
+        if ($scope.query.get('status').match("query completed")) {
+          $scope.mode = 'query-done'
+        }
+        if ($scope.query.get('status').match("fetch completed")) {
+          $scope.mode = 'fetch-done'
+        }
       });
     }
     $timeout(queryTick, 2000)
