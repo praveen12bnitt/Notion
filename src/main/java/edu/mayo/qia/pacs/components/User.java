@@ -33,6 +33,7 @@ public class User {
 
   public String uid = UUID.randomUUID().toString();
   public Boolean activated = false;
+  public Boolean isAdmin = false;
   public String activationHash = UUID.randomUUID().toString();
 
   // Never pass password and salt out

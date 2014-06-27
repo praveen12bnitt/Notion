@@ -40,6 +40,7 @@ import com.sun.jersey.spi.container.ResourceFilterFactory;
 import edu.mayo.qia.pacs.components.AnonymizationMapProcessor;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
+import edu.mayo.qia.pacs.components.Group;
 import edu.mayo.qia.pacs.components.Instance;
 import edu.mayo.qia.pacs.components.Item;
 import edu.mayo.qia.pacs.components.MoveRequest;
@@ -52,10 +53,12 @@ import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
 import edu.mayo.qia.pacs.components.User;
+import edu.mayo.qia.pacs.db.GroupDAO;
 import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.managed.QuartzManager;
+import edu.mayo.qia.pacs.rest.AuthorizationEndpoint;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 import edu.mayo.qia.pacs.rest.UserEndpoint;
@@ -64,8 +67,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
   static Logger logger = LoggerFactory.getLogger(NotionApplication.class);
   static int HashIterations = 100;
 
-  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Connector.class, Device.class, User.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class, PoolManager.class,
-      Query.class, Result.class, Script.class, Series.class, Study.class, Connector.class) {
+  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Group.class, Connector.class, Device.class, User.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class,
+      PoolManager.class, Query.class, Result.class, Script.class, Series.class, Study.class) {
     @Override
     public DataSourceFactory getDataSourceFactory(NotionConfiguration configuration) {
       return configuration.getDataSourceFactory();
@@ -110,6 +113,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     parent.getBeanFactory().registerSingleton("configuration", configuration);
     parent.getBeanFactory().registerSingleton("objectMapper", environment.getObjectMapper());
     parent.getBeanFactory().registerSingleton("userDAO", new UserDAO(hibernate.getSessionFactory()));
+    parent.getBeanFactory().registerSingleton("groupDAO", new GroupDAO(hibernate.getSessionFactory()));
 
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setUrl(configuration.getDataSourceFactory().getUrl());
@@ -172,6 +176,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     environment.jersey().register(context.getBean(PoolEndpoint.class));
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
     environment.jersey().register(context.getBean(UserEndpoint.class));
+    environment.jersey().register(context.getBean(AuthorizationEndpoint.class));
 
     QuartzManager manager = new QuartzManager(StdSchedulerFactory.getDefaultScheduler());
     environment.lifecycle().manage(manager);
