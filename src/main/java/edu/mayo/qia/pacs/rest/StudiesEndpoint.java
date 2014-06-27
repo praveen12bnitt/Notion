@@ -206,8 +206,8 @@ public class StudiesEndpoint {
       }
     };
     StringBuilder fn = new StringBuilder(study.PatientName.replaceAll(regex, "_"));
-    fn.append("-" + study.StudyDate == null ? "empty" : study.StudyDate.toString().replaceAll(regex, "_"));
-    fn.append("-" + study.StudyDescription == null ? "empty" : study.StudyDescription.replaceAll(regex, "_"));
+    fn.append("-").append(study.StudyDate == null ? "empty" : study.StudyDate.toString().replaceAll(regex, "_"));
+    fn.append("-").append(study.StudyDescription == null ? "empty" : study.StudyDescription.replaceAll(regex, "_"));
     fn.append(".zip");
     return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
   }
