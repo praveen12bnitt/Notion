@@ -174,15 +174,15 @@ public class StudiesEndpoint {
           byte[] buffer = new byte[1024];
           ZipOutputStream zip = new ZipOutputStream(output);
           File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
-          String path = study.PatientName.replaceAll(regex, "_");
-          // zip.putNextEntry(new ZipEntry(path));
+          String path = study.PatientName == null ? "empty" : study.PatientName.replaceAll(regex, "_");
 
-          String sub = study.StudyID == null ? "" : study.StudyID.replaceAll(regex, "_") + "-";
+          String sub = study.StudyID == null ? "empty" : study.StudyID.replaceAll(regex, "_") + "-";
           DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
           path = path + "/" + sub + format.format(study.StudyDate);
           // zip.putNextEntry(new ZipEntry(path));
           for (Series series : study.series) {
-            String seriesPath = path + "/" + series.SeriesDescription.replaceAll(regex, "_");
+            String desc = series.SeriesDescription == null ? "empty" : series.SeriesDescription;
+            String seriesPath = path + "/" + desc.replaceAll(regex, "_");
             // zip.putNextEntry(new ZipEntry(seriesPath));
             for (Instance instance : series.instances) {
               String instancePath = seriesPath + "/" + instance.SOPInstanceUID + ".dcm";
