@@ -19,7 +19,7 @@ function (str){
 };
 
 
-notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
+notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise('/pools/index')
@@ -76,6 +76,14 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
     url: "/connectors",
     templateUrl: 'partials/connectors.html',
     controller: 'ConnectorsController',
+    data: {
+      access: ['admin']
+    }
+  })
+  .state('root.groups', {
+    url: "/groups",
+    templateUrl: 'partials/groups.html',
+    controller: 'GroupController',
     data: {
       access: ['admin']
     }

@@ -95,3 +95,22 @@ parse: function(response) {
 }
 
 });
+
+
+// Groups
+GroupModel = Backbone.Model.extend({
+  idAttribute: 'groupKey'
+});
+GroupCollection = Backbone.Collection.extend({
+  model: GroupModel,
+  url: '/rest/authorization/group',
+parse: function(response) {
+  console.log("Got response: ", response)
+  var m = [];
+  for(var i = 0; i < response.group.length; i++) {
+    m.push(new GroupModel(response.group[i]))
+  }
+  this.set ( m )
+  return this.models;
+}
+})
