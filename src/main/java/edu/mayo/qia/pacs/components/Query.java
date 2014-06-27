@@ -33,6 +33,7 @@ import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
@@ -122,6 +123,28 @@ public class Query {
     return query;
   }
 
+  static String getAttribute(JsonNode node, String key) {
+    return node.has(key) ? node.get(key).asText() : null;
+  }
+
+  public static Query constructQuery(JsonNode json) {
+    Query query = new Query();
+    Iterator<JsonNode> iterator = json.get("items").elements();
+    while (iterator.hasNext()) {
+      JsonNode node = iterator.next();
+      Item item = new Item();
+      item.patientID = getAttribute(node, "PatientID");
+      item.patientName = getAttribute(node, "PatientName");
+      item.anonymizedName = getAttribute(node, "AnonymizedName");
+      item.anonymizedID = getAttribute(node, "AnonymizedID");
+      if (item.patientID != null) {
+        query.items.add(item);
+        item.query = query;
+      }
+    }
+    return query;
+  }
+
   static String getColumn(Map<String, Integer> headerMap, Row row, String column) {
     if (!headerMap.containsKey(column)) {
       return null;
@@ -142,18 +165,8 @@ public class Query {
 
   // Implement a C-FIND and store results away...
   public void executeQuery() {
-    Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
-
-
-
-
-
-
-
-
-
-
-
+    Executor executor = Notion.context.getBean("executor", Executor.class);
+    executor.execute(new Runnable() {
       public void run() {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
@@ -313,4 +326,5 @@ public class Query {
       }
     });
   }
+
 }
