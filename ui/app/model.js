@@ -99,7 +99,8 @@ parse: function(response) {
 
 // Groups
 GroupModel = Backbone.Model.extend({
-  idAttribute: 'groupKey'
+  idAttribute: 'groupKey',
+  url: function() { return 'rest/authorization/group/' + this.get('groupKey')}
 });
 GroupCollection = Backbone.Collection.extend({
   model: GroupModel,

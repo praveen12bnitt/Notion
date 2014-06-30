@@ -7,26 +7,25 @@
         <td>Group</td>
         <td>Description</td>
         <td>Users</td>
-<td></td>
-<td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="group in groups | orderBy:'name'">
         <td>{{group.name}}</td>
-        <td>{{group.description}} -- {{group.userKeys}}</td>
+        <td>{{group.description.trunc()}}</td>
         <td>
-        <div w11k-select
-                    
-                     w11k-select-options="user.userKey as user.username + ' ' + user.email for user in users"
-                     ng-model="group.userKeys"
-                    >
-                </div>
-              </td>
-              <td>
-                <button class="btn btn-primary" ng-click="saveGroup(group)">Save</button>
-                </td>
-        <td>Delete</td>
+        <div w11k-select w11k-select-options="user.userKey as user.username + ' ' + user.email for user in users"
+            ng-model="group.userKeys">
+        </div>
+      </td>
+      <td>
+        <button class="btn btn-primary" ng-click="saveGroup(group)">Save</button>
+      </td>
+      <td><i class="fa fa-edit" ng-click="editGroup(groupCollection.get(group.groupKey))"></i></td>
+      <td><i class="fa fa-times-circle" ng-click="deleteGroup(groupCollection.get(group.groupKey))"></i></td>
       </tr>
     </tbody>
   </table>

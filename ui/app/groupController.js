@@ -7,6 +7,7 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
     $scope.users = data.users;
   });
   $scope.groupCollection = new GroupCollection()
+
   $scope.updateModel = function() {
     console.log("Success from fetch")
     $scope.groups = $scope.groupCollection.toJSON()
@@ -22,8 +23,9 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
   });
 
   $scope.saveGroup = function ( group ) {
+    console.log("group", group)
     var g = new GroupModel();
-    g.url = "/rest/authorization/group/" + group.groupKey
+    g.url = "/rest/authorization/group/" + (group.groupKey || "")
     g.set( group )
     g.save();
   }
@@ -32,6 +34,34 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
     console.log("Collection: ", $scope.groupCollection)
     console.log("Model:", $scope.groups)
   }
+
+$scope.deleteGroup = function(group) {
+  $scope.group = group
+  $scope.groupModel = group.toJSON()
+  $modal.open ({
+    templateUrl: 'partials/modal.html',
+    scope: $scope,
+    controller: function($scope, $modalInstance) {
+      $scope.title = "Delete group?"
+      $scope.message = "Delete the group: " + group.get('name')
+      $scope.ok = function(){
+        $scope.groupCollection.remove(group)
+        group.destroy({
+          success: function(model, response) {
+            console.log("Dismissing modal")
+            $modalInstance.dismiss();
+            $scope.updateModel();
+          },
+          error: function(model, response) {
+            alert ( "Failed to delete group: " + response.message )
+          }
+        })
+      };
+      $scope.cancel = function() { $modalInstance.dismiss() };
+    }
+  });
+};
+
 
   $scope.editGroup = function(group) {
     console.log("EditGroup")
@@ -54,8 +84,7 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
         $scope.save = function(){
           group.set ( $scope.groupModel )
           $scope.groupCollection.add(group);
-          group.save();
-          $scope.updateModel()
+          group.save(group.toJSON(), {success: $scope.updateModel});
           $modalInstance.close();
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
