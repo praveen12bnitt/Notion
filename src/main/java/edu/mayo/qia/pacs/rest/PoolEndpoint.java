@@ -19,8 +19,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.subject.Subject;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.secnod.shiro.jaxrs.Auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -59,10 +62,13 @@ public class PoolEndpoint extends Endpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  public Response listPools() {
+  // @RequiresPermissions({ "pool:list" })
+  public Response listPools(@Auth Subject subject) {
+    boolean p = subject.isPermitted("pool:list");
     List<Pool> result = new ArrayList<Pool>();
     Session session = sessionFactory.getCurrentSession();
     result = session.createCriteria(Pool.class).list();
+    // Test for permission
     SimpleResponse s = new SimpleResponse("pool", result);
     return Response.ok(s).build();
   }
@@ -166,6 +172,15 @@ public class PoolEndpoint extends Endpoint {
     queryEndpoint = getResource(QueryEndpoint.class);
     queryEndpoint.poolKey = id;
     return queryEndpoint;
+  }
+
+  /** Group / Roles */
+  @Path("/{id: [1-9][0-9]*}/grouprole")
+  public GroupRoleEndpoint group(@PathParam("id") int id) {
+    GroupRoleEndpoint endpoint;
+    endpoint = getResource(GroupRoleEndpoint.class);
+    endpoint.poolKey = id;
+    return endpoint;
   }
 
   /** CTP */
