@@ -23,6 +23,6 @@ create table GROUPROLE (
 );
 create index GROUPROLE_idx1 on GROUPROLE ( GroupKey, PoolKey );  
 
-alter table USERS add column IsAdmin boolean;
+alter table USERS add column IsAdmin boolean NOT NULL default false;
 
 

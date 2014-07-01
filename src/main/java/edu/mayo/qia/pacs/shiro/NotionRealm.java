@@ -1,5 +1,10 @@
 package edu.mayo.qia.pacs.shiro;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.sql.DataSource;
 
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
@@ -15,12 +20,14 @@ public class NotionRealm extends JdbcRealm {
     setDataSource(Notion.context.getBean("dataSource", DataSource.class));
     setSaltStyle(SaltStyle.COLUMN);
     setAuthenticationQuery("select password, salt from users where email = ?");
-    setUserRolesQuery("select roles.role from roles, user_role, users where roles.id = user_role.id and users.id = user_role.user_id and users.email = ?");
-    setPermissionsQuery("select role_permission.permission from role_permission, roles where roles.role = ?");
     HashedCredentialsMatcher matcher = new HashedCredentialsMatcher(configuration.notion.hashAlgorithm);
     matcher.setHashIterations(configuration.notion.hashIterations);
     matcher.setStoredCredentialsHexEncoded(true);
     setCredentialsMatcher(matcher);
   }
 
+  @Override
+  protected Set<String> getRoleNamesForUser(Connection conn, String username) throws SQLException {
+    return new HashSet<String>();
+  }
 }

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.mayo.qia.pacs.components.Group;
 import edu.mayo.qia.pacs.db.GroupDAO;
 
-@Scope("singleton")
 @Component
 public class GroupEndpoint {
 
