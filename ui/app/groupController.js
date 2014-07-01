@@ -84,8 +84,10 @@ $scope.deleteGroup = function(group) {
         $scope.save = function(){
           group.set ( $scope.groupModel )
           $scope.groupCollection.add(group);
-          group.save(group.toJSON(), {success: $scope.updateModel});
-          $modalInstance.close();
+          group.save({}, { success: function() {
+            $modalInstance.close();
+            $scope.updateModel();
+          }});
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
       }

@@ -13,7 +13,7 @@
           <tr ng-repeat="pool in poolCollection.models">
             <td>
               {{pool.get('name')}} <a ui-sref='root.pools.pool({poolKey: pool.id})'>detail</a> <a ui-sref='root.pools.query({poolKey: pool.id})'>query</a><br /><a ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
-              <a ng-href="#/pools/{{pool.id}}/studies">studies</a>
+              <a ui-sref='root.pools.studies({poolKey: pool.id})'>studies</a> <a ui-sref="root.pools.authorization({poolKey: pool.id})">permissions</a>
             </td>
           </tr>
         </table>

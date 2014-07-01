@@ -56,14 +56,22 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
       access: ['admin', 'user']
     }
   })
-  .state('root.pools.studies', {
-    url: "/:poolKey/studies",
-    templateUrl: 'partials/pool.studies.html',
-    controller: 'StudyController',
-    data: {
-      access: ['admin', 'user']
-    }
-  })
+.state('root.pools.studies', {
+  url: "/:poolKey/studies",
+  templateUrl: 'partials/pool.studies.html',
+  controller: 'StudyController',
+  data: {
+    access: ['admin', 'user']
+  }
+})
+.state('root.pools.authorization', {
+  url: "/:poolKey/authorization",
+  templateUrl: 'partials/pool.authorization.html',
+  controller: 'AuthorizationController',
+  data: {
+    access: ['admin', 'user']
+  }
+})
   .state('root.pools.query', {
     url: "/:poolKey/query",
     templateUrl: 'partials/pool.query.html',

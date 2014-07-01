@@ -100,11 +100,13 @@ parse: function(response) {
 // Groups
 GroupModel = Backbone.Model.extend({
   idAttribute: 'groupKey',
-  url: function() { return 'rest/authorization/group/' + this.get('groupKey')}
+  urlRoot: function() { return 'rest/authorization/group/' }
 });
+
 GroupCollection = Backbone.Collection.extend({
   model: GroupModel,
-  url: '/rest/authorization/group',
+url: 'rest/authorization/group',
+urlRoot: 'rest/authorization/group',
 parse: function(response) {
   console.log("Got response: ", response)
   var m = [];
@@ -114,4 +116,25 @@ parse: function(response) {
   this.set ( m )
   return this.models;
 }
-})
+});
+
+
+GroupRoleModel = Backbone.Model.extend({
+  idAttribute: 'groupRoleKey',
+  urlRoot: function() {
+    return 'rest/pool/' + this.get('poolKey') + "/grouprole/"
+  }
+});
+GroupRoleCollection = Backbone.Collection.extend({
+  model: GroupRoleModel,
+url: function () { return this.urlRoot; },
+parse: function(response) {
+  console.log("Got response: ", response)
+  var m = [];
+  for(var i = 0; i < response.groupRole.length; i++) {
+    m.push(new this.model(response.groupRole[i]))
+  }
+  this.set ( m )
+  return this.models;
+}
+});
