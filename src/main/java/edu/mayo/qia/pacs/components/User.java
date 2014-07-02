@@ -42,12 +42,7 @@ public class User {
   @JsonIgnore
   public String salt;
 
-  @Transient
-  public Set<String> roles = new HashSet<String>();
-
   public User() {
-    roles.add("admin");
-    roles.add("user");
   }
 
   public void setPassword(String password, int hashIterations) {

@@ -9,8 +9,12 @@ import org.quartz.JobExecutionException;
 import edu.mayo.qia.pacs.Notion;
 
 public class CacheCleaner implements Job {
+  public static void clean() {
+    Notion.context.getBean("authorizationCache", Map.class).clear();
+  }
+
   @Override
   public void execute(JobExecutionContext context) throws JobExecutionException {
-    Notion.context.getBean("authorizationCache", Map.class).clear();
+    clean();
   }
 }

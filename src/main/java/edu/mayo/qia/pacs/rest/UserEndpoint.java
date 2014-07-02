@@ -4,6 +4,7 @@ import io.dropwizard.hibernate.UnitOfWork;
 
 import java.security.SecureRandom;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -28,11 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import edu.mayo.qia.pacs.NotionConfiguration;
@@ -52,20 +56,21 @@ public class UserEndpoint {
   UserDAO userDAO;
 
   @Autowired
+  JdbcTemplate template;
+
+  @Autowired
   NotionConfiguration configuration;
 
   Random rng = new SecureRandom();
 
   @GET
   @UnitOfWork
+  @Produces(MediaType.APPLICATION_JSON)
   public Response checkLogin(@Auth Subject subject) {
     User user = userDAO.getFromSubject(subject);
     if (user == null) {
       user = new User();
     }
-    user.roles = new HashSet<String>();
-    user.roles.add("admin");
-    user.roles.add("user");
     ObjectNode json = objectMapper.createObjectNode();
     json.putPOJO("user", user);
     json.put("isAuthenticated", subject.isAuthenticated());
@@ -109,6 +114,24 @@ public class UserEndpoint {
     return checkLogin(subject);
   }
 
+  @POST
+  @Path("permission")
+  @UnitOfWork
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response checkPermissions(JsonNode check, @Auth Subject subject) {
+    ObjectNode permissions = objectMapper.createObjectNode();
+
+    if (check.with("permission").isContainerNode()) {
+      ObjectNode list = (ObjectNode) check.with("permission");
+      Iterator<String> it = list.fieldNames();
+      while (it.hasNext()) {
+        String name = it.next();
+        permissions.put(name, subject.isPermitted(list.get(name).asText()));
+      }
+    }
+    return Response.ok(permissions).build();
+  }
+
   @UnitOfWork
   @PUT
   @Path("/update")
@@ -123,6 +146,7 @@ public class UserEndpoint {
   @RequiresGuest
   @POST
   @Path("/register")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response register(@FormParam("username") String username, @FormParam("email") String email, @FormParam("password") String password, @Auth Subject subject) {
     // Note that a normal app would reference an attribute rather
     // than create a new RNG every time:
@@ -146,6 +170,12 @@ public class UserEndpoint {
     user.activated = false;
     user.activationHash = UUID.randomUUID().toString();
 
+    // Make the first user an admin
+    Integer userCount = template.queryForObject("select count(*) from USERS", Integer.class);
+    if (userCount == 0) {
+      user.isAdmin = true;
+    }
+
     try {
       user = userDAO.create(user);
     } catch (Exception e) {
@@ -160,5 +190,4 @@ public class UserEndpoint {
 
     return checkLogin(subject);
   }
-
 }

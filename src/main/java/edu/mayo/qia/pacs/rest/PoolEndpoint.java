@@ -64,10 +64,26 @@ public class PoolEndpoint extends Endpoint {
   @Produces(MediaType.APPLICATION_JSON)
   @RequiresPermissions({ "pool:list" })
   public Response listPools(@Auth Subject subject) {
-    boolean p = subject.isPermitted("pool:list");
-    List<Pool> result = new ArrayList<Pool>();
+    List<Pool> result;
     Session session = sessionFactory.getCurrentSession();
-    result = session.createCriteria(Pool.class).list();
+    // Two paths here, if the user is an admin, show them everything, otherwise
+    // just their pools.
+    if (subject.isPermitted("admin:pool")) {
+      result = session.createCriteria(Pool.class).list();
+    } else {
+      // @formatter:off
+      String query = 
+        "select {p.*} from POOL p, GROUPROLE GR, USERGROUP UG, USERS U " 
+        + " where "
+        + " U.Username = :username "
+        + " and p.PoolKey = GR.PoolKey " 
+        + " and GR.GroupKey = UG.GroupKey "
+        + " and U.UserKey = UG.UserKey "
+        + " and ( GR.IsPoolAdmin or GR.IsCoordinator )";
+      // @formatter:on
+      result = session.createSQLQuery(query).addEntity("p", Pool.class).setParameter("username", subject.getPrincipal().toString()).list();
+
+    }
     // Test for permission
     SimpleResponse s = new SimpleResponse("pool", result);
     return Response.ok(s).build();
@@ -78,7 +94,8 @@ public class PoolEndpoint extends Endpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPool(@PathParam("id") int id) {
+  public Response getPool(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     // Look up the pool and change it
     Pool pool = null;
     Session session = sessionFactory.getCurrentSession();
@@ -89,7 +106,8 @@ public class PoolEndpoint extends Endpoint {
   @GET
   @Path("/{id: [1-9][0-9]*}/statistics")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPoolStatistics(@PathParam("id") int id) {
+  public Response getPoolStatistics(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     SimpleResponse s = new SimpleResponse();
     s.put("study", template.queryForObject("select count(STUDY.StudyKey) from STUDY where STUDY.PoolKey = ?", Integer.class, id));
     s.put("series", template.queryForObject("select count(SERIES.SeriesKey) from SERIES, STUDY where STUDY.PoolKey = ? and SERIES.StudyKey = STUDY.StudyKey", Integer.class, id));
@@ -100,7 +118,8 @@ public class PoolEndpoint extends Endpoint {
   @PUT
   @Path("/{id: [1-9][0-9]*}/move")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response moveStudies(@PathParam("id") int id, MoveRequest request) {
+  @RequiresPermissions("admin:move")
+  public Response moveStudies(@Auth Subject subject, @PathParam("id") int id, MoveRequest request) {
     ObjectNode json = new ObjectMapper().createObjectNode();
     // Build the query
     ArrayNode records = json.putArray("Status");

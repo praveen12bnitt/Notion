@@ -3,10 +3,12 @@ package edu.mayo.qia.pacs.rest;
 import io.dropwizard.hibernate.UnitOfWork;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.secnod.shiro.jaxrs.Auth;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import edu.mayo.qia.pacs.components.User;
 import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.rest.Endpoint;
 
@@ -32,6 +35,15 @@ public class AuthorizationEndpoint extends Endpoint {
   @UnitOfWork
   public Response checkPermissions(@Auth Subject subject) {
     return Response.ok(new SimpleResponse("users", userDAO.findAll())).build();
+  }
+
+  @PUT
+  @Path("users/{id: [1-9][0-9]*}")
+  @UnitOfWork
+  @RequiresPermissions("admin:user:edit")
+  public Response updateUser(@PathParam("id") int id, User user) {
+    userDAO.update(user);
+    return Response.ok().build();
   }
 
   @GET

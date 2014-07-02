@@ -51,10 +51,12 @@ public class AuthorizationRealm extends AuthorizingRealm {
             int poolKey = rs.getInt("PoolKey");
             if (rs.getBoolean("IsPoolAdmin")) {
               info.addObjectPermission(new WildcardPermission("pool:*:" + poolKey));
+              info.addObjectPermission(new WildcardPermission("pool:admin:" + poolKey));
               return;
             }
             if (rs.getBoolean("IsCoordinator")) {
               info.addObjectPermission(new WildcardPermission("pool:query:" + poolKey));
+              info.addObjectPermission(new WildcardPermission("pool:coordinator:" + poolKey));
             }
           }
         });
@@ -64,6 +66,7 @@ public class AuthorizationRealm extends AuthorizingRealm {
 
     if (template.queryForObject("select IsAdmin from USERS where Username = ?", Boolean.class, user)) {
       info.addObjectPermission(new WildcardPermission("admin:*"));
+      info.addObjectPermission(new WildcardPermission("pool:*"));
     }
     authorizationCache.put(user, info);
     return info;

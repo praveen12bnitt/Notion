@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.mayo.qia.pacs.components.Group;
 import edu.mayo.qia.pacs.db.GroupDAO;
+import edu.mayo.qia.pacs.job.CacheCleaner;
 
 @Component
 public class GroupEndpoint {
@@ -41,6 +42,7 @@ public class GroupEndpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   public Response createGroup(@Auth Subject subject, Group group) {
+    CacheCleaner.clean();
     return Response.ok(groupDAO.create(group)).build();
   }
 
@@ -56,6 +58,7 @@ public class GroupEndpoint {
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateGroup(@Auth Subject subject, @PathParam("id") int id, Group group) {
+    CacheCleaner.clean();
     return Response.ok(groupDAO.update(group)).build();
   }
 
@@ -64,6 +67,7 @@ public class GroupEndpoint {
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
   public Response getGroup(@Auth Subject subject, @PathParam("id") int id) {
+    CacheCleaner.clean();
     return Response.ok(groupDAO.get(id)).build();
   }
 
@@ -73,6 +77,7 @@ public class GroupEndpoint {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteGroup(@Auth Subject subject, @PathParam("id") int id) {
     groupDAO.delete(groupDAO.get(id));
+    CacheCleaner.clean();
     return Response.ok(new SimpleResponse("message", "success")).build();
   }
 
