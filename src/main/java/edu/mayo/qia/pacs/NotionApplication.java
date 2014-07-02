@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.shiro.web.env.IniWebEnvironment;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
+import org.apache.shiro.web.filter.authc.UserFilter;
 import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
 import org.apache.shiro.web.filter.mgt.FilterChainManager;
 import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
@@ -169,8 +171,16 @@ public class NotionApplication extends Application<NotionConfiguration> {
         setFilterChainResolver(shiroEnv.getFilterChainResolver());
         if (getFilterChainResolver() == null) {
           FilterChainManager fcMan = new DefaultFilterChainManager();
-          fcMan.addFilter("basic", new BasicHttpAuthenticationFilter());
-          fcMan.createChain("/**", "basic, user, authc, rest, authcBasic");
+          logger.info("Filters: " + fcMan.getFilters().toString());
+          Filter filter = fcMan.getFilters().get("user");
+          if (filter instanceof UserFilter) {
+            UserFilter uf = (UserFilter) filter;
+            uf.setLoginUrl("/login.html");
+          }
+          fcMan.createChain("/rest/user/**", "anon");
+          fcMan.createChain("/rest/pool/**", "user");
+          fcMan.createChain("/rest/connector/**", "user");
+          fcMan.createChain("/rest/authorization/**", "user");
 
           PathMatchingFilterChainResolver resolver = new PathMatchingFilterChainResolver();
           resolver.setFilterChainManager(fcMan);
