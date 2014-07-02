@@ -105,7 +105,7 @@ public class Beans {
 
   @Bean
   public Executor executor() {
-    return Executors.newFixedThreadPool(4);
+    return Executors.newCachedThreadPool();
   }
 
   @Bean
