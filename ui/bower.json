@@ -27,6 +27,7 @@
     "angular-ui-bootstrap": "~0.10.0",
     "angular-ui-bootstrap-bower": "~0.10.0",
     "angular-ui-ace": "~0.1.0",
-    "font-awesome": "~4.0.3"
+    "font-awesome": "~4.0.3",
+    "w11k-select": "~0.4.4"
   }
 }

@@ -19,7 +19,7 @@ function (str){
 };
 
 
-notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace']);
+notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise('/pools/index')
@@ -56,14 +56,22 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
       access: ['admin', 'user']
     }
   })
-  .state('root.pools.studies', {
-    url: "/:poolKey/studies",
-    templateUrl: 'partials/pool.studies.html',
-    controller: 'StudyController',
-    data: {
-      access: ['admin', 'user']
-    }
-  })
+.state('root.pools.studies', {
+  url: "/:poolKey/studies",
+  templateUrl: 'partials/pool.studies.html',
+  controller: 'StudyController',
+  data: {
+    access: ['admin', 'user']
+  }
+})
+.state('root.pools.authorization', {
+  url: "/:poolKey/authorization",
+  templateUrl: 'partials/pool.authorization.html',
+  controller: 'AuthorizationController',
+  data: {
+    access: ['admin', 'user']
+  }
+})
   .state('root.pools.query', {
     url: "/:poolKey/query",
     templateUrl: 'partials/pool.query.html',
@@ -76,6 +84,22 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
     url: "/connectors",
     templateUrl: 'partials/connectors.html',
     controller: 'ConnectorsController',
+    data: {
+      access: ['admin']
+    }
+  })
+  .state('root.groups', {
+    url: "/groups",
+    templateUrl: 'partials/groups.html',
+    controller: 'GroupController',
+    data: {
+      access: ['admin']
+    }
+  })
+  .state('root.users', {
+    url: "/users",
+    templateUrl: 'partials/users.html',
+    controller: 'UserController',
     data: {
       access: ['admin']
     }
@@ -208,6 +232,14 @@ notionApp.config(function ($httpProvider) {
 
 
           notionApp.controller("RootController", function($scope, $state, authorization,$timeout,$http,$modal,$window) {
+            $scope.permission = {};
+            var check = {
+              'admin' : 'admin:edit'
+            };
+            $http.post('/rest/user/permission', {permission: check} ).success(function(result) {
+              $scope.permission = result;
+              console.log("Permissions", result)
+            }).error();
 
             var heartbeat = function() {
               authorization.checkLogin( function() {
@@ -262,13 +294,29 @@ notionApp.config(function ($httpProvider) {
         })
 
 
-        notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization) {
+        notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization, $http) {
           console.log("Creating PoolsController")
           $scope.name = "PoolsController"
           $scope.poolCollection = new PoolCollection();
           // Make the first one syncrhonous
           $scope.poolCollection.fetch({remove:true, async:false})
-          // $scope.user = authorization.user;
+
+          $scope.permission = {};
+          for ( var i = 0; i < $scope.poolCollection.length; i++ ) {
+            var poolKey = $scope.poolCollection.at(i).get('poolKey')
+            var check = {
+              'admin' : 'pool:admin:' + poolKey,
+              'coordinator' : 'pool:coordinator:' + poolKey,
+              'edit' : 'pool:edit:' + poolKey,
+              'query' : 'pool:query:' + poolKey,
+              'download' : 'pool:download:' + poolKey
+            };
+            $http.post('/rest/user/permission', {permission: check}, { key: poolKey } ).success(function(result, status, headers, config) {
+              var poolKey = config.key;
+              $scope.permission[poolKey] = result;
+              console.log(config.key + "Permissions for " + poolKey, result)
+            }).error();
+          }
 
           p = $scope.poolCollection;
           $scope.newPoolKey = false;

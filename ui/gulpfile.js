@@ -38,7 +38,7 @@ gulp.task("watch", ['lr-server', 'build'], function() {
 })
 
 // Handlebars / ember / all the rest
-gulp.task('app', function() {
+gulp.task('app', ['assets'], function() {
 
   // Just for backbone
   gulp.src('app/*.js')
@@ -58,7 +58,8 @@ gulp.task('app', function() {
 gulp.task('style', function() {
   gulp.src([
     'app/styles/*.css',
-    'bower_components/font-awesome/css/font-awesome*.css'
+    'bower_components/font-awesome/css/font-awesome*.css',
+    'bower_components/w11k-select/dist/w11k-select.css'
     ])
   .pipe(gulp.dest('public/css'));
 
@@ -87,6 +88,10 @@ gulp.task('vendor', function() {
     'bower_components/underscore/underscore.js',
     'bower_components/handlebars/handlebars.js',
     'vendor/scripts/console-polyfill.js',
+    'bower_components/angular-bindonce/bindonce.js',
+    'bower_components/w11k-dropdownToggle/dist/w11k-dropdownToggle.js',
+    'bower_components/w11k-select/dist/w11k-select.js',
+    'bower_components/w11k-select/dist/w11k-select.tpl.js'
     ])
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))

@@ -5,6 +5,7 @@ import io.dropwizard.hibernate.AbstractDAO;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.metamodel.source.annotations.entity.EntityClass;
 
 import com.google.common.base.Optional;
 
@@ -18,6 +19,10 @@ public class SimpleDAO<T> extends AbstractDAO<T> {
     return Optional.fromNullable(get(id));
   }
 
+  public T get(int i) {
+    return get(new Integer(i));
+  }
+
   public T create(T t) {
     return persist(t);
   }
@@ -25,6 +30,14 @@ public class SimpleDAO<T> extends AbstractDAO<T> {
   @SuppressWarnings("unchecked")
   public List<T> findAll(Class<T> c) {
     return currentSession().createCriteria(c).list();
+  }
+
+  public List<T> findAll() {
+    return findAll(this.getEntityClass());
+  }
+
+  public void delete(T t) {
+    currentSession().delete(t);
   }
 
   public T update(T t) {

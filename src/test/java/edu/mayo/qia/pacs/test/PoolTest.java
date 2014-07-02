@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
 
@@ -44,16 +45,25 @@ public class PoolTest extends PACSTest {
   public void listPools() {
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
+
+    Pool pool = new Pool("list-empty", "list-empty", "list-empty", false);
+    response = client.resource(uri).type(JSON).accept(JSON).post(ClientResponse.class, pool);
+    assertEquals("Got result", 200, response.getStatus());
+
     logger.debug("Loading: " + uri);
     response = client.resource(uri).accept(JSON).get(ClientResponse.class);
     assertEquals("Got result", 200, response.getStatus());
+    ObjectNode result = response.getEntity(ObjectNode.class);
+    assertTrue(result.withArray("pool").size() > 0);
   }
 
   @Test
   public void createPool() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);

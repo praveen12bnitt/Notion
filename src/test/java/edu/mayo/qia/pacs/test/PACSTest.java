@@ -1,9 +1,8 @@
 package edu.mayo.qia.pacs.test;
 
+import static io.dropwizard.testing.junit.ConfigOverride.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.dropwizard.testing.junit.ConfigOverride;
-import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,29 +14,34 @@ import java.util.Random;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.ConfigurationException;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.api.client.filter.LoggingFilter;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionApplication;
@@ -48,8 +52,6 @@ import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmSnd;
 import edu.mayo.qia.pacs.dicom.TagLoader;
-import edu.mayo.qia.pacs.managed.DBWebServer;
-import static io.dropwizard.testing.junit.ConfigOverride.config;
 
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
@@ -66,12 +68,42 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   @Autowired
   JdbcTemplate template;
 
+  @Autowired
+  ObjectMapper objectMapper;
+
   static {
+
     ClientConfig config = new DefaultClientConfig();
-    // config.register(new JacksonFeature());
-    // config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
-    // Boolean.TRUE);
     client = Client.create(config);
+    // add a filter to set cookies received from the server and to check if
+    // login has been triggered
+    // client.addFilter(new LoggingFilter());
+    client.addFilter(new ClientFilter() {
+      private List<Object> cookies = new ArrayList<Object>();
+      private String cookie = "";
+
+      @Override
+      public ClientResponse handle(ClientRequest request) throws ClientHandlerException {
+        if (cookie.length() > 0) {
+          request.getHeaders().add("Cookie", cookie);
+        }
+
+        request.getHeaders().add("My-header", "foo");
+        ClientResponse response = getNext().handle(request);
+        // copy cookies
+        for (NewCookie c : response.getCookies()) {
+          if (c.getName().equals("JSESSIONID")) {
+            cookie = c.getName() + "=" + c.getValue();
+          }
+        }
+        if (response.getCookies() != null) {
+          // A simple addAll just for illustration (should probably check for
+          // duplicates and expired cookies)
+          cookies.addAll(response.getCookies());
+        }
+        return response;
+      }
+    });
   }
 
   @Rule
@@ -130,14 +162,30 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     return testPort;
   }
 
-  public static ApplicationFixture<NotionConfiguration> NotionTestApp = new ApplicationFixture<NotionConfiguration>(NotionApplication.class, "notion.yml", config("dbWeb", "8088"), config("database.url", "jdbc:derby:memory:notion;create=true"), config(
-      "notion.dicomPort", Integer.toString(DICOMPort)), config("server.connector.port", Integer.toString(RESTPort)), config("dbWeb", Integer.toString(DBPort)), config("notion.imageDirectory", tempDirectory.toString()), config("shiro.iniConfigs",
-      "classpath:shiro.ini"));
+  // @formatter:off
+  public static ApplicationFixture<NotionConfiguration> NotionTestApp = new ApplicationFixture<NotionConfiguration>(NotionApplication.class,
+      "notion.yml",
+      config("database.url", "jdbc:derby:memory:notion;create=true"),
+      config("notion.dicomPort", Integer.toString(DICOMPort)),
+      config("server.connector.port", Integer.toString(RESTPort)),
+      config("dbWeb", Integer.toString(DBPort)),
+      config("notion.imageDirectory", tempDirectory.toString()),
+      config("shiro.iniConfigs", "classpath:shiro.ini"));
+  // @formatter:on
 
   @Override
   public synchronized void initialize(GenericApplicationContext applicationContext) {
     applicationContext.setParent(Notion.context);
     NotionTestApp.startIfRequired();
+
+    // Create a Notion user
+    URI uri = UriBuilder.fromUri(baseUri).path("user").path("register").build();
+    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+    formData.add("username", "notion");
+    formData.add("password", "notion");
+    formData.add("email", "empty");
+    client.resource(uri).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+
   }
 
   Pool createPool(Pool pool) {

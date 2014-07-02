@@ -11,20 +11,31 @@ import io.dropwizard.setup.Environment;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.shiro.web.env.IniWebEnvironment;
+import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
+import org.apache.shiro.web.filter.authc.UserFilter;
+import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
+import org.apache.shiro.web.filter.mgt.FilterChainManager;
+import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.quartz.Job;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 import org.secnod.dropwizard.shiro.ShiroBundle;
 import org.secnod.dropwizard.shiro.ShiroConfiguration;
+import org.secnod.shiro.jaxrs.ShiroExceptionMapper;
 import org.secnod.shiro.jersey.ShiroResourceFilterFactory;
 import org.secnod.shiro.jersey.SubjectInjectableProvider;
 import org.slf4j.Logger;
@@ -40,6 +51,8 @@ import com.sun.jersey.spi.container.ResourceFilterFactory;
 import edu.mayo.qia.pacs.components.AnonymizationMapProcessor;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
+import edu.mayo.qia.pacs.components.Group;
+import edu.mayo.qia.pacs.components.GroupRole;
 import edu.mayo.qia.pacs.components.Instance;
 import edu.mayo.qia.pacs.components.Item;
 import edu.mayo.qia.pacs.components.MoveRequest;
@@ -52,10 +65,14 @@ import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
 import edu.mayo.qia.pacs.components.User;
+import edu.mayo.qia.pacs.db.GroupDAO;
+import edu.mayo.qia.pacs.db.GroupRoleDAO;
 import edu.mayo.qia.pacs.db.UserDAO;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver;
+import edu.mayo.qia.pacs.job.CacheCleaner;
 import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.managed.QuartzManager;
+import edu.mayo.qia.pacs.rest.AuthorizationEndpoint;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 import edu.mayo.qia.pacs.rest.UserEndpoint;
@@ -64,8 +81,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
   static Logger logger = LoggerFactory.getLogger(NotionApplication.class);
   static int HashIterations = 100;
 
-  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Connector.class, Device.class, User.class, Instance.class, Item.class, MoveRequest.class, Pool.class, PoolContainer.class, PoolManager.class,
-      Query.class, Result.class, Script.class, Series.class, Study.class, Connector.class) {
+  private final HibernateBundle<NotionConfiguration> hibernate = new HibernateBundle<NotionConfiguration>(Group.class, GroupRole.class, Connector.class, Device.class, User.class, Instance.class, Item.class, MoveRequest.class, Pool.class,
+      PoolContainer.class, PoolManager.class, Query.class, Result.class, Script.class, Series.class, Study.class) {
     @Override
     public DataSourceFactory getDataSourceFactory(NotionConfiguration configuration) {
       return configuration.getDataSourceFactory();
@@ -110,6 +127,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
     parent.getBeanFactory().registerSingleton("configuration", configuration);
     parent.getBeanFactory().registerSingleton("objectMapper", environment.getObjectMapper());
     parent.getBeanFactory().registerSingleton("userDAO", new UserDAO(hibernate.getSessionFactory()));
+    parent.getBeanFactory().registerSingleton("groupDAO", new GroupDAO(hibernate.getSessionFactory()));
+    parent.getBeanFactory().registerSingleton("groupRoleDAO", new GroupRoleDAO(hibernate.getSessionFactory()));
 
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setUrl(configuration.getDataSourceFactory().getUrl());
@@ -142,6 +161,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     final IniWebEnvironment shiroEnv = new IniWebEnvironment();
     shiroEnv.setConfigLocations(shiroConfig.getIniConfigs());
     shiroEnv.init();
+    shiroEnv.getWebSecurityManager();
 
     AbstractShiroFilter shiroFilter = new AbstractShiroFilter() {
       @Override
@@ -149,6 +169,23 @@ public class NotionApplication extends Application<NotionConfiguration> {
         WebSecurityManager securityManager = shiroEnv.getWebSecurityManager();
         setSecurityManager(securityManager);
         setFilterChainResolver(shiroEnv.getFilterChainResolver());
+        if (getFilterChainResolver() == null) {
+          FilterChainManager fcMan = new DefaultFilterChainManager();
+          logger.info("Filters: " + fcMan.getFilters().toString());
+          Filter filter = fcMan.getFilters().get("user");
+          if (filter instanceof UserFilter) {
+            UserFilter uf = (UserFilter) filter;
+            uf.setLoginUrl("/login.html");
+          }
+          fcMan.createChain("/rest/user/**", "anon");
+          fcMan.createChain("/rest/pool/**", "user");
+          fcMan.createChain("/rest/connector/**", "user");
+          fcMan.createChain("/rest/authorization/**", "user");
+
+          PathMatchingFilterChainResolver resolver = new PathMatchingFilterChainResolver();
+          resolver.setFilterChainManager(fcMan);
+          this.setFilterChainResolver(resolver);
+        }
       }
     };
     ResourceConfig resourceConfig = environment.jersey().getResourceConfig();
@@ -157,6 +194,8 @@ public class NotionApplication extends Application<NotionConfiguration> {
     resourceFilterFactories.add(new ShiroResourceFilterFactory());
     environment.jersey().register(new SubjectInjectableProvider());
     environment.servlets().addFilter("ShiroFilter", shiroFilter).addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, shiroConfig.getFilterUrlPattern());
+    // Register the Exception mapper to return correct responses
+    environment.jersey().register(new ShiroExceptionMapper());
 
     if (configuration.dbWeb != null) {
       environment.lifecycle().manage(new DBWebServer(configuration.dbWeb));
@@ -172,6 +211,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
     environment.jersey().register(context.getBean(PoolEndpoint.class));
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
     environment.jersey().register(context.getBean(UserEndpoint.class));
+    environment.jersey().register(context.getBean(AuthorizationEndpoint.class));
 
     QuartzManager manager = new QuartzManager(StdSchedulerFactory.getDefaultScheduler());
     environment.lifecycle().manage(manager);
@@ -183,6 +223,10 @@ public class NotionApplication extends Application<NotionConfiguration> {
     Trigger trigger = newTrigger().withIdentity("trigger1", "group1").startNow().withSchedule(simpleSchedule().withIntervalInSeconds(60).repeatForever()).build();
 
     // Tell quartz to schedule the job using our trigger
+    scheduler.scheduleJob(job, trigger);
+
+    job = newJob(CacheCleaner.class).build();
+    trigger = newTrigger().startNow().withSchedule(simpleSchedule().withIntervalInMinutes(10).repeatForever()).build();
     scheduler.scheduleJob(job, trigger);
 
     logger.info("\n\n=====\nStarted Notion Test:\nImageDirectory: \n" + configuration.notion.imageDirectory + "\nDBWeb:\nhttp://localhost:" + configuration.dbWeb + "\n\nDICOMPort: " + configuration.notion.dicomPort + "\n=====\n\n");
