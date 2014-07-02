@@ -311,9 +311,10 @@ notionApp.config(function ($httpProvider) {
               'query' : 'pool:query:' + poolKey,
               'download' : 'pool:download:' + poolKey
             };
-            $http.post('/rest/user/permission', {permission: check} ).success(function(result) {
+            $http.post('/rest/user/permission', {permission: check}, { key: poolKey } ).success(function(result, status, headers, config) {
+              var poolKey = config.key;
               $scope.permission[poolKey] = result;
-              console.log("Permissions for " + poolKey, result)
+              console.log(config.key + "Permissions for " + poolKey, result)
             }).error();
           }
 
