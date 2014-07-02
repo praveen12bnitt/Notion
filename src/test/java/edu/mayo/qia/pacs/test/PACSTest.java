@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.FileUtils;
@@ -35,9 +36,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionApplication;
@@ -72,6 +78,7 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
     // config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
     // Boolean.TRUE);
     client = Client.create(config);
+    client.addFilter(new HTTPBasicAuthFilter("notion", "notion"));
   }
 
   @Rule
@@ -138,6 +145,14 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   public synchronized void initialize(GenericApplicationContext applicationContext) {
     applicationContext.setParent(Notion.context);
     NotionTestApp.startIfRequired();
+
+    // Create a Notion user
+    URI uri = UriBuilder.fromUri(baseUri).path("user").path("register").build();
+    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+    formData.add("username", "notion");
+    formData.add("password", "notion");
+    formData.add("email", "empty");
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
   }
 
   Pool createPool(Pool pool) {

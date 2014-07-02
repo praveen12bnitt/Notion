@@ -62,7 +62,7 @@ public class PoolEndpoint extends Endpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  // @RequiresPermissions({ "pool:list" })
+  @RequiresPermissions({ "pool:list" })
   public Response listPools(@Auth Subject subject) {
     boolean p = subject.isPermitted("pool:list");
     List<Pool> result = new ArrayList<Pool>();

@@ -17,6 +17,10 @@ import javax.servlet.DispatcherType;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.shiro.web.env.IniWebEnvironment;
+import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
+import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
+import org.apache.shiro.web.filter.mgt.FilterChainManager;
+import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -163,6 +167,15 @@ public class NotionApplication extends Application<NotionConfiguration> {
         WebSecurityManager securityManager = shiroEnv.getWebSecurityManager();
         setSecurityManager(securityManager);
         setFilterChainResolver(shiroEnv.getFilterChainResolver());
+        if (getFilterChainResolver() == null) {
+          FilterChainManager fcMan = new DefaultFilterChainManager();
+          fcMan.addFilter("basic", new BasicHttpAuthenticationFilter());
+          fcMan.createChain("/**", "basic, user, authc, rest, authcBasic");
+
+          PathMatchingFilterChainResolver resolver = new PathMatchingFilterChainResolver();
+          resolver.setFilterChainManager(fcMan);
+          this.setFilterChainResolver(resolver);
+        }
       }
     };
     ResourceConfig resourceConfig = environment.jersey().getResourceConfig();

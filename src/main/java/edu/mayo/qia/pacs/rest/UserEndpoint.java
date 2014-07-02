@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
@@ -119,6 +120,7 @@ public class UserEndpoint {
   }
 
   @UnitOfWork
+  @RequiresGuest
   @POST
   @Path("/register")
   public Response register(@FormParam("username") String username, @FormParam("email") String email, @FormParam("password") String password, @Auth Subject subject) {
