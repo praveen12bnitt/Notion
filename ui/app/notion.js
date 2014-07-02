@@ -96,6 +96,14 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
       access: ['admin']
     }
   })
+  .state('root.users', {
+    url: "/users",
+    templateUrl: 'partials/users.html',
+    controller: 'UserController',
+    data: {
+      access: ['admin']
+    }
+  })
   .state('root.loggedout', {
     templateUrl: 'partials/loggedout.html',
   });
@@ -224,6 +232,14 @@ notionApp.config(function ($httpProvider) {
 
 
           notionApp.controller("RootController", function($scope, $state, authorization,$timeout,$http,$modal,$window) {
+            $scope.permission = {};
+            var check = {
+              'admin' : 'admin:edit'
+            };
+            $http.post('/rest/user/permission', {permission: check} ).success(function(result) {
+              $scope.permission = result;
+              console.log("Permissions", result)
+            }).error();
 
             var heartbeat = function() {
               authorization.checkLogin( function() {
@@ -278,13 +294,28 @@ notionApp.config(function ($httpProvider) {
         })
 
 
-        notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization) {
+        notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization, $http) {
           console.log("Creating PoolsController")
           $scope.name = "PoolsController"
           $scope.poolCollection = new PoolCollection();
           // Make the first one syncrhonous
           $scope.poolCollection.fetch({remove:true, async:false})
-          // $scope.user = authorization.user;
+
+          $scope.permission = {};
+          for ( var i = 0; i < $scope.poolCollection.length; i++ ) {
+            var poolKey = $scope.poolCollection.at(i).get('poolKey')
+            var check = {
+              'admin' : 'pool:admin:' + poolKey,
+              'coordinator' : 'pool:coordinator:' + poolKey,
+              'edit' : 'pool:edit:' + poolKey,
+              'query' : 'pool:query:' + poolKey,
+              'download' : 'pool:download:' + poolKey
+            };
+            $http.post('/rest/user/permission', {permission: check} ).success(function(result) {
+              $scope.permission[poolKey] = result;
+              console.log("Permissions for " + poolKey, result)
+            }).error();
+          }
 
           p = $scope.poolCollection;
           $scope.newPoolKey = false;
