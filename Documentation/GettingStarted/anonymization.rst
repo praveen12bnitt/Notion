@@ -9,13 +9,13 @@ Anonymziation
 Anonymization
 -------------
 
-To turn on Anonymization, click the :tt:`Edit` icon next to the Pool info on this page http://localhost:11118/index.html#/pools/pool/1.  In the dialog box, check :tt:`Use Anonymizer`, click :tt:`Save changes` and :tt:`close`.  Now our Pool display looks somewhat different with two new sections: :tt:`CTP Configuration` and :tt:`Anonymization Rules`.  Opening up the :tt:`CTP Configuration` reveals an editor for the CTP configuration used by the pool.  The particular file is for the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_ configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.
+To turn on Anonymization, click the :tt:`Edit` icon next to the Pool info on this page http://localhost:8080/index.html#/pools/pool/1.  In the dialog box, check :tt:`Use Anonymizer`, click :tt:`Save changes` and :tt:`close`.  Now our Pool display looks somewhat different with two new sections: :tt:`CTP Configuration` and :tt:`Anonymization Rules`.  Opening up the :tt:`CTP Configuration` reveals an editor for the CTP configuration used by the pool.  The particular file is for the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_ configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.
 
 .. figure:: /images/ctp_configuration.png
-   :align: center
-   :width: 768
+  :align: center
+  :width: 768
 
-   Configuration of the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_.  Changes will be saved to the server and used for anonymization of incoming DICOM images.
+Configuration of the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_.  Changes will be saved to the server and used for anonymization of incoming DICOM images.
 
 CTP is the first stage of the anonymization process in Notion.  The second stage is a `Javascript <http://en.wikipedia.org/wiki/JavaScript>`_ snippits that are used to substitute DICOM tags.  To demonstrate, we will look at the standard anonymization script.
 
@@ -100,7 +100,7 @@ The ``anonymizer`` object has several other functions
    First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymization>` for details on prepopulating the lookup tables.
 
 ``Exception(text)``
-  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See :ref:`PatientNameAnonymizer` for an example.
+  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.
 
 Coming back to our example, set the anonymization rule for ``PatientName`` to be:
 
@@ -155,7 +155,7 @@ Anonymize Images
 
 The moment we've all been waiting for (yea right).  With our anonymizer in place, send the same data through Notion into the ``test`` Pool.
 
-.. code-block:: plain
+.. code-block:: bash
 
    >> java -classpath lib:"lib/*" org.dcm4che2.tool.dcmsnd.DcmSnd test@localhost:11117 /path/to/DICOM/data/
    Scanning files to send
@@ -172,7 +172,7 @@ The moment we've all been waiting for (yea right).  With our anonymizer in place
 	Released connection to test@localhost:11117
 	INFO - test(1): close Socket[addr=localhost/127.0.0.1,port=11117,localport=60448]
 
-`Viewing the studies <http://localhost:11118/index.html#/pools/studies/1>`_ for the ``test`` Pool gives:
+`Viewing the studies <http://localhost:8080/index.html#/pools/studies/1>`_ for the ``test`` Pool gives:
 
 .. figure:: /images/anonymized_images.png
 	:align: center
@@ -185,4 +185,4 @@ If the same images were sent again, they would receive the same PatientID, Acces
 Next Steps
 ----------
 
-The :ref:`next tutorial <MovingTutorial>` is using :ref:`Connectors` between pools.
+The :ref:`next tutorial <UsingConnectors>` is using :ref:`Connectors` between pools.

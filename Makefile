@@ -15,12 +15,7 @@ dist:
 	cp -r build/libs/lib $(dir)
 	cp notion $(dir)
 	cp build/libs/Notion.jar $(dir)/Notion.jar
-	cp Readme.md $(dir)
-	echo "log4j.rootLogger=INFO, stdout" > $(dir)/lib/log4j.properties
-	echo "log4j.appender.stdout=org.apache.log4j.ConsoleAppender" >> $(dir)/lib/log4j.properties
-	echo "log4j.appender.stdout.layout=org.apache.log4j.PatternLayout" >> $(dir)/lib/log4j.properties
-	echo "log4j.appender.stdout.layout.ConversionPattern=%5p - %m%n" >> $(dir)/lib/log4j.properties
-
+	cp Readme.md notion.example.yml $(dir)
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
 watch:
