@@ -1,0 +1,26 @@
+<div class="modal-header">{{title}}</div>
+
+<div class="modal-body">
+  <form>
+
+  <div class="form-group">
+    <label>Group</label>
+    <select ng-model="model.groupKey" ng-options="p.get('groupKey') as p.get('name') + ' / ' + p.get('description').trunc() for p in groupCollection.models" name='queryPoolKey' ng-change="groupKeyChanged()"></select>
+  </div>
+
+    <div class="form-group">
+      <label class="control-label">Administrator:</label> <input type="checkbox" ng-model="model.isPoolAdmin"></input>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label">Coordinator:</label>
+      <input type="checkbox" ng-model="model.isCoordinator" ></textarea>
+    </div>
+
+
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="save()">Save</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

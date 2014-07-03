@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -76,6 +77,46 @@ public class QueryEndpoint {
     }
     query.doFetch();
     return getQuery(id);
+  }
+
+  @PUT
+  @Path("/simple")
+  @UnitOfWork
+  public Response createQuery(JsonNode json) {
+    Session session = sessionFactory.getCurrentSession();
+    try {
+      Connector connector = (Connector) session.byId(Connector.class).load(json.get("connectorKey").asInt());
+
+      int destinationPoolKey = connector.destinationPoolKey;
+      int deviceKey = connector.queryDeviceKey;
+      int queryPoolKey = connector.queryPoolKey;
+
+      Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
+      if (pool == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
+      }
+
+      Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
+      if (destinationPool == null) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
+      }
+
+      Device device = (Device) session.byId(Device.class).load(deviceKey);
+
+      if (device == null || device.pool.poolKey != queryPoolKey) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
+      }
+      Query query = Query.constructQuery(json);
+      query.pool = pool;
+      query.device = device;
+      query.destinationPool = destinationPool;
+      session.save(query);
+      session.getTransaction().commit();
+      query.executeQuery();
+      return Response.ok(query).build();
+    } catch (Exception e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new SimpleResponse("message", "Failed to process simple query")).build();
+    }
   }
 
   @POST

@@ -5,12 +5,15 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -102,7 +105,12 @@ public class Beans {
 
   @Bean
   public Executor executor() {
-    return Executors.newFixedThreadPool(4);
+    return Executors.newCachedThreadPool();
+  }
+
+  @Bean
+  public Map<String, AuthorizationInfo> authorizationCache() {
+    return new ConcurrentHashMap<String, AuthorizationInfo>();
   }
 
 }

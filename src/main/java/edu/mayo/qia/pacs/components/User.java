@@ -33,6 +33,7 @@ public class User {
 
   public String uid = UUID.randomUUID().toString();
   public Boolean activated = false;
+  public Boolean isAdmin = false;
   public String activationHash = UUID.randomUUID().toString();
 
   // Never pass password and salt out
@@ -41,12 +42,7 @@ public class User {
   @JsonIgnore
   public String salt;
 
-  @Transient
-  public Set<String> roles = new HashSet<String>();
-
   public User() {
-    roles.add("admin");
-    roles.add("user");
   }
 
   public void setPassword(String password, int hashIterations) {

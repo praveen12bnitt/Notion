@@ -14,3 +14,6 @@ node_modules: package.json
 
 bower_components: bower.json
 	bower --config.interactive=false install
+
+docs:
+	(cd ../Documentation && make html)

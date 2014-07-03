@@ -1,0 +1,10 @@
+.tt {
+	font-family: 'Source Code Pro', monospace;
+}
+
+code {
+	font-family: 'Source Code Pro', monospace;
+	background-color: #eeeeee;
+	color: black;
+	padding: 1px 5px 1px 5px;
+}

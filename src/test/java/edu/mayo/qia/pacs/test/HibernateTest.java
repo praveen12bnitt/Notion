@@ -53,6 +53,7 @@ public class HibernateTest extends PACSTest {
     Criteria criteria = session.createCriteria(Pool.class);
     criteria.add(Restrictions.eq("name", "One"));
 
+    @SuppressWarnings("unchecked")
     List<Pool> result = criteria.list();
     assertTrue("Fetched pool", result.size() == 1);
     assertTrue("Has the proper comment", result.get(0).description.equals("One"));

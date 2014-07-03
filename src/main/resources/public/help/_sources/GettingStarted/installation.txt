@@ -1,0 +1,44 @@
+.. include:: ../global.rst
+
+.. _Installation:
+
+Installation
+============
+
+After downloading Notion and unzipping, look in the ``Notion-x.x.x`` folder (where ``x.x.x`` is the version number).  This folder contains the following items:
+
+:tt:`Notion-x.x.x.jar`
+    The Jar file with the Notion classes and runtime files bundled.
+
+:tt:`lib`
+    External Java libraries.  Must be maintained in the same directory as ``Notion-x.x.x.jar`` because the main jar file references the libraries by a relative path.
+
+:tt:`Documentation`
+    Contains this documentation
+
+:tt:`notion.yml`
+    A configuration file for Notion in `YAML <http://www.yaml.org/>`_ format.
+
+The jar file and lib directory may be copied to any location as needed.
+
+Running Notion
+--------------
+
+TL;DR
+^^^^^
+
+.. code-block:: bash
+
+  java -jar Notion.jar server notion.yml
+
+Point a browser at http://localhost:11118
+
+.. _CLI:
+
+Configuration
+^^^^^^^^^^^^^
+
+Notion is configured through a YAML file.  A starting configuration is included in the distribution.  The Notion-specific sections are described below.  Additional configuration options may be found at http://dropwizard.io/manual/configuration.html
+
+.. literalinclude:: ../../notion.yml
+:linenos:

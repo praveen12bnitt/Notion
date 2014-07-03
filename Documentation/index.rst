@@ -1,26 +1,26 @@
-.. ResearchPACS documentation master file, created by
+.. Notion documentation master file, created by
    sphinx-quickstart on Tue Nov 12 11:25:06 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 .. include:: global.rst
 
-Notion: a PACS for researchers
-==============================
+Notion: a 'PACS' for researchers
+================================
 
-This project exists to create a low-overhead PACS system for researchers in radiology.  Notion provides several useful facilities for a department including multiple, independant "pools" of images, restrictions on access to images stored in pools, anonymization, simple installation, web interface for administration.
+This project exists to create a low-overhead DICOM storage system for researchers in radiology.  A full PACS system includes EMR integration, reading workstations, worklists, etc. and is outside the scope of Notion.  However, Notion provides several useful facilities for a department including multiple, independant "pools" of images, restrictions on access to images stored in pools, anonymization, simple installation, and web interface for administration.
 
 
 Why use Notion?
 ---------------
 
-If you have a need to:
+Need to:
 
-- store DICOM images, but do not want/have a dedicated research PACS
-- anonymize DICOM images
-- map Names, IDs and Accession numbers during anonymization
-- maintain separation of image data across projects
-- scale to 100's of independant research projects
+- store DICOM images, but do not want/have a dedicated research PACS?
+- anonymize DICOM images?
+- map Names, IDs and Accession numbers during anonymization?
+- maintain separation of image data across projects?
+- scale to 100's of independent research projects?
 
 Why *not* use Notion?
 ---------------------
@@ -32,7 +32,7 @@ If you:
 - do not care about isolation between research projects
 - are happy using manual anonymization tools
 
-There are other Open Source / free PACS systems available including 
+There are other Open Source / free PACS systems available including
 
 - Conquest_
 - orthanc_
@@ -48,20 +48,68 @@ There are other Open Source / free PACS systems available including
 
 Depending on needs, one of the other systems may be a better fit.
 
-Contents:
-=========
+Overview
+========
 
+Main documentation for Notion is in several different sections:
+
+* :ref:`site-docs`
+* :ref:`feature-docs`
+* :ref:`concept-docs`
+
+Information about development and administration of your own instance is also available:
+
+* :ref:`dev-docs`
+* :ref:`ops-docs`
+
+
+.. _site-docs:
+
+User Documentation
+------------------
 .. toctree::
-   :maxdepth: 2
+  :maxdepth: 2
 
-   GettingStarted/installation
-   GettingStarted/getting_started
-   GettingStarted/anonymization
-   GettingStarted/moving_images
-   GettingStarted/use_cases
-   Reference/reference
-   Development/development
+  GettingStarted/installation
+  GettingStarted/getting_started
+  GettingStarted/anonymization
+  GettingStarted/moving_images
+
+.. _feature-docs:
+
+Features
+--------
+.. toctree::
+  :maxdepth: 2
+
+  GettingStarted/use_cases
+
+.. _concept-docs:
+
+Concepts
+--------
+.. toctree::
+  :maxdepth: 2
+
+  Reference/reference
+
+
+.. _dev-docs:
+
+Developer Documentation
+-----------------------
+.. toctree::
+  :maxdepth: 2
+
+  Development/development
+
+.. _ops-docs:
+
+Operations Documentation
+------------------------
+.. toctree::
+  :maxdepth: 2
+
+  Reference/operations
 
 .. Reference/kitchen_sink
-
-

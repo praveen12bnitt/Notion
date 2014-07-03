@@ -1,10 +1,11 @@
 
-notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams, $state, $modal) {
+notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams, $state, $modal, $http) {
   $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
   console.log ( "QueryController for ", $stateParams.poolKey )
   console.log ( "Pool is: ", $scope.pool)
   $scope.model = $scope.pool.toJSON();
   $scope.pools = $scope.$parent.poolCollection.toJSON();
+  $scope.item = {}
 
   // modes are:
   // 'setup' - not fetching, configuring the query
@@ -33,6 +34,26 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     item.doFetch = !item.doFetch
   }
 
+  var successCallback = function(data) {
+      console.log("Create query")
+      $scope.query = new QueryModel(data);
+      $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+      $scope.mode = 'query-pending'
+      queryTick();
+    };
+
+  $scope.submitIndividual = function() {
+    var data = {
+      items: [$scope.item],
+      connectorKey: $scope.connectorKey
+    }
+    $http.put("/rest/pool/" + $scope.pool.get('poolKey') + "/query/simple", data).
+    success(successCallback).
+    error(function(data){
+      alert ( "Could not construct query:" + data.message)
+    })
+  }
+
   $scope.submit = function() {
     console.log ( $('#queryFile')[0].files[0])
     var formData = new FormData();
@@ -47,17 +68,9 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       data: formData,
       processData: false,
       contentType: false,
-      success: function(data) {
-        $scope.$apply ( function(){
-          console.log("Create query")
-          $scope.query = new QueryModel(data);
-          $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-          $scope.mode = 'query-pending'
-          queryTick();
-        })
-      },
+      success: successCallback,
       error: function(xhr, status, error) {
-        alert ( "Query failed: " + xhr.responseText )
+        alert ( "Could not construct query: " + xhr.responseText )
       }
     });
   };
@@ -68,12 +81,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       // console.log("queryTick")
       $scope.query.fetch().done(function() {
         // console.log ("queryTick completed")
-if ($scope.query.get('status').match("Query Completed")) {
-  $scope.mode = 'query-done'
-}
-if ($scope.query.get('status').match("Fetch Completed")) {
-  $scope.mode = 'fetch-done'
-}
+        if ($scope.query.get('status').match("query completed")) {
+          $scope.mode = 'query-done'
+        }
+        if ($scope.query.get('status').match("fetch completed")) {
+          $scope.mode = 'fetch-done'
+        }
       });
     }
     $timeout(queryTick, 2000)

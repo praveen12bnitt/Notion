@@ -27,6 +27,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.multipart.FormDataMultiPart;
@@ -202,7 +204,7 @@ public class QueryTest extends PACSTest {
         Thread.sleep(400);
       }
     }
-    assertTrue(query.status.startsWith("Query Completed"));
+    assertTrue(query.status.startsWith("query completed"));
 
     assertEquals(2, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", new Object[] { query.queryKey }, Integer.class));
 
@@ -250,4 +252,120 @@ public class QueryTest extends PACSTest {
     assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pacsPool.poolKey }, Integer.class));
 
   }
+
+  @Test
+  public void executeSimpleQuery() throws Exception {
+    // My pool
+    String aet;
+    aet = "myPoolSimple";
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+
+    // "PACS" pool
+    aet = "PACSSimple";
+    Pool pacsPool = createPool(new Pool(aet, aet, aet, false));
+
+    // "destination" pool
+    aet = "destinationS";
+    Pool destinationPool = createPool(new Pool(aet, aet, aet, false));
+
+    // Flow of images is:
+    // PACS -> destinationPool -> pool
+
+    // Let the PACS pool know about the destination pool, and vice versa
+    createDevice(new Device(destinationPool.applicationEntityTitle, "localhost", DICOMPort, pacsPool));
+    createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool));
+    // The device we will use to query the "PACS" pool
+    Device queryDevice = createDevice(new Device(pacsPool.applicationEntityTitle, "localhost", DICOMPort, destinationPool.applicationEntityTitle, destinationPool));
+
+    // create the connector
+    Connector connector = new Connector();
+    connector.name = "Connection to PACS For Simple Queries";
+    connector.destinationPoolKey = destinationPool.poolKey;
+    connector.queryPoolKey = destinationPool.poolKey;
+    connector.queryDeviceKey = queryDevice.deviceKey;
+    connector = createConnector(connector);
+
+    // Send some test data to the PACS pool
+    sendDICOM(pacsPool.applicationEntityTitle, destinationPool.applicationEntityTitle, "TOF/IMAGE001.dcm");
+
+    // Upload our query
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path("simple").build();
+
+    ObjectNode node = new ObjectMapper().createObjectNode();
+    node.put("connectorKey", connector.connectorKey);
+    ObjectNode it = node.putArray("items").addObject();
+    it.put("PatientID", "MRA-0068");
+
+    ClientResponse response = client.resource(uri).type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).put(ClientResponse.class, node);
+
+    Query query = response.getEntity(Query.class);
+
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path(Integer.toString(query.queryKey)).build();
+    logger.debug("Loading: " + uri);
+    response = client.resource(uri).accept(JSON).get(ClientResponse.class);
+    assertEquals("Got result", 200, response.getStatus());
+
+    // Grab the data until the query finishes, then fetch and verify
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path(Integer.toString(query.queryKey)).build();
+    for (int i = 0; i < 5; i++) {
+      logger.debug("Loading: " + uri);
+      response = client.resource(uri).accept(JSON).get(ClientResponse.class);
+      assertEquals("Got result", 200, response.getStatus());
+      query = response.getEntity(Query.class);
+      if (query.status.startsWith("Query Completed")) {
+        break;
+      } else {
+        Thread.sleep(400);
+      }
+    }
+    assertTrue(query.status.startsWith("query completed"));
+
+    assertEquals(1, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", new Object[] { query.queryKey }, Integer.class));
+
+    // Update the query to fetch any results
+    int sum = 0;
+    for (Item item : query.items) {
+      for (Result result : item.items) {
+        result.doFetch = true;
+        sum++;
+      }
+    }
+    // Should have 1 study to fetch
+    assertEquals(1, sum);
+
+    response = client.resource(uri).type(JSON).accept(JSON).put(ClientResponse.class, query);
+    assertEquals(200, response.getStatus());
+
+    // Trigger the fetch
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path(Integer.toString(query.queryKey)).path("fetch").build();
+    response = client.resource(uri).accept(JSON).put(ClientResponse.class);
+    assertEquals(200, response.getStatus());
+
+    // Wait for things to finish
+    uri = UriBuilder.fromUri(baseUri).path("/pool").path(Integer.toString(pool.poolKey)).path("query").path(Integer.toString(query.queryKey)).build();
+    for (int i = 0; i < 15; i++) {
+      logger.debug("Loading: " + uri);
+      response = client.resource(uri).accept(JSON).get(ClientResponse.class);
+      assertEquals("Got result", 200, response.getStatus());
+      query = response.getEntity(Query.class);
+      logger.info("Got response: " + query.status);
+      if (query.status.startsWith("fetch completed")) {
+        break;
+      } else {
+        // Ugly, but it works
+        Thread.sleep(1000);
+      }
+    }
+    assertTrue("Waiting for fetch to be completed -- " + query.status, query.status.startsWith("fetch completed"));
+
+    // The pool should have 1
+    assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pool.poolKey }, Integer.class));
+    // The destination pool should not have any studies
+    assertEquals("is study deleted from the destination pool?", 0, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { destinationPool.poolKey }, Integer.class));
+    // The PACS pool should have 1
+    assertEquals(1, (int) template.queryForObject("select count(*) from STUDY where PoolKey = ?", new Object[] { pacsPool.poolKey }, Integer.class));
+
+  }
+
 }

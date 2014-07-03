@@ -8,6 +8,7 @@ dir=zip-temp/$(versionDir)
 
 dist:
 	(cd ui/ && make install)
+	(cd Documentation && make install)
 	./gradlew jar
 	rm -rf zip-temp
 	mkdir -p $(dir)

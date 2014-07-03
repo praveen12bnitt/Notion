@@ -14,16 +14,19 @@
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li><a ng-show="loggedIn" ui-sref="root.pools.index">Pools</a></li>
-        <li><a ng-show="loggedIn" ui-sref="root.connectors">Connectors</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.connectors">Connectors</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.groups">Groups</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.users">Users</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-show="loggedIn"><p class="navbar-text">Signed in as {{user.username}} {{user.email}}</p></li>
         <li ng-show="loggedIn"><button type="button" class="btn btn-default navbar-btn" ng-click="logout()">Sign Out</button></li>
-                <li ng-show="loggedIn"><p class="navbar-text"><i class="fa fa-cog fa-lg" ng-click="settings()"></i></p></li>
+        <li ng-show="loggedIn"><p class="navbar-text"><i class="fa fa-cog fa-lg" ng-click="settings()"></i></p></li>
 
 
         <!-- <li ng-hide="loggedIn"><a ui-sref="root.register">Register</a></li> -->
         <li ng-hide="loggedIn"><a ui-sref="root.login">Login</a></li>
+        <li><a href="help/index.html"><i class="fa fa-question fa-lg"></i></a></li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container-fluid -->
@@ -32,4 +35,3 @@
 
 
 <div ui-view></div>
-

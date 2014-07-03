@@ -1,25 +1,55 @@
 <div>
-  <div class="panel panel-default" ng-hide="query">
-    <div class="panel-heading">
-      <h2 class="panel-title">Query images to be retrieved to the '{{model.name}}' Pool</h3>
-      </div>
-
-      <div class="panel-body">
-        <form role="form" enctype="multipart/form-data" >
-          <div class="form-group">
-            <label>DICOM Destination to Query</label>
-            <select ng-model="connectorKey" ng-options="c.connectorKey as c.name for c in connectors " name='connectorKey'></select>
-          </div>
-
-          <div class="form-group">
-            <label>File input</label>
-            <input type="file" name="file" id="queryFile">
-            <p class="help-block">Upload an Excel or CSV file using the templates (Excel / CSV).</p>
-          </div>
-          <button ng-click="submit()" class="btn btn-default">Submit</button>
-        </form>
-      </div>
+<div class="panel panel-default" ng-hide="query">
+  <div class="panel-heading">
+    <h2 class="panel-title">Query images by spreadsheet to be retrieved to the '{{model.name}}' Pool</h3>
     </div>
+
+    <div class="panel-body">
+      <form role="form" enctype="multipart/form-data" >
+        <div class="form-group">
+          <label>DICOM Destination to Query</label>
+          <select ng-model="connectorKey" ng-options="c.connectorKey as c.name for c in connectors " name='connectorKey'></select>
+        </div>
+
+        <div class="form-group">
+          <label>File input</label>
+          <input type="file" name="file" id="queryFile">
+          <p class="help-block">Upload an Excel or CSV file using the <a href="NotionQueryTemplate.xlsx" download="">Excel template</a>.</p>
+        </div>
+        <button ng-click="submit()" class="btn btn-default">Submit</button>
+      </form>
+    </div>
+  </div>
+
+<div class="panel panel-default" ng-hide="query">
+  <div class="panel-heading">
+    <h2 class="panel-title">Enter individual MRN</h3>
+    </div>
+    <div class="panel-body">
+      <form role="form" enctype="multipart/form-data" >
+        <div class="form-group">
+          <label>DICOM Destination to Query</label>
+          <select ng-model="connectorKey" ng-options="c.connectorKey as c.name for c in connectors " name='connectorKey'></select>
+        </div>
+<div class="form-group">
+  <label class="control-label">PatientID:</label>
+  <input class="form-control" ng-model="item.PatientID" ></input>
+</div>
+<div class="form-group">
+  <label class="control-label">Anonymized Name (optional):</label>
+  <input class="form-control" ng-model="item.AnonymizedName" ></input>
+</div>
+<div class="form-group">
+  <label class="control-label">Anonymized ID (optional):</label>
+  <input class="form-control" ng-model="item.AnonymizedID" ></input>
+</div>
+
+        <button ng-click="submitIndividual()" class="btn btn-default">Submit</button>
+      </form>
+    </div>
+  </div>
+
+
 
     <div class="panel panel-default" ng-hide="!query">
       <div class="panel-heading">
