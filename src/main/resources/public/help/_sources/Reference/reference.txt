@@ -46,46 +46,53 @@ Anonymization is handled in two stages.  Each incoming image is processed separa
    First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymization>` for details on prepopulating the lookup tables.
 
 ``Exception(text)``
-  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See :ref:`PatientNameAnonymizer` for an example.
+  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.
 
 The :ref:`anonymization tutorial <AnonymizationIntro>` contains more details.
+
+
+.. _Connectors:
+.. _Connector:
+
+Connectors
+^^^^^^^^^^
+
+Notion supports the concept of Connectors, that is a specific Pool that is configured to query and receive DICOM images from a PACS system.  It is easier for PACS administrators to configure to send to a single Notion Pool, rather than configuring each individual Pool.  A Connector is a configuration involving several pools.
+
+.. figure:: /images/create_connector.png
+  :align: center
+  :width: 512
+
+
+The ``Query Pool`` will be used to query the ``Query Device`` (often a hospital PACS).  ``Receiving Pool`` will be used for moving the images into Notion.  The PACS will be given a ``C-MOVE`` request to move images to the ``Receiving Pool``.  Connectors can be used by any Pool in Notion, allowing researchers to query and retrieve images from remote PACS to their pool.  See :ref:`UsingConnectors` for more details.
 
 .. _DICOMConfig:
 
 DICOM Configuration
 -------------------
 
-Notion's DICOM listener supports ``C-ECHO``, ``C-FIND``, ``C-STORE`` and ``C-MOVE``.  The listening port is specified by the command line argument ``--port`` (see :ref:`CLI`) and is 11117 by default.  All other DICOM configuration is by Pools and Devices.
+Notion's DICOM listener supports ``C-ECHO``, ``C-FIND``, ``C-STORE`` and ``C-MOVE``.  The listening port is specified in the ``notion.yml`` configuration file and is 11117 by default.  All other DICOM configuration is by Pools and Devices.
 
-.. _REST:
+.. _shiro-config:
 
-REST
-----
-
-All Notion functions are available through a `REST interface <http://en.wikipedia.org/wiki/REST>`_ available on port 11118 by default and can be changed using the ``--rest`` argument in the :ref:`command line <CLI>`.
-
-============================ ========== ============
-URL                          Method     Description
-============================ ========== ============
-/rest/pool                   GET        Get a list of all pools as json
-/rest/pool/                  POST       Create a new Pool
-/rest/pool/:id               GET        Get details of a pool identified by ``:id``
-/rest/pool/:id               PUT        Update a Pool, NB: AETitle is read only!
-/rest/pool/:id               DELETE     Deletes a Pool and all data contained in the Pool, use with caution!
-/rest/pool/:id/move          PUT        Move studies internally between Pools
-/rest/pool/:id/ctp           GET        Get the CTP configuration for this pool
-/rest/pool/:id/ctp           PUT        Update the CTP configuration for this pool
-/rest/pool/:id/statistics    GET        Get statistics for this Pool
-/rest/pool/:id/device        GET        Get list of Devices for this Pool
-/rest/pool/:id/studies       GET        Get list of Studies for this Pool
-/rest/pool/:id/lookup        GET        Get list of Lookups for this Pool
-/rest/pool/:id/script        GET        Get list of Anonymization scripts for this Pool
-============================ ========== ============
+Authentication and Authorization Configuration
+----------------------------------------------
 
 
-.. _Webapp:
+.. _users-and-groups:
 
-Webapp
-------
+Users and Groups
+----------------
 
-In addition to the REST interface, an `Ember.js <http://emberjs.com/>`_ single page web application is avaliable on the same port as the REST interface.  By default it is http://localhost:11118/index.html but the port may be changed using the ``--rest`` argument on the command line.
+Notion supports multiple user accounts.  The first user created has Administrative rights and can grant those rights to other users.  User rights can be edited on the `Users` tab in the menu bar.  Administrators can see all Pools, configure Connectors, edit Groups and change users permissions.
+
+Groups
+^^^^^^
+
+A Group is a collection of users.  Groups can be granted PoolAdmin and Coordinator rights to a Pool.
+
+PoolAdmin
+  A PoolAdmin is allowed to change access to the pool, edit details, add Devices and change Anonymization settiongs.  PoolAdmins rights include all rights granted to Coordinators.
+
+Coordinators
+  A Coordinator has limited access to a Pool.  The Coordinator role is designed to let users query images from a Connector and download the resulting images.
