@@ -32,9 +32,8 @@ public class NotionConfiguration extends Configuration implements AssetsBundleCo
   public String dbWeb = null;
 
   @Valid
-  @NotNull
   @JsonProperty
-  public EmailConfiguration email = new EmailConfiguration();
+  public EmailConfiguration email;
 
   @Valid
   @NotNull
@@ -43,7 +42,7 @@ public class NotionConfiguration extends Configuration implements AssetsBundleCo
 
   @Valid
   @JsonProperty
-  public ShiroConfiguration shiro;
+  public ShiroConfiguration shiro = new ShiroConfiguration();
 
   @Override
   public AssetsConfiguration getAssetsConfiguration() {

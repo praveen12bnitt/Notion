@@ -19,7 +19,7 @@ public class NotionRealm extends JdbcRealm {
     NotionConfiguration configuration = Notion.context.getBean("configuration", NotionConfiguration.class);
     setDataSource(Notion.context.getBean("dataSource", DataSource.class));
     setSaltStyle(SaltStyle.COLUMN);
-    setAuthenticationQuery("select password, salt from users where email = ?");
+    setAuthenticationQuery("select Password, Salt from users where username = ?");
     HashedCredentialsMatcher matcher = new HashedCredentialsMatcher(configuration.notion.hashAlgorithm);
     matcher.setHashIterations(configuration.notion.hashIterations);
     matcher.setStoredCredentialsHexEncoded(true);
