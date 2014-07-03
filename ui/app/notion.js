@@ -262,10 +262,12 @@ notionApp.config(function ($httpProvider) {
 
 
             $scope.settings = function(){
+              console.log ( "Configuration of settings")
               $modal.open({
                 templateUrl: 'partials/settings.html',
                 scope: $scope,
                 controller: function($scope,$modalInstance) {
+                  console.log("Settings controller")
                   $scope.updateUser = $.extend(true,{},$scope.user)
                   $scope.save = function() {
                     $http.put("/rest/user/update", $scope.updateUser)

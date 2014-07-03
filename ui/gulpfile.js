@@ -23,6 +23,9 @@ var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
+    connectlr = require('connect-livereload'),
+    express = require('express'),
+    exec = require('child_process').exec,
     server = lr();
 
 gulp.task("default", ['watch'], function() {
@@ -35,6 +38,21 @@ gulp.task("build", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], fun
 gulp.task("watch", ['lr-server', 'build'], function() {
   console.log("\nStarting webserver and watching files\n")
   gulp.watch ( ['app/*.js', 'app/partials/**', 'app/assets/*.html', 'app/*.html'], ['app'])
+  gulp.watch ( ['../Documentation/**/*.rst'], ['docs'])
+})
+
+gulp.task('docs', function() {
+  exec('make docs', function (err, stdout, stderr) {
+    // console.log(stdout);
+    // console.log(stderr);
+    console.log("bumping the Docs server")
+    // Hmmp, some magic here, just hit the lr server with *.html
+    server.changed({
+      body: {
+        files: ['*.html']
+      }
+    });
+  });
 })
 
 // Handlebars / ember / all the rest
@@ -120,4 +138,11 @@ gulp.task('lr-server', function() {
   server.listen(35729, function(err) {
     if (err) return console.log(err);
   });
+
+  // Start an Express server for the docs
+  var app = express();
+  app.use ( connectlr() );
+  app.use(express.static('../Documentation/_build/html'));
+  app.listen(8400);
+
 });

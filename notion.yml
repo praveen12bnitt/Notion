@@ -44,7 +44,7 @@ email:
 notion:
   host: myst.mayo.edu:8080
   dicomPort: 11117
-  imageDirectory: ./LocalPACS/Images
+  imageDirectory: ../Working/LocalPACS/Images
 
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
