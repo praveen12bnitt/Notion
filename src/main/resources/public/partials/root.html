@@ -14,7 +14,9 @@
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li><a ng-show="loggedIn" ui-sref="root.pools.index">Pools</a></li>
-        <li><a ng-show="loggedIn" ui-sref="root.connectors">Connectors</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.connectors">Connectors</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.groups">Groups</a></li>
+        <li><a ng-show="loggedIn && permission.admin" ui-sref="root.users">Users</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-show="loggedIn"><p class="navbar-text">Signed in as {{user.username}} {{user.email}}</p></li>
@@ -32,4 +34,3 @@
 
 
 <div ui-view></div>
-

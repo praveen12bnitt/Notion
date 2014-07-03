@@ -1,0 +1,314 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial 3 &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
+        <link rel="next" title="Use Cases" href="use_cases.html"/>
+        <link rel="prev" title="Tutorial 2" href="anonymization.html"/>
+<link rel="stylesheet" href="../_static/notion.css" />
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+ 
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> Notion: a PACS for researchers</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#running-notion">Running Notion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Tutorial 1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#create-a-pool">Create a Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#working-with-the-pool">Working with the pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="anonymization.html">Tutorial 2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial 3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#moving-images">Moving images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-second-pool">Create a second Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-anonymization-rules">Create Anonymization Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-lookup-values">Setting Lookup Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Moving Images</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#rest">REST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#webapp">Webapp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Development/development.html">Development</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Notion: a PACS for researchers</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Tutorial 3</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="tutorial-3">
+<span id="movingtutorial"></span><h1>Tutorial 3<a class="headerlink" href="#tutorial-3" title="Permalink to this headline">¶</a></h1>
+<p>Glad you have made it this far in the tutorials!  By now, you have learned <a class="reference internal" href="getting_started.html#createapool"><em>how to create Pools and Devices</em></a>, <a class="reference internal" href="getting_started.html#sendimagestoapool"><em>send images via the command line</em></a> and <a class="reference internal" href="anonymization.html#anonymizationintro"><em>construct a simple anonymizer</em></a>.  Here we are going to demonstrate a <a class="reference internal" href="use_cases.html#multiresearcherusecase"><em>simple use case</em></a> of moving images from a Pool without an anonymizer to one with an anonymizer.  This would be useful for the scenario of multiple researchers collecting images in a common pool, then transferring images to the investigator specific Pool.</p>
+<div class="section" id="moving-images">
+<h2>Moving images<a class="headerlink" href="#moving-images" title="Permalink to this headline">¶</a></h2>
+<p>If you&#8217;ve followed the tutorials, you should have 2 studies in the <span class="tt">test</span> Pool.  If not, go back and follow the <a class="reference internal" href="anonymization.html#anonymizationintro"><em>prior tutorial</em></a>.</p>
+</div>
+<div class="section" id="create-a-second-pool">
+<h2>Create a second Pool<a class="headerlink" href="#create-a-second-pool" title="Permalink to this headline">¶</a></h2>
+<p>Just as we <a class="reference internal" href="getting_started.html#createapool"><em>created the first Pool</em></a>, now create a second Pool called <span class="tt">second</span> with the Anonymizer enabled.  Finished?  Good.  Let&#8217;s construct a few different anonymization rules for some different tags.</p>
+</div>
+<div class="section" id="create-anonymization-rules">
+<h2>Create Anonymization Rules<a class="headerlink" href="#create-anonymization-rules" title="Permalink to this headline">¶</a></h2>
+<p>Create several anonymization rules for these tags:</p>
+<ul class="simple">
+<li><span class="tt">PatientName</span></li>
+<li><span class="tt">PatientID</span></li>
+<li><span class="tt">AccessionNumber</span></li>
+<li><span class="tt">SeriesDescription</span></li>
+<li><span class="tt">StudyDescription</span></li>
+</ul>
+<p>The new Pool should look like this (<a class="reference external" href="http://localhost:11118/index.html#/pools/pool/2">http://localhost:11118/index.html#/pools/pool/2</a>):</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/second_pool.png"><img alt="../_images/second_pool.png" src="../_images/second_pool.png" style="width: 768px;" /></a>
+<p class="caption">The anonymization configuration for a second pool.  This will be the landing place for an individual investigator&#8217;s images.</p>
+</div>
+<div class="section" id="patientname">
+<span id="patientnameanonymizer"></span><h3>PatientName<a class="headerlink" href="#patientname" title="Permalink to this headline">¶</a></h3>
+<p>In the second pool, we will pre-populate our Lookup data and use that in the anonymizer.  If the <span class="tt">PatientName</span> lookup fails, throw an exception thus rejecting the image.</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Lookup the PatientName</span>
+<span class="kd">var</span> <span class="nx">pn</span> <span class="o">=</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span> <span class="p">(</span> <span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span> <span class="nx">pn</span> <span class="o">==</span> <span class="kc">null</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">exception</span> <span class="p">(</span> <span class="s2">&quot;Could not find &quot;</span> <span class="o">+</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="o">+</span> <span class="s2">&quot; in the lookup table&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">// Use the new PatientName, make sure it&#39;s the last statement</span>
+<span class="nx">pn</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="patientid">
+<h3>PatientID<a class="headerlink" href="#patientid" title="Permalink to this headline">¶</a></h3>
+<p>PatientID will be set using a zero padded incrementing number, similar to the <a class="reference internal" href="anonymization.html#anonymizationintro"><em>prior tutorial</em></a>.  Using zero padding helps with sorting images properly.</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Generate a sequence number for PatientID</span>
+<span class="kd">var</span> <span class="nx">sequenceNumberString</span> <span class="o">=</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">)</span>
+<span class="c1">// Convert to an Integer</span>
+<span class="kd">var</span> <span class="nx">sequenceNumber</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">java</span><span class="p">.</span><span class="nx">lang</span><span class="p">.</span><span class="nx">Integer</span> <span class="p">(</span> <span class="nx">sequenceNumberString</span> <span class="p">)</span>
+<span class="c1">// Zero pad</span>
+<span class="kd">var</span> <span class="nx">padded</span> <span class="o">=</span> <span class="nx">java</span><span class="p">.</span><span class="nx">lang</span><span class="p">.</span><span class="nb">String</span><span class="p">.</span><span class="nx">format</span> <span class="p">(</span> <span class="s2">&quot;%05d&quot;</span><span class="p">,</span> <span class="nx">sequenceNumber</span> <span class="p">)</span>
+<span class="c1">// Final output is Second-#####</span>
+<span class="s1">&#39;Second-&#39;</span> <span class="o">+</span> <span class="nx">sequenceNumber</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="accessionnumber">
+<h3>AccessionNumber<a class="headerlink" href="#accessionnumber" title="Permalink to this headline">¶</a></h3>
+<p>We would like our AccessionNumbers to be 5 digits long, but randomized.  Using a hash function, AccessionNumbers from multiple series will map to the same anonymized value.  So the script for AccessionNumber is simple.</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Generate a 5 digit hash value</span>
+<span class="nx">anonymizer</span><span class="p">.</span><span class="nx">hash</span> <span class="p">(</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">AccessionNumber</span><span class="p">,</span> <span class="mi">5</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="seriesdescription-and-studydescription">
+<h3>SeriesDescription and StudyDescription<a class="headerlink" href="#seriesdescription-and-studydescription" title="Permalink to this headline">¶</a></h3>
+<p>By default, the CTP anonymizer removes both SeriesDescription and StudyDescription.  We would like to preserve these tags.  By returning the value stored in the <tt class="docutils literal"><span class="pre">tags</span></tt> hash map, we will restore the default value removed by CTP.  Remember the <tt class="docutils literal"><span class="pre">tags</span></tt> hash contains the values from the non-anonymized image.</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// SeriesDescription</span>
+<span class="c1">// Preserve the value</span>
+<span class="nx">tags</span><span class="p">.</span><span class="nx">SeriesDescription</span>
+</pre></div>
+</div>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// StudyDescription</span>
+<span class="c1">// Preserve the value</span>
+<span class="nx">tags</span><span class="p">.</span><span class="nx">StudyDescription</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="setting-lookup-values">
+<h2>Setting Lookup Values<a class="headerlink" href="#setting-lookup-values" title="Permalink to this headline">¶</a></h2>
+<p>In the <a class="reference internal" href="#patientnameanonymizer"><em>PatientName anonymization script</em></a> we referenced a lookup value using <tt class="docutils literal"><span class="pre">anonymizer.lookup()</span></tt>.  This value needs to be set prior to images arriving at this Pool.  To enter the value, follow the <span class="tt">Edit Lookup Values</span> link (<a class="reference external" href="http://localhost:11118/index.html#/pools/lookup/2">http://localhost:11118/index.html#/pools/lookup/2</a>) on the <span class="tt">second</span> Pool.  It should be empty and the start.  Click the <span class="tt">New PatientName</span> button at the top of the table and enter the following information in the dialog box:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Key:</th><td class="field-body">MRA-0068</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Value:</th><td class="field-body">Subject-ABCDE</td>
+</tr>
+</tbody>
+</table>
+<p>The lookup table should look like this:</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/lookup_table.png"><img alt="../_images/lookup_table.png" src="../_images/lookup_table.png" style="width: 768px;" /></a>
+<p class="caption">Populated Lookup table for the <span class="tt">second</span> Pool.</p>
+</div>
+<p>NB: data can also be entered in bulk by uploading a CSV file.  The CSV is verified in the browser, then transmitted to the server.</p>
+</div>
+<div class="section" id="id1">
+<h2>Moving Images<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Notion is able to transfer studies directly from one pool to another.  We are going to move images from the <span class="tt">test</span> Pool into the <span class="tt">second</span> pool.  To accomplish this, visit the <tt class="docutils literal"><span class="pre">View</span> <span class="pre">Studies</span></tt> link under the <span class="tt">test</span> Pool (<a class="reference external" href="http://localhost:11118/index.html#/pools/studies/1">http://localhost:11118/index.html#/pools/studies/1</a>).  Just above the table is a <tt class="docutils literal"><span class="pre">Move</span> <span class="pre">destination</span></tt> selection box.  Go ahead and change this to the <span class="tt">second</span> Pool which is named <tt class="docutils literal"><span class="pre">An</span> <span class="pre">Investigator's</span> <span class="pre">Pool</span></tt> (1 in figure below).  Then select the Patient with PatientID of <tt class="docutils literal"><span class="pre">MRA-0068</span></tt> (2 in the figure).  Finally, click <tt class="docutils literal"><span class="pre">Move</span></tt> in the upper right of the table (3 in the figure).</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/move_images.png"><img alt="../_images/move_images.png" src="../_images/move_images.png" style="width: 768px;" /></a>
+<p class="caption">Move images to a different Pool.</p>
+</div>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/move_completed.png"><img alt="../_images/move_completed.png" src="../_images/move_completed.png" style="width: 768px;" /></a>
+<p class="caption">A status message appears at the beginning of the send, and notifies of completion of the send.</p>
+</div>
+<p>To verify the move, visit the Studies page of the <span class="tt">second</span> Pool (<a class="reference external" href="http://localhost:11118/index.html#/pools/studies/2">http://localhost:11118/index.html#/pools/studies/2</a>).  We see the <tt class="docutils literal"><span class="pre">PatientID,</span> <span class="pre">PatientName,</span> <span class="pre">AccessionNumber</span> <span class="pre">and</span> <span class="pre">StudyDescription</span></tt> are all as we expected!</p>
+<a class="reference internal image-reference" href="../_images/move_verified.png"><img alt="../_images/move_verified.png" class="align-center" src="../_images/move_verified.png" style="width: 768px;" /></a>
+<p>This completes the Notion tutorial.  For further information checkout Notion&#8217;s <a class="reference internal" href="../Reference/reference.html#concepts"><em>concepts</em></a> and <a class="reference internal" href="use_cases.html#usecases"><em>use cases</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="use_cases.html" class="btn btn-neutral float-right" title="Use Cases">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="anonymization.html" class="btn btn-neutral" title="Tutorial 2"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

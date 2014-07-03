@@ -1,0 +1,375 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial 1 &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
+        <link rel="next" title="Tutorial 2" href="anonymization.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/>
+<link rel="stylesheet" href="../_static/notion.css" />
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+ 
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> Notion: a PACS for researchers</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#running-notion">Running Notion</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial 1</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-pool">Create a Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-the-pool">Working with the pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sending-images-to-the-pool">Sending images to the Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="anonymization.html">Tutorial 2</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="moving_images.html">Tutorial 3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#moving-images">Moving images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#create-a-second-pool">Create a second Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#create-anonymization-rules">Create Anonymization Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#setting-lookup-values">Setting Lookup Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#id1">Moving Images</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#rest">REST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#webapp">Webapp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Development/development.html">Development</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Notion: a PACS for researchers</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Tutorial 1</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="tutorial-1">
+<h1>Tutorial 1<a class="headerlink" href="#tutorial-1" title="Permalink to this headline">¶</a></h1>
+<p>Getting started with Notion is straightforward.  After <a class="reference internal" href="installation.html#installation"><em>installation</em></a> of Notion, an instance should be up and running at <a class="reference external" href="http://localhost:11118">http://localhost:11118</a>. <strong>NB:</strong> links on this page reference <span class="tt">http://localhost:11118</span> and can be visited if Notion is running on the local machine. Visiting the web app gives:</p>
+<a class="reference internal image-reference" href="../_images/landing_page.png"><img alt="../_images/landing_page.png" class="align-center" src="../_images/landing_page.png" style="width: 512px;" /></a>
+<p>The goal of this tutorial is to introduce several of Notion&#8217;s concepts including <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a>, <a class="reference internal" href="../Reference/reference.html#devices"><em>Device</em></a>, and <a class="reference internal" href="../Reference/reference.html#anonymization"><em>Anonymization</em></a>.  Once a simple <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a> is configured, test images will be sent to the Pool, both with and without anonymization.  The second step will be to move images between two pools to simulate the <a class="reference internal" href="use_cases.html#multiresearcherusecase"><em>multi-researcher / multi-pool</em></a>.</p>
+<div class="section" id="create-a-pool">
+<span id="createapool"></span><h2>Create a Pool<a class="headerlink" href="#create-a-pool" title="Permalink to this headline">¶</a></h2>
+<p>On the <a class="reference external" href="http://localhost:11118/index.html#/pools">Pool</a> (<a class="reference external" href="http://localhost:11118/index.html#/pools">http://localhost:11118/index.html#/pools</a>) page of the webapp is a list of Pools defined in this Notion installation (none currently, we&#8217;ll fix that shortly).  To create a Pool, click on the <span class="tt">plus</span> icon next to <span class="tt">Pools</span>.</p>
+<a class="reference internal image-reference" href="../_images/pools_page.png"><img alt="../_images/pools_page.png" class="align-center" src="../_images/pools_page.png" style="width: 512px;" /></a>
+<p>In the dialog, enter the following information:</p>
+<a class="reference internal image-reference" href="../_images/new_test_pool.png"><img alt="../_images/new_test_pool.png" class="align-right" src="../_images/new_test_pool.png" style="width: 400px;" /></a>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Name:</th><td class="field-body">Test pool</td>
+</tr>
+<tr class="field-even field"><th class="field-name">AETitle:</th><td class="field-body">test</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Description:</th><td class="field-body">Test anonymization and Pool options.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Use Anonymizer:</th><td class="field-body">do not check</td>
+</tr>
+</tbody>
+</table>
+<p>click <span class="tt">Save changes</span> and <span class="tt">Close</span> to save and close the dialog.</p>
+</div>
+<div class="section" id="working-with-the-pool">
+<h2>Working with the pool<a class="headerlink" href="#working-with-the-pool" title="Permalink to this headline">¶</a></h2>
+<p>Clicking on the <a class="reference external" href="http://localhost:11118/index.html#/pools/pool/1">Test pool</a> link shows details of our new test pool.</p>
+<img alt="../_images/created_test_pool.png" class="align-center" src="../_images/created_test_pool.png" />
+<p>To interact with a Pool from a DICOM tool, a <a class="reference internal" href="../Reference/reference.html#device"><em>Device</em></a> must be defined.  To create a Device, click on the <span class="tt">plus</span> icon next to <span class="tt">Devices</span> to bring up the Device dialog.  Enter the following information:</p>
+<a class="reference internal image-reference" href="../_images/new_device.png"><img alt="../_images/new_device.png" class="align-left" src="../_images/new_device.png" style="width: 300px;" /></a>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Hostname:</th><td class="field-body">localhost</td>
+</tr>
+<tr class="field-even field"><th class="field-name">AET:</th><td class="field-body">sender</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Port:</th><td class="field-body">11112</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">A test sender.</td>
+</tr>
+</tbody>
+</table>
+<p>and create the new device.  Access to our <span class="tt">test</span> pool will come through a matching Device.  To allow more wide open access to the Pool, both Hostname and AET are matched as <a class="reference external" href="http://www.vogella.com/articles/JavaRegularExpressions/article.html">regular expressions</a>.  Using a <span class="tt">.*</span> will match any string, so if we enter this information for a new Device:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Hostname:</th><td class="field-body">.*</td>
+</tr>
+<tr class="field-even field"><th class="field-name">AET:</th><td class="field-body">.*</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Port:</th><td class="field-body">1</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Allow any host and AET to connect.</td>
+</tr>
+</tbody>
+</table>
+<p>All DICOM devices will be allowed to connect to the <span class="tt">test</span> Pool, including query, sending images and moving images to a third destination.  For this tutorial, our wildcard Device will give us great flexibility.  In practice, however, it may not be a good idea.</p>
+<p>Our Device list will look like this:</p>
+<img alt="../_images/device_list.png" class="align-center" src="../_images/device_list.png" />
+</div>
+<div class="section" id="sending-images-to-the-pool">
+<span id="sendimagestoapool"></span><h2>Sending images to the Pool<a class="headerlink" href="#sending-images-to-the-pool" title="Permalink to this headline">¶</a></h2>
+<p>There are several ways to send DICOM images to the Pool.  Graphical tools such as <a class="reference external" href="http://www.osirix-viewer.com/">OsiriX</a> and <a class="reference external" href="http://www.clearcanvas.ca/">ClearCanvas</a> have excellent DICOM networking tools, but may not be available to everyone working through this tutorial.  We will use the <a class="reference external" href="http://www.dcm4che.org">DCM4CHE</a> tools because they <em>happen</em> to be bundled with Notion&#8217;s distribution.</p>
+<div class="section" id="echo-the-server">
+<h3>Echo the server<a class="headerlink" href="#echo-the-server" title="Permalink to this headline">¶</a></h3>
+<p>DICOM provides a method to check if a PACS is awake and listening for connections.  This is similar to a using <a class="reference external" href="http://en.wikipedia.org/wiki/Ping_%28networking_utility%29">ping</a> to test for connectivity to a network connected server.  To issue a DICOM echo (more formally a C-ECHO, see <a class="reference external" href="http://medical.nema.org/Dicom/2011/11_07pu.pdf">the standard</a> for full details), we will use <span class="tt">dcm4che&#8217;s</span> <span class="tt">dcmecho</span> utility.  From Notion&#8217;s install directory, invoke as:</p>
+<div class="highlight-plain"><pre>&gt;&gt; java -classpath "lib/*":lib org.dcm4che2.tool.dcmecho.DcmEcho test@localhost:11117
+INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59270]
+INFO - test(1): A-ASSOCIATE-RQ test &lt;&lt; DCMECHO
+INFO - test(1): A-ASSOCIATE-AC DCMECHO &gt;&gt; test
+Connected to test@localhost:11117 in 0.034s
+INFO - test(1) &lt;&lt; 1:C-ECHO-RQ[pcid=1
+       cuid=1.2.840.10008.1.1/Verification SOP Class]
+INFO - test(1) &gt;&gt; 1:C-ECHO-RSP[pcid=1, status=0H]
+Perform Verification in -0.05s
+INFO - test(1) &lt;&lt; A-RELEASE-RQ
+INFO - test(1) &gt;&gt; A-RELEASE-RP
+Released connection to test@localhost:11117
+INFO - test(1): close Socket[addr=localhost/127.0.0.1,port=11117,localport=59270]</pre>
+</div>
+<p>We have successfully connected to Notion&#8217;s DICOM server.  Let&#8217;s query our first pool:</p>
+<div class="highlight-plain"><pre>&gt;&gt; java -classpath lib:"lib/*" org.dcm4che2.tool.dcmqr.DcmQR  test@localhost:11117
+INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59278]
+INFO - test(1): A-ASSOCIATE-RQ test &lt;&lt; DCMQR
+INFO - test(1): A-ASSOCIATE-AC DCMQR &gt;&gt; test
+INFO - Connected to test@localhost:11117 in 0.03 s
+INFO - Send Query Request using 1.2.840.10008.5.1.4.1.2.2.1/Study Root Query/Retrieve Information Model - FIND:
+(0008,0020) DA #0 [] Study Date
+(0008,0030) TM #0 [] Study Time
+(0008,0050) SH #0 [] Accession Number
+(0008,0052) CS #6 [STUDY] Query/Retrieve Level
+(0020,000D) UI #0 [] Study Instance UID
+(0020,0010) SH #0 [] Study ID
+(0020,1206) IS #0 [] Number of Study Related Series
+(0020,1208) IS #0 [] Number of Study Related Instances
+
+INFO - test(1) &lt;&lt; 1:C-FIND-RQ[pcid=7, prior=0
+       cuid=1.2.840.10008.5.1.4.1.2.2.1/Study Root Query/Retrieve Information Model - FIND
+       ts=1.2.840.10008.1.2.1/Explicit VR Little Endian]
+INFO - test(1) &gt;&gt; 1:C-FIND-RSP[pcid=7, status=0H]
+INFO - Received 0 matching entries in 0.055 s
+INFO - test(1) &lt;&lt; A-RELEASE-RQ
+INFO - test(1) &gt;&gt; A-RELEASE-RP
+INFO - Released connection to test@localhost:11117
+INFO - test(1): close Socket[addr=localhost/127.0.0.1,port=11117,localport=59278]</pre>
+</div>
+<p>The command ran sucessfully, but didn&#8217;t return anything (<span class="tt">Received 0 matching entries in 0.055 s</span>) because there is no data in the Pool.  Let&#8217;s send some data:</p>
+<div class="highlight-plain"><pre>&gt;&gt; java -classpath lib:"lib/*" org.dcm4che2.tool.dcmsnd.DcmSnd test@localhost:11117 /path/to/DICOM/Data
+Scanning files to send
+....................................................................................................................................................................
+Scanned 164 files in 0.176s (=1ms/file)
+Connected to test@localhost:11117 in 0.
+&lt;NB: INFO message removed for brevity&gt;
+....................................................................................................................................................................
+Sent 164 objects (=3.0736637MB) in 3.579s (=879.4165KB/s)
+Released connection to test@localhost:11117</pre>
+</div>
+<p>To verify that Notion recieved images, check the <a class="reference external" href="http://localhost:11118/index.html#/pools/studies/1">Study web page</a> for our Pool.  This page can be accessed directly, or by clicking on the <span class="tt">View Studies</span> link under the <span class="tt">Test pool</span> in the <a class="reference external" href="http://localhost:11118/index.html#/pools">Pools</a> list.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/study_page.png"><img alt="../_images/study_page.png" src="../_images/study_page.png" style="width: 768px;" /></a>
+<p class="caption">Study data stored in the <span class="tt">Test Pool</span>.  In this case a patient named <span class="tt">MRA-0068</span> was sent to the server, your particular data may be different.</p>
+</div>
+<p>Now, if we try our query once again:</p>
+<div class="highlight-plain"><pre>&gt;&gt; java -classpath lib:"lib/*" org.dcm4che2.tool.dcmqr.DcmQR  test@localhost:11117
+INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59286]
+INFO - test(1): A-ASSOCIATE-RQ test &lt;&lt; DCMQR
+INFO - test(1): A-ASSOCIATE-AC DCMQR &gt;&gt; test
+INFO - Connected to test@localhost:11117 in 0.03 s
+INFO - Send Query Request using 1.2.840.10008.5.1.4.1.2.2.1/Study Root Query/Retrieve Information Model - FIND:
+(0008,0020) DA #0 [] Study Date
+(0008,0030) TM #0 [] Study Time
+(0008,0050) SH #0 [] Accession Number
+(0008,0052) CS #6 [STUDY] Query/Retrieve Level
+(0020,000D) UI #0 [] Study Instance UID
+(0020,0010) SH #0 [] Study ID
+(0020,1206) IS #0 [] Number of Study Related Series
+(0020,1208) IS #0 [] Number of Study Related Instances
+
+INFO - test(1) &lt;&lt; 1:C-FIND-RQ[pcid=7, prior=0
+       cuid=1.2.840.10008.5.1.4.1.2.2.1/Study Root Query/Retrieve Information Model - FIND
+       ts=1.2.840.10008.1.2.1/Explicit VR Little Endian]
+INFO - test(1) &gt;&gt; 1:C-FIND-RSP[pcid=7, status=ff00H
+       ts=1.2.840.10008.1.2.1/Explicit VR Little Endian]
+INFO - test(1) &gt;&gt; 1:C-FIND-RSP[pcid=7, status=0H]
+INFO - Query Response #1:
+(0008,0050) SH #10 [8863218-1] Accession Number
+(0008,0052) CS #6 [STUDY] Query/Retrieve Level
+(0008,0054) AE #4 [test] Retrieve AE Title
+(0020,000D) UI #52 [1.2.40.0.13.1.1.172.22.2.90.20080613130257614.49733] Study Instance UID
+(0020,0010) SH #6 [23274] Study ID
+(0020,1206) IS #2 [2] Number of Study Related Series
+(0020,1208) IS #4 [164] Number of Study Related Instances
+
+INFO - Received 1 matching entries in 0.043 s
+INFO - test(1) &lt;&lt; A-RELEASE-RQ
+INFO - test(1) &gt;&gt; A-RELEASE-RP
+INFO - Released connection to test@localhost:11117
+INFO - test(1): close Socket[addr=localhost/127.0.0.1,port=11117,localport=59286]</pre>
+</div>
+<p>And we receive one matching response containing 2 Series and 164 Instances (images in DICOM-speak).  The images in the Pool may be queried or retrieved by a variety of tools, including command line tools like dcm4che.</p>
+</div>
+</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<p>The tutorial continues with <a class="reference internal" href="anonymization.html#anonymizationintro"><em>Anonymization</em></a></p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="anonymization.html" class="btn btn-neutral float-right" title="Tutorial 2">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
