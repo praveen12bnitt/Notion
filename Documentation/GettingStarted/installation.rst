@@ -14,7 +14,10 @@ After downloading Notion and unzipping, look in the ``Notion-x.x.x`` folder (whe
     External Java libraries.  Must be maintained in the same directory as ``Notion-x.x.x.jar`` because the main jar file references the libraries by a relative path.
 
 :tt:`Documentation`
-    Contains this documentation, both in html and ePub.
+    Contains this documentation
+
+:tt:`notion.yml`
+    A configuration file for Notion in `YAML <http://www.yaml.org/>`_ format.
 
 The jar file and lib directory may be copied to any location as needed.
 
@@ -26,43 +29,43 @@ TL;DR
 
 .. code-block:: bash
 
-  java -jar Notion.jar
+  java -jar Notion.jar server notion.yml
 
-Point a browser at http://localhost:11118
+Point a browser at http://localhost:8080
 
 .. _CLI:
 
-Command line options
-^^^^^^^^^^^^^^^^^^^^
+Configuration
+-------------
 
-Notion supports setting several command line parameters:
+Notion is configured through a YAML file.  A starting configuration is included in the distribution.  The Notion-specific sections are described below.  Additional configuration options may be found at http://dropwizard.io/manual/configuration.html
 
-.. code-block:: bash
+.. literalinclude:: ../../notion.example.yml
+  :linenos:
 
-  >> java -jar Notion-1.0.0.jar  --help
-  usage: Notion [options] [directory]
-  options:
-   -d,--db <arg>     Start the embedded DB Web server on the given port
-                     (normally 8082), will not start without this option
-   -h,--help         Print help and exit
-   -m,--memoryDB     Start services in memory (DB only)
-   -p,--port <arg>   Port to listen for DICOM traffic, default is 11117
-   -r,--rest <arg>   Port to listen for REST traffic, default is 11118
-  
-  Start the Notion PACS system using [directory] for data storage.  If not
-  specified defaults to the current working directory
-  (/Users/blezek/Source/ResearchPACS).  By default the REST api is started
-  on port 11118, with the web app being served at http://localhost:11118
-  The DICOM listener starts on port 11117 (can be changed with a --port) and
-  provides C-ECHO, C-MOVE, C-STORE and C-FIND services.  Notion serves as a
-  full DICOM query / retrive SCP.
-  Database administration can be handled via the bundled web interface.  By
-  default, http://localhost:8082, if the  --db option is given.  It will not
-  start up otherwise. The JDBC connection URL is given in the log message of
-  the server.
+DB Web Interface
+^^^^^^^^^^^^^^^^
 
+The ``dbWeb`` option gives a port where Notion listens and shows a web interface to the embedded Derby database.  If omitted, Notion does not specify the DB interface.  More details are at :ref:`dbweb`.
 
-Of particular interest is the :tt:`--db` argument which specifies a port for the server to listen on for `web access <localhost:8082>`_ to the embedded database.  Performance tuning, db maintance, etc can be performed through the web interface (http://localhost:8082 by default).
+Database
+^^^^^^^^
 
-Notion listens for DICOM requests on a specific port (11117 by default) and for HTTP requests (port 11118 by default).  Configuration of DICOM is covered :ref:`elsewhere <DICOMConfig>`.  The HTTP server responds to :ref:`REST requests <REST>` and serves :ref:`Notion's webapp <Webapp>`.
+Notion requires the Derby_ embedded database, removing any external database dependancies.  The directory where Derby stores the database is specified in the ``url`` setting of the ``database`` section.  The directory is specified after the ``directory:`` portion of the ``url``.  ``Username`` and ``password`` are optional settings.
 
+Notion
+^^^^^^
+
+The Notion section specifies where notion listens for incoming DICOM communications (``dicomPort``) and where image files are saved on disk (``imageDirectory``).  It is common to store images in the same directory as the Derby database.
+
+Logging
+^^^^^^^
+
+The logging level of the entire application (including non-Notion components such as Derby) can be controlled in the ``logging`` section of the configuration.  See http://dropwizard.io/manual/core.html#logging for extensive documentation of logging.
+
+.. _Derby: http://db.apache.org/derby/
+
+User Authentication and Authorization -- Shiro
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Notion uses Shiro (http://shiro.apache.org/) a pluggable authorization and authentication package.  Shiro enables Notion to authenticate against a diverse set of providers, including LDAP and Active Directory.  Configuration of Shiro is somewhat outside the scope of this documentation, but covered briefly in :ref:`shiro-config`.

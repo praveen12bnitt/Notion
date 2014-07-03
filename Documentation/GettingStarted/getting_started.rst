@@ -1,22 +1,36 @@
 .. include:: /global.rst
 
-Tutorial 1
-==========
+Getting Started
+===============
 
-Getting started with Notion is straightforward.  After :ref:`installation <Installation>` of Notion, an instance should be up and running at http://localhost:11118. **NB:** links on this page reference :tt:`http://localhost:11118` and can be visited if Notion is running on the local machine. Visiting the web app gives:
+Getting started with Notion is straightforward.  After :ref:`installation <Installation>` of Notion, an instance should be up and running at http://localhost:8080. **NB:** links on this page reference :tt:`http://localhost:8080` and can be visited if Notion is running on the local machine. Visiting the web app gives:
 
 .. image:: /images/landing_page.png
    :width: 512px
    :align: center
 
-The goal of this tutorial is to introduce several of Notion's concepts including :ref:`Pools`, :ref:`Devices`, and :ref:`Anonymization`.  Once a simple :ref:`Pool <Pools>` is configured, test images will be sent to the Pool, both with and without anonymization.  The second step will be to move images between two pools to simulate the :ref:`multi-researcher / multi-pool <MultiResearcherUseCase>`.
+Create a User
+-------------
+
+Click the *Register* link on the landing page, and create a new user.  For this tutorial, ``notion`` will be the username.
+
+.. image:: /images/register_user.png
+   :width: 512px
+   :align: center
+
+The new user will automatically be logged in.  The first user of a new Notion installation will be automatically granted administrator authorization.  :ref:`users-and-groups` gives more detail on configuration of other users and permissions for individual pools.
+
+Goal
+^^^^
+
+The goal of this tutorial is to introduce several of Notion's concepts including :ref:`Pools`, :ref:`Devices`, and :ref:`Anonymization`.  Once a simple :ref:`Pool <Pools>` is configured, test images will be sent to the Pool, both with and without anonymization.
 
 .. _CreateAPool:
 
 Create a Pool
 -------------
 
-On the `Pool <http://localhost:11118/index.html#/pools>`_ (http://localhost:11118/index.html#/pools) page of the webapp is a list of Pools defined in this Notion installation (none currently, we'll fix that shortly).  To create a Pool, click on the :tt:`plus` icon next to :tt:`Pools`.
+On the `Pool <http://localhost:8080/index.html#/pools>`_ (http://localhost:8080/index.html#/pools) page of the webapp is a list of Pools defined in this Notion installation (none currently, we'll fix that shortly).  To create a Pool, click on the :tt:`plus` icon next to :tt:`Pools`.
 
 .. image:: /images/pools_page.png
 	:width: 512px
@@ -33,14 +47,14 @@ In the dialog, enter the following information:
 :Name: Test pool
 :AETitle: test
 :Description: Test anonymization and Pool options.
-:Use Anonymizer: do not check
+:Anonymizer: do not check
 
-click :tt:`Save changes` and :tt:`Close` to save and close the dialog.
+click :tt:`Save` to save and close the dialog.
 
 Working with the pool
 ---------------------
 
-Clicking on the `Test pool <http://localhost:11118/index.html#/pools/pool/1>`_ link shows details of our new test pool.
+Clicking on the `Test pool <http://localhost:8080/index.html#/pools/pool/1>`_ link shows details of our new test pool.
 
 .. image:: /images/created_test_pool.png
 	:align: center
@@ -63,7 +77,7 @@ and create the new device.  Access to our :tt:`test` pool will come through a ma
 :Port: 1
 :Description: Allow any host and AET to connect.
 
-All DICOM devices will be allowed to connect to the :tt:`test` Pool, including query, sending images and moving images to a third destination.  For this tutorial, our wildcard Device will give us great flexibility.  In practice, however, it may not be a good idea.
+All DICOM devices will be allowed to connect to the :tt:`test` Pool, including query, sending images and moving images to a third destination.  For this tutorial, our wildcard Device will give us great flexibility.  In practice, however, it may not be a good idea, see :ref:`devices` for more details on configuring Devices.
 
 Our Device list will look like this:
 
@@ -141,13 +155,13 @@ The command ran sucessfully, but didn't return anything (:tt:`Received 0 matchin
 	Sent 164 objects (=3.0736637MB) in 3.579s (=879.4165KB/s)
 	Released connection to test@localhost:11117
 
-To verify that Notion recieved images, check the `Study web page <http://localhost:11118/index.html#/pools/studies/1>`_ for our Pool.  This page can be accessed directly, or by clicking on the :tt:`View Studies` link under the :tt:`Test pool` in the `Pools <http://localhost:11118/index.html#/pools>`_ list.
+To verify that Notion recieved images, check the `Study web page <http://localhost:8080/index.html#/pools/studies/1>`_ for our Pool.  This page can be accessed directly, or by clicking on the :tt:`View Studies` link under the :tt:`Test pool` in the `Pools <http://localhost:8080/index.html#/pools>`_ list.
 
 .. figure:: /images/study_page.png
 	:align: center
 	:width: 768
 
-	Study data stored in the :tt:`Test Pool`.  In this case a patient named :tt:`MRA-0068` was sent to the server, your particular data may be different.
+Study data stored in the :tt:`Test Pool`.  In this case a patient named :tt:`MRA-0068` was sent to the server, your particular data may be different.  To delete the study, click the "x" icon, and to download click the blue download icon to the right of the study.
 
 Now, if we try our query once again:
 

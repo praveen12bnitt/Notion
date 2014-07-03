@@ -1,0 +1,23 @@
+<div>
+  <h3>Permissions <i class="fa fa-plus-circle" ng-click="editGroupRole()"></i></h3>
+  <table class="table table-striped table-hover table-condensed">
+    <thead>
+      <tr>
+        <td>Group</td>
+        <td>Administrator</td>
+        <td>Coordinator</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="gr in groupRoleCollection.models">
+        <td>{{groupCollection.get(gr.get("groupKey")).get('name')}} / {{groupCollection.get(gr.get("groupKey")).get('description').trunc()}}</td>
+        <td><i ng-show="gr.get('isPoolAdmin')" class="fa fa-check"></i></td>
+        <td><i ng-show="gr.get('isCoordinator')" class="fa fa-check"></i></td>
+        <td><i class="fa fa-edit" ng-click="editGroupRole(gr)"></i></td>
+        <td><i class="fa fa-times-circle" ng-click="deleteGroupRole(gr)"></i></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

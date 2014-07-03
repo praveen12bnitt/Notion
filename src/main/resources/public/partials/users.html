@@ -1,0 +1,20 @@
+<div>
+  <h3>Users</h3>
+  <table class="table table-striped table-hover table-condensed">
+    <thead>
+      <tr>
+        <td>Username</td>
+        <td>Email</td>
+        <td>Admin</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="u in userCollection.models | orderBy: 'id'">
+        <td>{{u.get('username')}}</td>
+        <td>{{u.get('email')}}</td>
+
+        <td><input type='checkbox' ng-model="u.attributes.isAdmin" ng-click="toggleAdmin(u)"/</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

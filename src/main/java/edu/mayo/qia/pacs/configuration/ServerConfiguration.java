@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ServerConfiguration {
   @Valid
-  @NotNull
   @JsonProperty
   public String host;
 
