@@ -96,7 +96,7 @@ Echo the server
 
 DICOM provides a method to check if a PACS is awake and listening for connections.  This is similar to a using `ping <http://en.wikipedia.org/wiki/Ping_%28networking_utility%29>`_ to test for connectivity to a network connected server.  To issue a DICOM echo (more formally a C-ECHO, see `the standard <http://medical.nema.org/Dicom/2011/11_07pu.pdf>`_ for full details), we will use :tt:`dcm4che's` :tt:`dcmecho` utility.  From Notion's install directory, invoke as:
 
-.. code-block:: plain
+.. code-block:: bash
 
    >> java -classpath "lib/*":lib org.dcm4che2.tool.dcmecho.DcmEcho test@localhost:11117
    INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59270]
@@ -114,7 +114,7 @@ DICOM provides a method to check if a PACS is awake and listening for connection
 
 We have successfully connected to Notion's DICOM server.  Let's query our first pool:
 
-.. code-block:: plain
+.. code-block:: bash
 
    >> java -classpath lib:"lib/*" org.dcm4che2.tool.dcmqr.DcmQR  test@localhost:11117
    INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59278]
@@ -143,7 +143,7 @@ We have successfully connected to Notion's DICOM server.  Let's query our first 
 
 The command ran sucessfully, but didn't return anything (:tt:`Received 0 matching entries in 0.055 s`) because there is no data in the Pool.  Let's send some data:
 
-.. code-block:: plain
+.. code-block:: bash
 
 	>> java -classpath lib:"lib/*" org.dcm4che2.tool.dcmsnd.DcmSnd test@localhost:11117 /path/to/DICOM/Data
 	Scanning files to send
@@ -165,7 +165,7 @@ Study data stored in the :tt:`Test Pool`.  In this case a patient named :tt:`MRA
 
 Now, if we try our query once again:
 
-.. code-block:: plain
+.. code-block:: bash
 
    >> java -classpath lib:"lib/*" org.dcm4che2.tool.dcmqr.DcmQR  test@localhost:11117
    INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=59286]

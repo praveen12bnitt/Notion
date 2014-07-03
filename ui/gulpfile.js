@@ -88,8 +88,6 @@ gulp.task('style', function() {
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'vendor/scripts/moment.js',
-    'vendor/scripts/showdown.js',
     'bower_components/jquery/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
@@ -105,7 +103,6 @@ gulp.task('vendor', function() {
     'bower_components/angular-route/angular-route.js',
     'bower_components/underscore/underscore.js',
     'bower_components/handlebars/handlebars.js',
-    'vendor/scripts/console-polyfill.js',
     'bower_components/angular-bindonce/bindonce.js',
     'bower_components/w11k-dropdownToggle/dist/w11k-dropdownToggle.js',
     'bower_components/w11k-select/dist/w11k-select.js',
