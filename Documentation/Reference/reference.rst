@@ -46,7 +46,7 @@ Anonymization is handled in two stages.  Each incoming image is processed separa
    First lookup the sequence number indexed by ``Type`` and ``Value``.  If it does not exist, generate a unique number by incrementing the ``Type`` sequence.  For instance the first time ``anonymizer.sequenceNumber('PatientName', 'Jones')`` is called, the return value is the string ``'1'``.  On the second call, ``anonymizer.sequenceNumber('PatientName', 'Jones')`` also returns the string ``'1'``, however ``anonymizer.sequenceNumber('PatientName', 'Smith')`` returns the string ``'2'``.  Sequence numbers are used to generate ``PatientName`` and ``PatientID`` tags if particular identifiers are not required.  *NB:* see the :ref:`anonymizer reference <Anonymization>` for details on prepopulating the lookup tables.
 
 ``Exception(text)``
-  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See :ref:`PatientNameAnonymizer` for an example.
+  Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.
 
 The :ref:`anonymization tutorial <AnonymizationIntro>` contains more details.
 

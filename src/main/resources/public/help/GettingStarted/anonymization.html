@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial 2 &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  <title>Anonymziation &mdash; Notion: a PACS for researchers 1.0 documentation</title>
   
 
   
@@ -30,8 +30,8 @@
 
   
     <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
-        <link rel="next" title="Tutorial 3" href="moving_images.html"/>
-        <link rel="prev" title="Tutorial 1" href="getting_started.html"/>
+        <link rel="next" title="Using Connectors" href="moving_images.html"/>
+        <link rel="prev" title="Getting Started" href="getting_started.html"/>
 <link rel="stylesheet" href="../_static/notion.css" />
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
 
@@ -66,41 +66,55 @@
             <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#running-notion">Running Notion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#configuration">Configuration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Tutorial 1</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#create-a-user">Create a User</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#create-a-pool">Create a Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#working-with-the-pool">Working with the pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial 2</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Anonymziation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#anonymize-images">Anonymize Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="moving_images.html">Tutorial 3</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="moving_images.html#moving-images">Moving images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="moving_images.html#create-a-second-pool">Create a second Pool</a></li>
-<li class="toctree-l2"><a class="reference internal" href="moving_images.html#create-anonymization-rules">Create Anonymization Rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="moving_images.html#setting-lookup-values">Setting Lookup Values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="moving_images.html#id1">Moving Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#configure-a-connector">Configure a Connector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#performing-a-query">Performing a Query</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="use_cases.html">Use Cases</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#irb-pool">IRB Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#research-pacs">Research PACS</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#rest">REST</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#webapp">Webapp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../Development/development.html">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
+</ul>
+</li>
 </ul>
 
         
@@ -124,7 +138,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Tutorial 2</li>
+    <li>Anonymziation</li>
       <li class="wy-breadcrumbs-aside">
         
       </li>
@@ -133,50 +147,66 @@
 </div>
           <div role="main">
             
-  <div class="section" id="tutorial-2">
-<h1>Tutorial 2<a class="headerlink" href="#tutorial-2" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="anonymziation">
+<h1>Anonymziation<a class="headerlink" href="#anonymziation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="anonymization">
 <span id="anonymizationintro"></span><h2>Anonymization<a class="headerlink" href="#anonymization" title="Permalink to this headline">¶</a></h2>
-<p>To turn on Anonymization, click the <span class="tt">Edit</span> icon next to the Pool info on this page <a class="reference external" href="http://localhost:11118/index.html#/pools/pool/1">http://localhost:11118/index.html#/pools/pool/1</a>.  In the dialog box, check <span class="tt">Use Anonymizer</span>, click <span class="tt">Save changes</span> and <span class="tt">close</span>.  Now our Pool display looks somewhat different with two new sections: <span class="tt">CTP Configuration</span> and <span class="tt">Anonymization Rules</span>.  Opening up the <span class="tt">CTP Configuration</span> reveals an editor for the CTP configuration used by the pool.  The particular file is for the <a class="reference external" href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">CTP DICOM anonymizer</a> configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.</p>
+<p>To turn on Anonymization, click the <span class="tt">Edit</span> icon next to the Pool info on this page <a class="reference external" href="http://localhost:8080/index.html#/pools/pool/1">http://localhost:8080/index.html#/pools/pool/1</a>.  In the dialog box, check <span class="tt">Use Anonymizer</span>, click <span class="tt">Save changes</span> and <span class="tt">close</span>.  Now our Pool display looks somewhat different with two new sections: <span class="tt">CTP Configuration</span> and <span class="tt">Anonymization Rules</span>.  Opening up the <span class="tt">CTP Configuration</span> reveals an editor for the CTP configuration used by the pool.  The particular file is for the <a class="reference external" href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">CTP DICOM anonymizer</a> configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/ctp_configuration.png"><img alt="../_images/ctp_configuration.png" src="../_images/ctp_configuration.png" style="width: 768px;" /></a>
 </div>
-<p>CTP is the first stage of the anonymization process in Notion.  The second stage is a series of <a class="reference external" href="http://en.wikipedia.org/wiki/JavaScript">Javascript</a> snippits that are used to substitute DICOM tags.  To demonstrate, we will add a new anonymization script by clicking the <span class="tt">plus</span> sign next to the <span class="tt">Anonymization Rules</span>.  This brings up a dialog to create the new rule.</p>
-<div class="figure align-center">
-<img alt="../_images/new_rule.png" src="../_images/new_rule.png" />
-<p class="caption">Create a new rule to replace the DICOM tag <span class="tt">PatientName</span> by entering</p>
-<div class="legend">
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Tag:</th><td class="field-body">PatientName</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Stcript:</th><td class="field-body">tags.PatientName</td>
-</tr>
-</tbody>
-</table>
-<p>By default, the context in which the Javascript snippit executes has a map called <span class="tt">tags</span>.  The <span class="tt">tags</span> hash map contains the original tag values for the current image (that is, before CTP Anonymization as CTP removes/changes many tags).  Save the script and look in the editor:</p>
-</div>
-</div>
+<p>Configuration of the <a class="reference external" href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">CTP DICOM anonymizer</a>.  Changes will be saved to the server and used for anonymization of incoming DICOM images.</p>
+<p>CTP is the first stage of the anonymization process in Notion.  The second stage is a <a class="reference external" href="http://en.wikipedia.org/wiki/JavaScript">Javascript</a> snippits that are used to substitute DICOM tags.  To demonstrate, we will look at the standard anonymization script.</p>
+<p>By default, the context in which the Javascript snippit executes has a map called <span class="tt">tags</span>.  The <span class="tt">tags</span> hash map contains the original tag values for the current image (that is, before CTP Anonymization as CTP removes/changes many tags).</p>
 <div class="figure align-center">
 <img alt="../_images/editing_anonymization_rule.png" src="../_images/editing_anonymization_rule.png" />
-<p class="caption">Editor for the <span class="tt">PatientId</span> anonymization rule.  Will replace <span class="tt">PatientName</span> with the original value.</p>
 </div>
-<p>The editor has some nifty features, including saving the rule and trial execution of the rule.  Pressing <span class="tt">&#8216;Ctrl-S&#8217;</span> on Windows or <span class="tt">&#8216;Command-S&#8217;</span> on the Mac will save the rule, while pressing <span class="tt">&#8216;Ctrl-Return&#8217;</span> will execute the rule&#8217;s Javascript on the server with dummy values for the <span class="tt">tags</span> hash.  To try it out, run the script.  The output should be <span class="tt">#PatientName#</span>.  Some of the other options of the anonymization rules include lookups and sequence numbers.  Now, change the rule to be:</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span><span class="p">(</span><span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span><span class="p">)</span>
+<p>The editor has some nifty features, including saving the rule and trial execution of the rule.  Pressing <span class="tt">&#8216;Ctrl-S&#8217;</span> on Windows or <span class="tt">&#8216;Command-S&#8217;</span> on the Mac will save the rule, while pressing <span class="tt">&#8216;Ctrl-Return&#8217;</span> will execute the rule&#8217;s Javascript on the server with dummy values for the <span class="tt">tags</span> hash.  To try it out, run the script.  The output should be <span class="tt">&#8220;{AccessionNumber=LOOKUP, PatientName=LOOKUP, PatientID=LOOKUP}&#8221;</span>. The standard script is:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">)</span> <span class="o">||</span> <span class="s1">&#39;PN-&#39;</span> <span class="o">+</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span><span class="p">),</span>
+  <span class="nx">PatientID</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;PatientID&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientID</span> <span class="p">)</span> <span class="o">||</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientID&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientID</span><span class="p">),</span>
+  <span class="nx">AccessionNumber</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;AccessionNumber&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">AccessionNumber</span> <span class="p">)</span> <span class="o">||</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;AccessionNumber&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">AccessionNumber</span><span class="p">),</span>
+ <span class="p">};</span>
+ <span class="c1">// Return the tags hash</span>
+<span class="nx">tags</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>And give the script a trial run.  The result should be <span class="tt">#PatientName#-42</span>.  This is because <tt class="docutils literal"><span class="pre">tags.PatientName</span></tt> returns <span class="tt">#PatientName#</span> as a string and <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">tags.PatientName)</span></tt> always returns the string <span class="tt">&#8216;42&#8217;</span>.  They are concatenated using <tt class="docutils literal"><span class="pre">+</span> <span class="pre">'-'</span> <span class="pre">+</span></tt> to form the output string.  The <tt class="docutils literal"><span class="pre">anonymizer</span></tt> object is available in the Javascript and contains many useful functions.  Apart from the trial execution, <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber(</span> <span class="pre">Type,</span> <span class="pre">Key</span> <span class="pre">)</span></tt> first attempts to retrieve a previously stored sequence number indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> ( <span class="tt">PatientName</span> in our case) and <tt class="docutils literal"><span class="pre">Key</span></tt> (<span class="tt">tags.PatientName</span>).  If found, the previous number is returned, otherwise a new sequence number is generated, stored for later use and returned.  Multiple sequences can be independantly maintained by the <tt class="docutils literal"><span class="pre">Type</span></tt> argument, or a single sequence can be used.</p>
-<p>Enter this code in the <span class="tt">PatientName</span> rule:</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">anonymizer</span><span class="p">.</span><span class="nx">hash</span> <span class="p">(</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">)</span>
+</div>
+<div class="section" id="scripts">
+<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h2>
+<p>Scripts are written in Javascript.  To anonymize an image, Notion runs the Javascript and looks for the value of the last statement.  If the value is an associative array, the keys are used to look up particular DICOM tags (<tt class="docutils literal"><span class="pre">PatientName</span></tt>, <tt class="docutils literal"><span class="pre">PatientID</span></tt>, etc) and replace with the corresponding value in the output DICOM image.  In the standard script, <tt class="docutils literal"><span class="pre">PatientName</span></tt>, <tt class="docutils literal"><span class="pre">PatientID</span></tt> and <tt class="docutils literal"><span class="pre">AccessionNumber</span></tt> are replaced.</p>
+<p>And give the script a trial run.  The result should be <span class="tt">&#8220;{AccessionNumber=LOOKUP, PatientName=LOOKUP, PatientID=LOOKUP}&#8221;</span>.  The <tt class="docutils literal"><span class="pre">anonymizer.lookup</span></tt> function returns a previously stored value for the PatientName corresponding to the PatientName tag in the incoming image (<tt class="docutils literal"><span class="pre">tags.PatientName</span></tt>).  If we remove the lookup code:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="s1">&#39;PN-&#39;</span> <span class="o">+</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span><span class="p">),</span>
+  <span class="nx">PatientID</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;PatientID&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientID</span> <span class="p">)</span> <span class="o">||</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientID&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientID</span><span class="p">),</span>
+  <span class="nx">AccessionNumber</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">lookup</span><span class="p">(</span><span class="s1">&#39;AccessionNumber&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">AccessionNumber</span> <span class="p">)</span> <span class="o">||</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;AccessionNumber&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">AccessionNumber</span><span class="p">),</span>
+ <span class="p">};</span>
+ <span class="c1">// Return the tags hash</span>
+<span class="nx">tags</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>The result of the trial execution is <tt class="docutils literal"><span class="pre">3382174773882</span></tt>.  This is the <a class="reference external" href="http://en.wikipedia.org/wiki/MD5">MD5 hash</a> of the input string.  The function <tt class="docutils literal"><span class="pre">anonymizer.hash</span> <span class="pre">(</span> <span class="pre">Key,</span> <span class="pre">[length]</span> <span class="pre">)</span></tt> returns the first <tt class="docutils literal"><span class="pre">length</span></tt> digits of the MD5 hash value of <tt class="docutils literal"><span class="pre">Key</span></tt>.  If we change our function to be:</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">anonymizer</span><span class="p">.</span><span class="nx">hash</span> <span class="p">(</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span><span class="p">,</span> <span class="mi">3</span> <span class="p">)</span>
+<p>and click <em>Try Script</em>, the result is ::tt::<cite>&#8220;{AccessionNumber=LOOKUP, PatientName=PN-42, PatientID=LOOKUP}&#8221;</cite>.  This is because <tt class="docutils literal"><span class="pre">tags.PatientName</span></tt> returns <span class="tt">#PatientName#</span> as a string and <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">tags.PatientName)</span></tt> always returns the string <span class="tt">&#8216;42&#8217;</span>.  They are concatenated using <tt class="docutils literal"><span class="pre">+</span> <span class="pre">'-'</span> <span class="pre">+</span></tt> to form the output string.  The <tt class="docutils literal"><span class="pre">anonymizer</span></tt> object is available in the Javascript and contains many useful functions.  Apart from the trial execution, <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber(</span> <span class="pre">Type,</span> <span class="pre">Key</span> <span class="pre">)</span></tt> first attempts to retrieve a previously stored sequence number indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> ( <span class="tt">PatientName</span> in our case) and <tt class="docutils literal"><span class="pre">Key</span></tt> (<span class="tt">tags.PatientName</span>).  If found, the previous number is returned, otherwise a new sequence number is generated, stored for later use and returned.  Multiple sequences can be independantly maintained by the <tt class="docutils literal"><span class="pre">Type</span></tt> argument, or a single sequence can be used.</p>
+<p>Enter this code in the <span class="tt">PatientName</span> key:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">hash</span> <span class="p">(</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">),</span>
+<span class="p">};</span>
+<span class="c1">// 1234</span>
+<span class="nx">tags</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>Trial execution gives <tt class="docutils literal"><span class="pre">338</span></tt> the first 3 digits of the full hash value from the previous script.</p>
+<p>The result of the trial execution is <tt class="docutils literal"><span class="pre">&quot;{PatientName=3382174773882}&quot;</span></tt>.  This is the <a class="reference external" href="http://en.wikipedia.org/wiki/MD5">MD5 hash</a> of the input string, <tt class="docutils literal"><span class="pre">tags.PatientName</span></tt> in the example.  The function <tt class="docutils literal"><span class="pre">anonymizer.hash</span> <span class="pre">(</span> <span class="pre">Key,</span> <span class="pre">[length]</span> <span class="pre">)</span></tt> returns the first <tt class="docutils literal"><span class="pre">length</span></tt> digits of the MD5 hash value of <tt class="docutils literal"><span class="pre">Key</span></tt>.  If we change our function to be:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">hash</span> <span class="p">(</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="p">};</span>
+<span class="c1">// 1234</span>
+<span class="nx">tags</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Trial execution gives <tt class="docutils literal"><span class="pre">&quot;{PatientName=338}&quot;</span></tt> the first 3 digits of the full hash value from the previous script.</p>
 <p>The <tt class="docutils literal"><span class="pre">anonymizer</span></tt> object has several other functions</p>
 <dl class="docutils">
 <dt><tt class="docutils literal"><span class="pre">debug(text)</span> <span class="pre">/</span> <span class="pre">info(text)</span> <span class="pre">/</span> <span class="pre">warn(text)</span> <span class="pre">/</span> <span class="pre">error(text)</span></tt></dt>
@@ -190,7 +220,7 @@
 <dt><tt class="docutils literal"><span class="pre">sequenceNumber(Type,Key)</span></tt></dt>
 <dd>First lookup the sequence number indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> and <tt class="docutils literal"><span class="pre">Value</span></tt>.  If it does not exist, generate a unique number by incrementing the <tt class="docutils literal"><span class="pre">Type</span></tt> sequence.  For instance the first time <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Jones')</span></tt> is called, the return value is the string <tt class="docutils literal"><span class="pre">'1'</span></tt>.  On the second call, <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Jones')</span></tt> also returns the string <tt class="docutils literal"><span class="pre">'1'</span></tt>, however <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Smith')</span></tt> returns the string <tt class="docutils literal"><span class="pre">'2'</span></tt>.  Sequence numbers are used to generate <tt class="docutils literal"><span class="pre">PatientName</span></tt> and <tt class="docutils literal"><span class="pre">PatientID</span></tt> tags if particular identifiers are not required.  <em>NB:</em> see the <a class="reference internal" href="../Reference/reference.html#anonymization"><em>anonymizer reference</em></a> for details on prepopulating the lookup tables.</dd>
 <dt><tt class="docutils literal"><span class="pre">Exception(text)</span></tt></dt>
-<dd>Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.  See <a class="reference internal" href="moving_images.html#patientnameanonymizer"><em>PatientName</em></a> for an example.</dd>
+<dd>Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.</dd>
 </dl>
 <p>Coming back to our example, set the anonymization rule for <tt class="docutils literal"><span class="pre">PatientName</span></tt> to be:</p>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Generate a sequence number for PatientName</span>
@@ -200,7 +230,15 @@
 <span class="c1">// Zero pad</span>
 <span class="kd">var</span> <span class="nx">padded</span> <span class="o">=</span> <span class="nx">java</span><span class="p">.</span><span class="nx">lang</span><span class="p">.</span><span class="nb">String</span><span class="p">.</span><span class="nx">format</span> <span class="p">(</span> <span class="s2">&quot;%05d&quot;</span><span class="p">,</span> <span class="nx">sequenceNumber</span> <span class="p">)</span>
 <span class="c1">// Final output is Study-#####</span>
-<span class="s1">&#39;Study-&#39;</span> <span class="o">+</span> <span class="nx">sequenceNumber</span>
+<span class="kd">var</span> <span class="nx">pn</span> <span class="o">=</span> <span class="s1">&#39;Study-&#39;</span> <span class="o">+</span> <span class="nx">sequenceNumber</span>
+
+
+<span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="nx">pn</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// 1234</span>
+<span class="nx">tags</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>This will set the PatientName to be a concatination of the string <tt class="docutils literal"><span class="pre">'Study-'</span></tt> and the zero padded string stored in <tt class="docutils literal"><span class="pre">padded</span></tt>.  Functions can also be used in anonymization rules:</p>
@@ -213,30 +251,38 @@
 <span class="kd">var</span> <span class="nx">sequenceNumber</span> <span class="o">=</span> <span class="nx">pad</span> <span class="p">(</span> <span class="nx">anonymizer</span><span class="p">.</span><span class="nx">sequenceNumber</span> <span class="p">(</span> <span class="s1">&#39;PatientName&#39;</span><span class="p">,</span> <span class="nx">tags</span><span class="p">.</span><span class="nx">PatientName</span> <span class="p">),</span> <span class="mi">5</span> <span class="p">)</span>
 
 <span class="c1">// Final output is Study-#####</span>
-<span class="s1">&#39;Study-&#39;</span> <span class="o">+</span> <span class="nx">sequenceNumber</span>
+<span class="kd">var</span> <span class="nx">pn</span> <span class="o">=</span> <span class="s1">&#39;Study-&#39;</span> <span class="o">+</span> <span class="nx">sequenceNumber</span>
+
+<span class="c1">// Default anonymization script</span>
+<span class="kd">var</span> <span class="nx">tags</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">PatientName</span><span class="o">:</span> <span class="nx">pn</span><span class="p">,</span>
+<span class="p">};</span>
+<span class="c1">// 1234</span>
+<span class="nx">tags</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>Remember, the tag replacement value is the last statement of the Javascript function expressed as a string.</p>
+<p>Remember, the tag replacement hash is the last statement of the Javascript and should consist of key-value pairs where the key is the DICOM tag to replace with the value.</p>
 </div>
 <div class="section" id="anonymize-images">
 <h2>Anonymize Images<a class="headerlink" href="#anonymize-images" title="Permalink to this headline">¶</a></h2>
 <p>The moment we&#8217;ve all been waiting for (yea right).  With our anonymizer in place, send the same data through Notion into the <tt class="docutils literal"><span class="pre">test</span></tt> Pool.</p>
-<div class="highlight-plain"><pre>&gt;&gt; java -classpath lib:"lib/*" org.dcm4che2.tool.dcmsnd.DcmSnd test@localhost:11117 /path/to/DICOM/data/
+<div class="highlight-bash"><div class="highlight"><pre>&gt;&gt; java -classpath lib:<span class="s2">&quot;lib/*&quot;</span> org.dcm4che2.tool.dcmsnd.DcmSnd <span class="nb">test</span>@localhost:11117 /path/to/DICOM/data/
 Scanning files to send
      ....................................................................................................................................................................
-     Scanned 164 files in 0.214s (=1ms/file)
-     INFO - Association(1) initiated Socket[addr=localhost/127.0.0.1,port=11117,localport=60448]
-     INFO - test(1): A-ASSOCIATE-RQ test &lt;&lt; DCMSND
-     INFO - test(1): A-ASSOCIATE-AC DCMSND &gt;&gt; test
-     Connected to test@localhost:11117 in 0.069s
+     Scanned 164 files in 0.214s <span class="o">(=</span>1ms/file<span class="o">)</span>
+     INFO - Association<span class="o">(</span>1<span class="o">)</span> initiated Socket<span class="o">[</span><span class="nv">addr</span><span class="o">=</span>localhost/127.0.0.1,port<span class="o">=</span>11117,localport<span class="o">=</span>60448<span class="o">]</span>
+     INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</span>: A-ASSOCIATE-RQ <span class="nb">test</span> <span class="s">&lt;&lt; DCMSND</span>
+<span class="s">     INFO - test(1): A-ASSOCIATE-AC DCMSND</span> &gt;&gt; <span class="nb">test</span>
+<span class="nb">     </span>Connected to <span class="nb">test</span>@localhost:11117 in 0.069s
      ....................................................................................................................................................................
-     Sent 164 objects (=3.0736637MB) in 5.895s (=533.91547KB/s)
-     INFO - test(1) &lt;&lt; A-RELEASE-RQ
-     INFO - test(1) &gt;&gt; A-RELEASE-RP
-     Released connection to test@localhost:11117
-     INFO - test(1): close Socket[addr=localhost/127.0.0.1,port=11117,localport=60448]</pre>
+     Sent 164 objects <span class="o">(=</span>3.0736637MB<span class="o">)</span> in 5.895s <span class="o">(=</span>533.91547KB/s<span class="o">)</span>
+     INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</span> <span class="s">&lt;&lt; A-RELEA</span>SE-RQ
+     INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</span> &gt;&gt; A-RELEASE-RP
+     Released connection to <span class="nb">test</span>@localhost:11117
+     INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</span>: close Socket<span class="o">[</span><span class="nv">addr</span><span class="o">=</span>localhost/127.0.0.1,port<span class="o">=</span>11117,localport<span class="o">=</span>60448<span class="o">]</span>
+</pre></div>
 </div>
-<p><a class="reference external" href="http://localhost:11118/index.html#/pools/studies/1">Viewing the studies</a> for the <tt class="docutils literal"><span class="pre">test</span></tt> Pool gives:</p>
+<p><a class="reference external" href="http://localhost:8080/index.html#/pools/studies/1">Viewing the studies</a> for the <tt class="docutils literal"><span class="pre">test</span></tt> Pool gives:</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/anonymized_images.png"><img alt="../_images/anonymized_images.png" src="../_images/anonymized_images.png" style="width: 768px;" /></a>
 <p class="caption">Anonymized and non-anonymized images.  <span class="tt">MRA-0068</span> is the original patient study, and <span class="tt">Study-00001</span> is the anonymized version.</p>
@@ -245,7 +291,7 @@ Scanning files to send
 </div>
 <div class="section" id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="moving_images.html#movingtutorial"><em>next tutorial</em></a> is moving images between pools.</p>
+<p>The <a class="reference internal" href="moving_images.html#usingconnectors"><em>next tutorial</em></a> is using <a class="reference internal" href="../Reference/reference.html#connectors"><em>Connectors</em></a> between pools.</p>
 </div>
 </div>
 
@@ -255,10 +301,10 @@ Scanning files to send
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="moving_images.html" class="btn btn-neutral float-right" title="Tutorial 3">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="moving_images.html" class="btn btn-neutral float-right" title="Using Connectors">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="getting_started.html" class="btn btn-neutral" title="Tutorial 1"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -267,7 +313,7 @@ Scanning files to send
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+        &copy; Copyright 2014, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
     </p>
   </div>
 

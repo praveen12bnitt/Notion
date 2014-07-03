@@ -65,41 +65,55 @@
             <ul>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted/installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/installation.html#running-notion">Running Notion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/installation.html#configuration">Configuration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/getting_started.html">Tutorial 1</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#create-a-user">Create a User</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#create-a-pool">Create a Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#working-with-the-pool">Working with the pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/anonymization.html">Tutorial 2</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/anonymization.html">Anonymziation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#anonymize-images">Anonymize Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/moving_images.html">Tutorial 3</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#moving-images">Moving images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#create-a-second-pool">Create a second Pool</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#create-anonymization-rules">Create Anonymization Rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#setting-lookup-values">Setting Lookup Values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#id1">Moving Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/moving_images.html">Using Connectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#configure-a-connector">Configure a Connector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#performing-a-query">Performing a Query</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted/use_cases.html">Use Cases</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#irb-pool">IRB Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#research-pacs">Research PACS</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Reference/reference.html">Reference Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#notion-concepts">Notion Concepts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#rest">REST</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#webapp">Webapp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#users-and-groups">Users and Groups</a></li>
 </ul>
 </li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Development/development.html">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
+</ul>
+</li>
 </ul>
 
         
@@ -137,13 +151,13 @@
 <p>This project exists to create a low-overhead DICOM storage system for researchers in radiology.  A full PACS system includes EMR integration, reading workstations, worklists, etc. and is outside the scope of Notion.  However, Notion provides several useful facilities for a department including multiple, independant &#8220;pools&#8221; of images, restrictions on access to images stored in pools, anonymization, simple installation, and web interface for administration.</p>
 <div class="section" id="why-use-notion">
 <h2>Why use Notion?<a class="headerlink" href="#why-use-notion" title="Permalink to this headline">¶</a></h2>
-<p>If you have a need to:</p>
+<p>Need to:</p>
 <ul class="simple">
-<li>store DICOM images, but do not want/have a dedicated research PACS</li>
-<li>anonymize DICOM images</li>
-<li>map Names, IDs and Accession numbers during anonymization</li>
-<li>maintain separation of image data across projects</li>
-<li>scale to 100&#8217;s of independant research projects</li>
+<li>store DICOM images, but do not want/have a dedicated research PACS?</li>
+<li>anonymize DICOM images?</li>
+<li>map Names, IDs and Accession numbers during anonymization?</li>
+<li>maintain separation of image data across projects?</li>
+<li>scale to 100&#8217;s of independent research projects?</li>
 </ul>
 </div>
 <div class="section" id="why-not-use-notion">
@@ -166,48 +180,96 @@
 <p>Depending on needs, one of the other systems may be a better fit.</p>
 </div>
 </div>
-<div class="section" id="contents">
-<h1>Contents:<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>Main documentation for Notion is in several different sections:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#site-docs"><em>User Documentation</em></a></li>
+<li><a class="reference internal" href="#feature-docs"><em>Features</em></a></li>
+<li><a class="reference internal" href="#concept-docs"><em>Concepts</em></a></li>
+</ul>
+<p>Information about development and administration of your own instance is also available:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#dev-docs"><em>Developer Documentation</em></a></li>
+<li><a class="reference internal" href="#ops-docs"><em>Operations Documentation</em></a></li>
+</ul>
+<div class="section" id="user-documentation">
+<span id="site-docs"></span><h2>User Documentation<a class="headerlink" href="#user-documentation" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted/installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/installation.html#running-notion">Running Notion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/installation.html#configuration">Configuration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/getting_started.html">Tutorial 1</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#create-a-user">Create a User</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#create-a-pool">Create a Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#working-with-the-pool">Working with the pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/anonymization.html">Tutorial 2</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/anonymization.html">Anonymziation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#anonymize-images">Anonymize Images</a></li>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted/moving_images.html">Tutorial 3</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#moving-images">Moving images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#create-a-second-pool">Create a second Pool</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#create-anonymization-rules">Create Anonymization Rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#setting-lookup-values">Setting Lookup Values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#id1">Moving Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted/moving_images.html">Using Connectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#configure-a-connector">Configure a Connector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/moving_images.html#performing-a-query">Performing a Query</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</div>
+<div class="section" id="features">
+<span id="feature-docs"></span><h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted/use_cases.html">Use Cases</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#irb-pool">IRB Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted/use_cases.html#research-pacs">Research PACS</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</div>
+<div class="section" id="concepts">
+<span id="concept-docs"></span><h2>Concepts<a class="headerlink" href="#concepts" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Reference/reference.html">Reference Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#notion-concepts">Notion Concepts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#rest">REST</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#webapp">Webapp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reference/reference.html#users-and-groups">Users and Groups</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</div>
+<div class="section" id="developer-documentation">
+<span id="dev-docs"></span><h2>Developer Documentation<a class="headerlink" href="#developer-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Development/development.html">Development</a></li>
 </ul>
+</div>
+</div>
+<div class="section" id="operations-documentation">
+<span id="ops-docs"></span><h2>Operations Documentation<a class="headerlink" href="#operations-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -227,7 +289,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+        &copy; Copyright 2014, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
     </p>
   </div>
 

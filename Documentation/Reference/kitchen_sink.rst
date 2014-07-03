@@ -1,5 +1,5 @@
 Holding place for interesting markup ideas
-======
+==========================================
 
 .. note::
    This is a note
@@ -14,7 +14,8 @@ Holding place for interesting markup ideas
 .. highlight:: java
 
 .. code-block:: java
-   for ( int i = 0; i < 10; i++ ) { System.out.println ( "hi" ); }
+
+  for ( int i = 0; i < 10; i++ ) { System.out.println ( "hi" ); }
 
 Keyboard sequences :kbd:`Control-x Control-s`
 
@@ -70,4 +71,3 @@ Footnotes [#fn1]_ is a footnote
 .. rubric:: Footnotes
 
 .. [#fn1] First note.
-
