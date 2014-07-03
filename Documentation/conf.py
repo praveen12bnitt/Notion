@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Notion: a PACS for researchers'
-copyright = u'2013, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
+copyright = u'2014, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
