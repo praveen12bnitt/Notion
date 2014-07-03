@@ -88,7 +88,7 @@ gulp.task('style', function() {
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'bower_components/jquery/jquery.js',
+    'bower_components/jquery/dist/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/vex/js/vex.dialog.js',
