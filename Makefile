@@ -2,7 +2,7 @@ include BuildProperties.properties
 build=$(build.major).$(build.minor).$(build.patch)
 versionDir=Notion-$(build)
 dir=zip-temp/$(versionDir)
-
+DATE := $(shell /bin/date +%F-%T)
 
 # The Log4j setup
 
@@ -28,4 +28,8 @@ server:
 	./gradlew jar
 
 sync:
-	rsync -arvz zip-temp/$(versionDir) qin@qia:/research/images/Notion
+	rsync -arvz zip-temp/$(versionDir)/ qin@qia:/research/images/Notion/$(versionDir)-$(DATE)
+	ssh qin@qia "cd /research/images/Notion ;ln -sfn $(versionDir)-$(DATE) Notion"
+
+restart:
+	ssh root@qia service notion restart

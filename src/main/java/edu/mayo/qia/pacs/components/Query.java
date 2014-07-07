@@ -275,6 +275,7 @@ public class Query {
         final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "fetch pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "fetch pending", queryKey);
+        template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) and DoFetch = 'F'", "", queryKey);
         Thread.currentThread().setName("Fetch " + device);
         PoolManager poolManager = Notion.context.getBean(PoolManager.class);
         PoolContainer poolContainer = poolManager.getContainer(pool.poolKey);
@@ -284,7 +285,7 @@ public class Query {
         for (final Item item : items) {
           for (final Result result : item.items) {
             if (!result.doFetch) {
-              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "not fetching", result.queryResultKey);
+              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "", result.queryResultKey);
               continue;
             }
             template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fetching", result.queryResultKey);
