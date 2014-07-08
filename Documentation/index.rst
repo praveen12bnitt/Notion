@@ -72,6 +72,7 @@ User Documentation
 
   GettingStarted/installation
   GettingStarted/getting_started
+  GettingStarted/dicom
   GettingStarted/anonymization
   GettingStarted/moving_images
 

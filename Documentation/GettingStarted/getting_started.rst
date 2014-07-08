@@ -211,4 +211,4 @@ And we receive one matching response containing 2 Series and 164 Instances (imag
 Next steps
 ----------
 
-The tutorial continues with :ref:`Anonymization <AnonymizationIntro>`
+The tutorial continues with :ref:`DICOM Configuration <DICOM>`
