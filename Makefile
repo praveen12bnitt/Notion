@@ -23,6 +23,7 @@ watch:
 
 install: dist
 	${MAKE} sync
+	${MAKE} restart
 
 server:
 	./gradlew jar
