@@ -30,7 +30,7 @@
 
   
     <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
-        <link rel="next" title="Concepts" href="../Reference/reference.html"/>
+        <link rel="next" title="Reference Guide" href="../Reference/reference.html"/>
         <link rel="prev" title="Using Connectors" href="moving_images.html"/>
 <link rel="stylesheet" href="../_static/notion.css" />
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
@@ -77,17 +77,11 @@
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#device-setup">Device Setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#store">Store</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#query">Query</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#retrieve">Retrieve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#example">Example</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="anonymization.html">Anonymziation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
@@ -105,11 +99,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Concepts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#pool">Pool</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#device">Device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#anonymization">Anonymization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#connector">Connectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
 </ul>
 </li>
 </ul>
@@ -118,9 +112,6 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#users-and-groups">Users and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
 </ul>
 </li>
@@ -165,7 +156,7 @@
 <div class="section" id="irb-pool">
 <span id="irbpoolusecase"></span><h2>IRB Pool<a class="headerlink" href="#irb-pool" title="Permalink to this headline">¶</a></h2>
 <p>A researcher has several Institutional Review Board approved projects.  Data for each project should be maintained separately, with limited access to the data.</p>
-<p>Notion supports this use case through the use of individual Pools created for each project.  Image data is not shared between Pools and <a class="reference internal" href="../Reference/operations.html#users-and-groups"><em>access can be restricted</em></a>.</p>
+<p>Notion supports this use case through the use of individual Pools created for each project.  Image data is not shared between Pools and <a class="reference internal" href="../Reference/reference.html#users-and-groups"><em>access can be restricted</em></a>.</p>
 </div>
 <div class="section" id="research-pacs">
 <span id="minipacsusecase"></span><h2>Research PACS<a class="headerlink" href="#research-pacs" title="Permalink to this headline">¶</a></h2>
@@ -180,7 +171,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../Reference/reference.html" class="btn btn-neutral float-right" title="Concepts">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../Reference/reference.html" class="btn btn-neutral float-right" title="Reference Guide">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="moving_images.html" class="btn btn-neutral" title="Using Connectors"><span class="fa fa-arrow-circle-left"></span> Previous</a>

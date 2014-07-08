@@ -77,17 +77,25 @@
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#device-setup">Device Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html#notion-s-services">Notion&#8217;s Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#device">Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dicom.html#store">Store</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dicom.html#query">Query</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dicom.html#retrieve">Retrieve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dicom.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html#example">Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#query-store">Query &amp; Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#retrive">Retrive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#match-examples">Match Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="anonymization.html">Anonymziation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
@@ -105,11 +113,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Concepts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#pool">Pool</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#device">Device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#anonymization">Anonymization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#connector">Connectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
 </ul>
 </li>
 </ul>
@@ -118,9 +126,6 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#users-and-groups">Users and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
 </ul>
 </li>
@@ -164,7 +169,7 @@
 <h2>Create a User<a class="headerlink" href="#create-a-user" title="Permalink to this headline">¶</a></h2>
 <p>Click the <em>Register</em> link on the landing page, and create a new user.  For this tutorial, <tt class="docutils literal"><span class="pre">notion</span></tt> will be the username.</p>
 <a class="reference internal image-reference" href="../_images/register_user.png"><img alt="../_images/register_user.png" class="align-center" src="../_images/register_user.png" style="width: 512px;" /></a>
-<p>The new user will automatically be logged in.  The first user of a new Notion installation will be automatically granted administrator authorization.  <a class="reference internal" href="../Reference/operations.html#users-and-groups"><em>Users and Groups</em></a> gives more detail on configuration of other users and permissions for individual pools.</p>
+<p>The new user will automatically be logged in.  The first user of a new Notion installation will be automatically granted administrator authorization.  <a class="reference internal" href="../Reference/reference.html#users-and-groups"><em>Users and Groups</em></a> gives more detail on configuration of other users and permissions for individual pools.</p>
 <div class="section" id="goal">
 <h3>Goal<a class="headerlink" href="#goal" title="Permalink to this headline">¶</a></h3>
 <p>The goal of this tutorial is to introduce several of Notion&#8217;s concepts including <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a>, <a class="reference internal" href="../Reference/reference.html#devices"><em>Device</em></a>, and <a class="reference internal" href="../Reference/reference.html#anonymization"><em>Anonymization</em></a>.  Once a simple <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a> is configured, test images will be sent to the Pool, both with and without anonymization.</p>
