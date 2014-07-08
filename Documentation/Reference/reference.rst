@@ -1,17 +1,13 @@
-Reference Guide
-===============
-
 .. _Concepts:
 
-Notion Concepts
----------------
-
+Concepts
+========
 
 .. _Pools:
 .. _Pool:
 
 Pool
-^^^^
+----
 
 A Pool is a collection of DICOM images, anonymization rules and Devices to manage access.
 
@@ -19,14 +15,14 @@ A Pool is a collection of DICOM images, anonymization rules and Devices to manag
 .. _Device:
 
 Device
-^^^^^^^
+------
 
 A Device consists of a descriptive name, `Application Entity Title <https://www.dabsoft.ch/dicom/8/C.1/>`_ (which must be unique for the Pool, and is abbreviated AETitle), Hostname, Port and a freetext Description.  The AETitle is used to restrict access to images using DICOM protocols.  The AETitle and Hostname must match incoming DICOM connections to the Pool to allow access.  Both AETitle and Hostname are matched using Java's regular expressions.  For instance ``.*`` matches any entry.
 
 .. _Anonymization:
 
 Anonymization
-^^^^^^^^^^^^^
+-------------
 
 Anonymization is handled in two stages.  Each incoming image is processed separately by the two stages.  First, an instance of the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_ processes images first according to its configuration file that is editable via the web app (see :ref:`AnonymizationIntro` for details).  The second stage is a series of custom `Javascript <http://en.wikipedia.org/wiki/JavaScript>`_ commands that are run on specific tags.  The Javascript has access to a custom map called ``tags`` that contains the original tags of the incoming image.  Javascript also has access to an object (``anonymization``) containing several useful methods for anonymization.  The methods are:
 
@@ -55,7 +51,7 @@ The :ref:`anonymization tutorial <AnonymizationIntro>` contains more details.
 .. _Connector:
 
 Connectors
-^^^^^^^^^^
+----------
 
 Notion supports the concept of Connectors, that is a specific Pool that is configured to query and receive DICOM images from a PACS system.  It is easier for PACS administrators to configure to send to a single Notion Pool, rather than configuring each individual Pool.  A Connector is a configuration involving several pools.
 
@@ -65,34 +61,3 @@ Notion supports the concept of Connectors, that is a specific Pool that is confi
 
 
 The ``Query Pool`` will be used to query the ``Query Device`` (often a hospital PACS).  ``Receiving Pool`` will be used for moving the images into Notion.  The PACS will be given a ``C-MOVE`` request to move images to the ``Receiving Pool``.  Connectors can be used by any Pool in Notion, allowing researchers to query and retrieve images from remote PACS to their pool.  See :ref:`UsingConnectors` for more details.
-
-.. _DICOMConfig:
-
-DICOM Configuration
--------------------
-
-Notion's DICOM listener supports ``C-ECHO``, ``C-FIND``, ``C-STORE`` and ``C-MOVE``.  The listening port is specified in the ``notion.yml`` configuration file and is 11117 by default.  All other DICOM configuration is by Pools and Devices.
-
-.. _shiro-config:
-
-Authentication and Authorization Configuration
-----------------------------------------------
-
-
-.. _users-and-groups:
-
-Users and Groups
-----------------
-
-Notion supports multiple user accounts.  The first user created has Administrative rights and can grant those rights to other users.  User rights can be edited on the `Users` tab in the menu bar.  Administrators can see all Pools, configure Connectors, edit Groups and change users permissions.
-
-Groups
-^^^^^^
-
-A Group is a collection of users.  Groups can be granted PoolAdmin and Coordinator rights to a Pool.
-
-PoolAdmin
-  A PoolAdmin is allowed to change access to the pool, edit details, add Devices and change Anonymization settiongs.  PoolAdmins rights include all rights granted to Coordinators.
-
-Coordinators
-  A Coordinator has limited access to a Pool.  The Coordinator role is designed to let users query images from a Connector and download the resulting images.
