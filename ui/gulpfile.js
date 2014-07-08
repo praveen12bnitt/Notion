@@ -18,7 +18,6 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     lr = require('tiny-lr'),
     streamqueue = require('streamqueue'),
-    handlebars = require('gulp-ember-handlebars'),
     styl = require('gulp-styl'),
     stylus = require('gulp-stylus'),
     uglify = require('gulp-uglify'),
@@ -55,7 +54,7 @@ gulp.task('docs', function() {
   });
 })
 
-// Handlebars / ember / all the rest
+// All the rest
 gulp.task('app', ['assets'], function() {
 
   // Just for backbone
@@ -88,7 +87,7 @@ gulp.task('style', function() {
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'bower_components/jquery/dist/jquery.js',
+    'bower_components/jquery/jquery.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/angular-ui-router/release/angular-ui-router.js',
@@ -98,7 +97,6 @@ gulp.task('vendor', function() {
     'bower_components/angular/angular.js',
     'bower_components/angular-route/angular-route.js',
     'bower_components/underscore/underscore.js',
-    'bower_components/handlebars/handlebars.js',
     'bower_components/angular-bindonce/bindonce.js',
     'bower_components/w11k-dropdownToggle/dist/w11k-dropdownToggle.js',
     'bower_components/w11k-select/dist/w11k-select.js',

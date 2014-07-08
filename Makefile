@@ -18,8 +18,8 @@ dist: build
 
 build:
 	rm -rf src/main/resources/public
-	(cd ui/ && make install)
-	(cd Documentation && make install)
+	(cd ui/ && make clean install)
+	(cd Documentation && make clean install)
 
 watch:
 	(cd Documentation && while :; do make html ; sleep 5s; done)
