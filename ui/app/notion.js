@@ -19,7 +19,6 @@ function (str){
 };
 
 // Notifications
-$.notify.defaults({ className: "success" });
 
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
 
@@ -455,10 +454,10 @@ notionApp.config(function ($httpProvider) {
           $scope.saveCTP = function() {
             $scope.ctp.set('script', $scope.ctpScript);
             $scope.ctp.sync("update", $scope.ctp).done ( function(data) {
-              $.notify ( "Saved CTP script" )
+              toastr.success ( "Saved CTP script" )
             })
             .fail ( function ( xhr, status, error ) {
-              $.notify ( "Failed to save script: " + status, "error");
+              toastr.error ( "Failed to save script: " + status );
             });
           }
 
@@ -473,10 +472,10 @@ notionApp.config(function ($httpProvider) {
             console.log ( "Saving script ", $scope.script)
             $scope.scriptModel.set("script", $scope.script)
             $scope.scriptModel.sync('update', $scope.scriptModel).done ( function(data) {
-              $.notify ( "Saved Anonymization script" )
+              toastr.success ( "Saved Anonymization script" )
             })
             .fail ( function ( xhr, status, error ) {
-              $.notify ( "Failed to save script: " + status, "error");
+              toastr.error ( "Failed to save script: " + status );
             });
           };
           $scope.aceLoaded = function(editor) {
@@ -509,7 +508,7 @@ notionApp.config(function ($httpProvider) {
                 console.log("Tried script, got back ", data)
                 $scope.$apply ( function() {
                   $scope.tryResult = data.result
-                  $.notify("Script result: " + data.result)
+                  toastr.success("Script result: " + data.result)
                 })
               }
             });

@@ -26,6 +26,7 @@
     "angular-ui-ace": "~0.1.0",
     "font-awesome": "~4.0.3",
     "w11k-select": "~0.4.4",
-    "notifyjs": "~0.3.2"
+    "notifyjs": "~0.3.2",
+    "toastr": "~2.0.3"
   }
 }

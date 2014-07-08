@@ -9,10 +9,10 @@ notionApp.controller ( 'UserController', function($scope,$timeout,$stateParams, 
     user.set ( 'isAdmin', !user.get('isAdmin'))
     user.save()
     .done ( function(data) {
-      $.notify ( "Saved " + user.get('username') + " " + user.get("email"))
+      toastr.success ("Saved " + user.get('username') + " " + user.get("email"))
     })
     .fail ( function ( xhr, status, error ) {
-      $.notify ( "Failed to save: " + status, "error");
+      toastr.error ( "Failed to save: " + status );
     });
   }
 });

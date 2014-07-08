@@ -76,7 +76,8 @@ gulp.task('style', function() {
   gulp.src([
     'app/styles/*.css',
     'bower_components/font-awesome/css/font-awesome*.css',
-    'bower_components/w11k-select/dist/w11k-select.css'
+    'bower_components/w11k-select/dist/w11k-select.css',
+    'bower_components/toastr/toastr.css'
     ])
   .pipe(gulp.dest('public/css'));
 
@@ -87,7 +88,8 @@ gulp.task('style', function() {
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'bower_components/jquery/jquery.js',
+    'bower_components/jquery/dist/jquery.js',
+    'bower_components/toastr/toastr.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
     'bower_components/angular-ui-router/release/angular-ui-router.js',
