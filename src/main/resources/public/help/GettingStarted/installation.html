@@ -183,48 +183,19 @@
 <div class="section" id="configuration">
 <span id="cli"></span><h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
 <p>Notion is configured through a YAML file.  A starting configuration is included in the distribution.  The Notion-specific sections are described below.  Additional configuration options may be found at <a class="reference external" href="http://dropwizard.io/manual/configuration.html">http://dropwizard.io/manual/configuration.html</a></p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31</pre></div></td><td class="code"><div class="highlight"><pre># Creates a web interface to the database, if set to a particular port.
+<div class="highlight-python"><pre>
+# Creates a web interface to the database, if set to a particular port.
 dbWeb: 8084
 
 # Database connection info
 # For simplicity, Notion uses the Derby embedded database, see
 # http://db.apache.org/derby/ for more information.
-# The directory where the DB in installed is specified after the &#39;directory:&#39;
+# The directory where the DB in installed is specified after the 'directory:'
 # portion of the URL.
 database:
   driverClass: org.apache.derby.jdbc.EmbeddedDriver
   url: jdbc:derby:directory:NotionPACS/DB;create=true
-  validationQuery: &quot;VALUES 1&quot;
+  validationQuery: "VALUES 1"
   user:
   password:
   autoCommitByDefault: true
@@ -243,9 +214,9 @@ logging:
 
 # Configure user authentication
 shiro:
-  iniConfigs: [&quot;classpath:shiro.ini&quot;]
-</pre></div>
-</td></tr></table></div>
+  iniConfigs: ["classpath:shiro.ini"]
+</pre>
+</div>
 <div class="section" id="db-web-interface">
 <h3>DB Web Interface<a class="headerlink" href="#db-web-interface" title="Permalink to this headline">¶</a></h3>
 <p>The <tt class="docutils literal"><span class="pre">dbWeb</span></tt> option gives a port where Notion listens and shows a web interface to the embedded Derby database.  If omitted, Notion does not specify the DB interface.  More details are at <a class="reference internal" href="../Reference/operations.html#dbweb"><em>DBWeb Interface</em></a>.</p>
