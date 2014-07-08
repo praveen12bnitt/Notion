@@ -55,6 +55,16 @@ public final class Pool {
     }
   };
 
+  @Transient
+  public String getHost() {
+    if (Notion.context != null) {
+      return Notion.context.getBean("configuration", NotionConfiguration.class).notion.host;
+    } else {
+      return "unknown";
+    }
+
+  }
+
   @JsonIgnore
   public Script getScript() {
     return script;
