@@ -17,3 +17,6 @@ bower_components: bower.json
 
 docs:
 	(cd ../Documentation && make html)
+
+clean:
+	rm -rf build

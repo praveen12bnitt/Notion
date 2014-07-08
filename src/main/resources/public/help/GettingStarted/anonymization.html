@@ -31,7 +31,7 @@
   
     <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
         <link rel="next" title="Using Connectors" href="moving_images.html"/>
-        <link rel="prev" title="Getting Started" href="getting_started.html"/>
+        <link rel="prev" title="DICOM Configuration" href="dicom.html"/>
 <link rel="stylesheet" href="../_static/notion.css" />
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
 
@@ -77,11 +77,17 @@
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#device-setup">Device Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#retrieve">Retrieve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#example">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Anonymziation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#anonymization">Anonymization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#anonymize-images">Anonymize Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
@@ -99,11 +105,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#pool">Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#device">Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#connector">Connectors</a></li>
 </ul>
 </li>
 </ul>
@@ -112,6 +118,9 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#users-and-groups">Users and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
 </ul>
 </li>
@@ -148,9 +157,7 @@
           <div role="main">
             
   <div class="section" id="anonymziation">
-<h1>Anonymziation<a class="headerlink" href="#anonymziation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="anonymization">
-<span id="anonymizationintro"></span><h2>Anonymization<a class="headerlink" href="#anonymization" title="Permalink to this headline">¶</a></h2>
+<span id="anonymizationintro"></span><h1>Anonymziation<a class="headerlink" href="#anonymziation" title="Permalink to this headline">¶</a></h1>
 <p>To turn on Anonymization, click the <span class="tt">Edit</span> icon next to the Pool info on this page <a class="reference external" href="http://localhost:8080/index.html#/pools/pool/1">http://localhost:8080/index.html#/pools/pool/1</a>.  In the dialog box, check <span class="tt">Use Anonymizer</span>, click <span class="tt">Save changes</span> and <span class="tt">close</span>.  Now our Pool display looks somewhat different with two new sections: <span class="tt">CTP Configuration</span> and <span class="tt">Anonymization Rules</span>.  Opening up the <span class="tt">CTP Configuration</span> reveals an editor for the CTP configuration used by the pool.  The particular file is for the <a class="reference external" href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">CTP DICOM anonymizer</a> configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/ctp_configuration.png"><img alt="../_images/ctp_configuration.png" src="../_images/ctp_configuration.png" style="width: 768px;" /></a>
@@ -171,7 +178,6 @@
  <span class="c1">// Return the tags hash</span>
 <span class="nx">tags</span><span class="p">;</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="scripts">
 <h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h2>
@@ -289,10 +295,6 @@ Scanning files to send
 </div>
 <p>If the same images were sent again, they would receive the same PatientID, AccessionNumber and Study Description.</p>
 </div>
-<div class="section" id="next-steps">
-<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="moving_images.html#usingconnectors"><em>next tutorial</em></a> is using <a class="reference internal" href="../Reference/reference.html#connectors"><em>Connectors</em></a> between pools.</p>
-</div>
 </div>
 
 
@@ -304,7 +306,7 @@ Scanning files to send
         <a href="moving_images.html" class="btn btn-neutral float-right" title="Using Connectors">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="dicom.html" class="btn btn-neutral" title="DICOM Configuration"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

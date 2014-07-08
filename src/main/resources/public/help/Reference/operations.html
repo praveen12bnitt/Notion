@@ -76,11 +76,17 @@
 <li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#next-steps">Next steps</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/dicom.html">DICOM Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#device-setup">Device Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#retrieve">Retrieve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#example">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../GettingStarted/anonymization.html">Anonymziation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#anonymization">Anonymization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#anonymize-images">Anonymize Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../GettingStarted/moving_images.html">Using Connectors</a><ul>
@@ -98,11 +104,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#notion-concepts">Notion Concepts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reference.html#users-and-groups">Users and Groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#pool">Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#device">Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#connector">Connectors</a></li>
 </ul>
 </li>
 </ul>
@@ -111,6 +117,9 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#users-and-groups">Users and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dbweb-interface">DBWeb Interface</a></li>
 </ul>
 </li>
@@ -148,6 +157,27 @@
             
   <div class="section" id="operations">
 <h1>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dicom-configuration">
+<span id="dicomconfig"></span><h2>DICOM Configuration<a class="headerlink" href="#dicom-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Notion&#8217;s DICOM listener supports <tt class="docutils literal"><span class="pre">C-ECHO</span></tt>, <tt class="docutils literal"><span class="pre">C-FIND</span></tt>, <tt class="docutils literal"><span class="pre">C-STORE</span></tt> and <tt class="docutils literal"><span class="pre">C-MOVE</span></tt>.  The listening port is specified in the <tt class="docutils literal"><span class="pre">notion.yml</span></tt> configuration file and is 11117 by default.  All other DICOM configuration is by Pools and Devices.</p>
+</div>
+<div class="section" id="authentication-and-authorization-configuration">
+<span id="shiro-config"></span><h2>Authentication and Authorization Configuration<a class="headerlink" href="#authentication-and-authorization-configuration" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="users-and-groups">
+<span id="id1"></span><h2>Users and Groups<a class="headerlink" href="#users-and-groups" title="Permalink to this headline">¶</a></h2>
+<p>Notion supports multiple user accounts.  The first user created has Administrative rights and can grant those rights to other users.  User rights can be edited on the <cite>Users</cite> tab in the menu bar.  Administrators can see all Pools, configure Connectors, edit Groups and change users permissions.</p>
+<div class="section" id="groups">
+<h3>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
+<p>A Group is a collection of users.  Groups can be granted PoolAdmin and Coordinator rights to a Pool.</p>
+<dl class="docutils">
+<dt>PoolAdmin</dt>
+<dd>A PoolAdmin is allowed to change access to the pool, edit details, add Devices and change Anonymization settiongs.  PoolAdmins rights include all rights granted to Coordinators.</dd>
+<dt>Coordinators</dt>
+<dd>A Coordinator has limited access to a Pool.  The Coordinator role is designed to let users query images from a Connector and download the resulting images.</dd>
+</dl>
+</div>
+</div>
 <div class="section" id="dbweb-interface">
 <span id="dbweb"></span><h2>DBWeb Interface<a class="headerlink" href="#dbweb-interface" title="Permalink to this headline">¶</a></h2>
 </div>
