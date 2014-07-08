@@ -140,6 +140,7 @@ gulp.task('lr-server', function() {
   var app = express();
   app.use ( connectlr() );
   app.use(express.static('../Documentation/_build/html'));
+  console.log ( "\nStarting documentation server on \n\thttp://localhost:8400\n")
   app.listen(8400);
 
 });
