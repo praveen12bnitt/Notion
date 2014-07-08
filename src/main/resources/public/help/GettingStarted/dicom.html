@@ -1,0 +1,345 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>DICOM Configuration &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
+        <link rel="next" title="Anonymziation" href="anonymization.html"/>
+        <link rel="prev" title="Getting Started" href="getting_started.html"/>
+<link rel="stylesheet" href="../_static/notion.css" />
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+ 
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> Notion: a PACS for researchers</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#running-notion">Running Notion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#create-a-user">Create a User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#create-a-pool">Create a Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#working-with-the-pool">Working with the pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">DICOM Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#device-setup">Device Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieve">Retrieve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="anonymization.html">Anonymziation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#scripts">Scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#configure-a-connector">Configure a Connector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moving_images.html#performing-a-query">Performing a Query</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#irb-pool">IRB Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="use_cases.html#research-pacs">Research PACS</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Development/development.html">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Notion: a PACS for researchers</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>DICOM Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="dicom-configuration">
+<span id="dicom"></span><h1>DICOM Configuration<a class="headerlink" href="#dicom-configuration" title="Permalink to this headline">¶</a></h1>
+<p>For those new to DICOM, the <a class="reference external" href="http://en.wikipedia.org/wiki/DICOM">Wikipedia DICOM Article</a> is especially helpful in understanding the different concepts discussed.</p>
+<p>Notion operates multiple Application Entities as Service Class Providers.  An Application Entity eithor provides a service or uses a service (and sometimes both).  Each Pool in Notion is configured as an Application Entity providing Store and Query/Retrieve.  External DICOM Application Entities can send images to Pools by using the Pool&#8217;s Application Entity Title, hostname and port.  The Query service enables other Application Entities to issue C-FIND requests to a Pool and retrieve a list of studies in the Pool.  The Retrive service of a Notion Pool sends images outbound to a properly specifed remote Application Entity (a Device).</p>
+<div class="section" id="device-setup">
+<h2>Device Setup<a class="headerlink" href="#device-setup" title="Permalink to this headline">¶</a></h2>
+<p>Access to a Pool&#8217;s services (Store, Query and Retrieve) are controlled by the list of Devices associated with a Pool.  Each operation on a Pool requires a matching Device to be found before the operation is allowed.  A Device consists of 4 elements:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">Application</span> <span class="pre">Entity</span> <span class="pre">Title</span></tt></dt>
+<dd>The 16 character name of the Application Entity</dd>
+<dt><tt class="docutils literal"><span class="pre">Hostname</span></tt></dt>
+<dd>The IP address (numeric or text) of the Application Entity</dd>
+<dt><tt class="docutils literal"><span class="pre">Port</span></tt></dt>
+<dd>Port where the Application Entity is listening.</dd>
+<dt><tt class="docutils literal"><span class="pre">Description</span></tt></dt>
+<dd>An optional description of the Device.</dd>
+</dl>
+<a class="reference internal image-reference" href="../_images/new_device.png"><img alt="../_images/new_device.png" class="align-center" src="../_images/new_device.png" style="width: 300px;" /></a>
+<p>To find a matching Device, Notion examines the incoming request, trying to find a match in the list of Devices.  Matches are found using <a class="reference external" href="http://www.vogella.com/tutorials/JavaRegularExpressions/article.html">Java&#8217;s regular expression rules</a>.  For instance, the incoming Application Entity <tt class="docutils literal"><span class="pre">Incoming</span></tt> will match <tt class="docutils literal"><span class="pre">Incoming</span></tt>, <tt class="docutils literal"><span class="pre">Incom.*</span></tt> and <tt class="docutils literal"><span class="pre">.*</span></tt>.  The Application Entity Title and Hostname are matched according to the regular expression rules.  Port is not matched.</p>
+<p>If a matching Device is not found, the incoming operation is rejected.  This is the only available DICOM mechanism for authorization, and does not allow very fine grain access controls.</p>
+</div>
+<div class="section" id="store">
+<h2>Store<a class="headerlink" href="#store" title="Permalink to this headline">¶</a></h2>
+<p>The Store service is invoked when a remote Application Entity attempts to send images to a Notion Pool.  The receiving Pool must be specified as the <tt class="docutils literal"><span class="pre">Called</span> <span class="pre">Application</span> <span class="pre">Entity</span> <span class="pre">Title</span></tt> and must match (exact and case-sensitive).  Notion matches the <tt class="docutils literal"><span class="pre">Calling</span> <span class="pre">Application</span> <span class="pre">Entity</span> <span class="pre">Title</span></tt> and remote Hostname against the list of Devices defined in the Pool according to the rules above.  If the Device is defined to Notion, the images are accepted and anonymized if the Pool is so configured.</p>
+</div>
+<div class="section" id="query">
+<h2>Query<a class="headerlink" href="#query" title="Permalink to this headline">¶</a></h2>
+<p>The Query service is invoked when a remote Application Entity attempts to query a Notion Pool.    The queried Pool must be specified as the <tt class="docutils literal"><span class="pre">Called</span> <span class="pre">Application</span> <span class="pre">Entity</span> <span class="pre">Title</span></tt> and must match (exact and case-sensitive).  Notion matches the <tt class="docutils literal"><span class="pre">Calling</span> <span class="pre">Application</span> <span class="pre">Entity</span> <span class="pre">Title</span></tt> and remote Hostname against the list of Devices defined in the Pool according to the rules above.  If the Device is matched, the DICOM query is completed.  Notion supports Exam and Series queries.</p>
+</div>
+<div class="section" id="retrieve">
+<h2>Retrieve<a class="headerlink" href="#retrieve" title="Permalink to this headline">¶</a></h2>
+<p>The Query service is invoked when a remote Application Entity requests Notion to send images.  In this case two matches are required, the Application Entity requesting the retrive and the destination Application Entity.  The destination Application Entity&#8217;s Title, Hostname and Port are used to initiate the DICOM send from Notion.  Thus the destination Application Entity is generally not a regular expression.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Suppose a Pool (Application Entity Title of <tt class="docutils literal"><span class="pre">femur</span></tt>) has the following Devices defined (Application Entity Title abbreviated by AET):</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="22%" />
+<col width="5%" />
+<col width="64%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Title</td>
+<td>Hostname</td>
+<td>Port</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>.*</td>
+<td>head.hospital.edu</td>
+<td>0</td>
+<td>Any AET from <tt class="docutils literal"><span class="pre">head.hospital.edu</span></tt></td>
+</tr>
+<tr class="row-odd"><td>radius</td>
+<td>arm.hospital.edu</td>
+<td>1234</td>
+<td>The <tt class="docutils literal"><span class="pre">radius</span></tt> AET on <tt class="docutils literal"><span class="pre">arm.hospital.edu</span></tt></td>
+</tr>
+<tr class="row-even"><td>cranium</td>
+<td>.*.hospital.edu</td>
+<td>0</td>
+<td><tt class="docutils literal"><span class="pre">cranium</span></tt> AET from any host in the hospital domain</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="query-store">
+<h3>Query &amp; Store<a class="headerlink" href="#query-store" title="Permalink to this headline">¶</a></h3>
+<p>Based on the first Device, any AET coming from <tt class="docutils literal"><span class="pre">head.hospital.edu</span></tt> can Store and Query the <tt class="docutils literal"><span class="pre">femur</span></tt> Pool, as can <tt class="docutils literal"><span class="pre">radius</span></tt> from <tt class="docutils literal"><span class="pre">arm.hospital.edu</span></tt>.  The <tt class="docutils literal"><span class="pre">cranium</span></tt> AET can be matched against any hostname in the <tt class="docutils literal"><span class="pre">hospital.edu</span></tt> domain, thus any host can query <tt class="docutils literal"><span class="pre">femur</span></tt>, if the use an AET of <tt class="docutils literal"><span class="pre">cranium</span></tt>.</p>
+</div>
+<div class="section" id="retrive">
+<h3>Retrive<a class="headerlink" href="#retrive" title="Permalink to this headline">¶</a></h3>
+<p>The only valid retrieve destination Device is <tt class="docutils literal"><span class="pre">radius</span></tt> listening at port <tt class="docutils literal"><span class="pre">1234</span></tt> on <tt class="docutils literal"><span class="pre">arm.hospital.edu</span></tt>.  The other two Devices do not have valid ports, and the regular expression in the <tt class="docutils literal"><span class="pre">cranium</span></tt> Device makes it impossible to send images.</p>
+</div>
+<div class="section" id="match-examples">
+<h3>Match Examples<a class="headerlink" href="#match-examples" title="Permalink to this headline">¶</a></h3>
+<p>Each Application Entity is represented in the form <tt class="docutils literal"><span class="pre">AET&#64;Hostname:Port</span></tt> with matches based on the above table shown.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="5%" />
+<col width="5%" />
+<col width="7%" />
+<col width="52%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Application Entity</td>
+<td>Store</td>
+<td>Query</td>
+<td>Retrive</td>
+<td>Remarks</td>
+</tr>
+<tr class="row-even"><td>sternum&#64;chest.hospital.edu:104</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>Partial match <tt class="docutils literal"><span class="pre">.*&#64;head.hospital.edu</span></tt> (not Hostname)</td>
+</tr>
+<tr class="row-odd"><td>mandible&#64;head.hospital.edu:104</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>Matches <tt class="docutils literal"><span class="pre">.*&#64;head.hospital.edu</span></tt></td>
+</tr>
+<tr class="row-even"><td>cranium&#64;leg.hospital.edu:1234</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>Matches <tt class="docutils literal"><span class="pre">cranium&#64;.*.hospital.edu</span></tt></td>
+</tr>
+<tr class="row-odd"><td>radius&#64;arm.hospital.edu</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>Exact match <tt class="docutils literal"><span class="pre">radius&#64;arm.hospital.edu:1234</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="anonymization.html" class="btn btn-neutral float-right" title="Anonymziation">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -7,6 +7,12 @@ notionApp.controller ( 'UserController', function($scope,$timeout,$stateParams, 
   });
   $scope.toggleAdmin = function ( user ) {
     user.set ( 'isAdmin', !user.get('isAdmin'))
-    user.save();
+    user.save()
+    .done ( function(data) {
+      $.notify ( "Saved " + user.get('username') + " " + user.get("email"))
+    })
+    .fail ( function ( xhr, status, error ) {
+      $.notify ( "Failed to save: " + status, "error");
+    });
   }
 });
