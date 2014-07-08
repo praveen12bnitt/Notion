@@ -42,7 +42,7 @@ email:
 
 
 notion:
-  host: myst.mayo.edu:8080
+  host: myst.mayo.edu
   dicomPort: 11117
   imageDirectory: ../Working/LocalPACS/Images
 
