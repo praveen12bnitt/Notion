@@ -19,7 +19,11 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
   }
 
   $scope.groupCollection.fetch({
-    success: $scope.updateModel
+    success: function() {
+      $scope.$apply ( function() {
+        $scope.updateModel();
+      })
+    }
   });
 
   $scope.saveGroup = function ( group ) {
@@ -27,7 +31,13 @@ notionApp.controller ( 'GroupController', function($scope,$timeout,$stateParams,
     var g = new GroupModel();
     g.url = "/rest/authorization/group/" + (group.groupKey || "")
     g.set( group )
-    g.save();
+    g.save()
+    .done ( function(data) {
+      toastr.success ("Updated group: " + g.get('name') + " with " + group.userKeys.length + " users")
+    })
+    .fail ( function ( xhr, status, error ) {
+      toastr.error ( "Failed to save group: " + status );
+    });
   }
 
   $scope.talkToMe = function() {
@@ -87,6 +97,7 @@ $scope.deleteGroup = function(group) {
           group.save({}, { success: function() {
             $modalInstance.close();
             $scope.updateModel();
+            toastr.success("Saved group " + group.get('name'))
           }});
         };
         $scope.cancel = function() { $modalInstance.dismiss() };
