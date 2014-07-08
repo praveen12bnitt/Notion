@@ -18,7 +18,6 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     lr = require('tiny-lr'),
     streamqueue = require('streamqueue'),
-    handlebars = require('gulp-ember-handlebars'),
     styl = require('gulp-styl'),
     stylus = require('gulp-stylus'),
     uglify = require('gulp-uglify'),
@@ -55,7 +54,7 @@ gulp.task('docs', function() {
   });
 })
 
-// Handlebars / ember / all the rest
+// All the rest
 gulp.task('app', ['assets'], function() {
 
   // Just for backbone
@@ -77,7 +76,8 @@ gulp.task('style', function() {
   gulp.src([
     'app/styles/*.css',
     'bower_components/font-awesome/css/font-awesome*.css',
-    'bower_components/w11k-select/dist/w11k-select.css'
+    'bower_components/w11k-select/dist/w11k-select.css',
+    'bower_components/toastr/toastr.css'
     ])
   .pipe(gulp.dest('public/css'));
 
@@ -89,20 +89,16 @@ gulp.task('style', function() {
 gulp.task('vendor', function() {
   gulp.src([
     'bower_components/jquery/dist/jquery.js',
+    'bower_components/toastr/toastr.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
-    'bower_components/vex/js/vex.dialog.js',
-    'bower_components/vex/js/vex.js',
     'bower_components/angular-ui-router/release/angular-ui-router.js',
     'bower_components/angular-ui-select/dist/select.js',
-    'bower_components/angularAMD/angularAMD.js',
-    'bower_components/angularAMD/ngload.js',
-    'bower_components/requirejs/require.js',
     'bower_components/backbone/backbone.js',
+    'bower_components/notifyjs/dist/notify-combined.js',
     'bower_components/angular/angular.js',
     'bower_components/angular-route/angular-route.js',
     'bower_components/underscore/underscore.js',
-    'bower_components/handlebars/handlebars.js',
     'bower_components/angular-bindonce/bindonce.js',
     'bower_components/w11k-dropdownToggle/dist/w11k-dropdownToggle.js',
     'bower_components/w11k-select/dist/w11k-select.js',
@@ -140,6 +136,7 @@ gulp.task('lr-server', function() {
   var app = express();
   app.use ( connectlr() );
   app.use(express.static('../Documentation/_build/html'));
+  console.log ( "\nStarting documentation server on \n\thttp://localhost:8400\n")
   app.listen(8400);
 
 });

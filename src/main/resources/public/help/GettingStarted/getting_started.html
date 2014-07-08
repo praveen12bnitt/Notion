@@ -30,7 +30,7 @@
 
   
     <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
-        <link rel="next" title="Anonymziation" href="anonymization.html"/>
+        <link rel="next" title="DICOM Configuration" href="dicom.html"/>
         <link rel="prev" title="Installation" href="installation.html"/>
 <link rel="stylesheet" href="../_static/notion.css" />
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
@@ -77,11 +77,17 @@
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#device-setup">Device Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#retrieve">Retrieve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dicom.html#example">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="anonymization.html">Anonymziation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymization">Anonymization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#scripts">Scripts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="anonymization.html#anonymize-images">Anonymize Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="anonymization.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="moving_images.html">Using Connectors</a><ul>
@@ -99,11 +105,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Reference Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#notion-concepts">Notion Concepts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#dicom-configuration">DICOM Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#users-and-groups">Users and Groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/reference.html">Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#pool">Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#device">Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/reference.html#connector">Connectors</a></li>
 </ul>
 </li>
 </ul>
@@ -112,6 +118,9 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Reference/operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#users-and-groups">Users and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Reference/operations.html#dbweb-interface">DBWeb Interface</a></li>
 </ul>
 </li>
@@ -155,7 +164,7 @@
 <h2>Create a User<a class="headerlink" href="#create-a-user" title="Permalink to this headline">¶</a></h2>
 <p>Click the <em>Register</em> link on the landing page, and create a new user.  For this tutorial, <tt class="docutils literal"><span class="pre">notion</span></tt> will be the username.</p>
 <a class="reference internal image-reference" href="../_images/register_user.png"><img alt="../_images/register_user.png" class="align-center" src="../_images/register_user.png" style="width: 512px;" /></a>
-<p>The new user will automatically be logged in.  The first user of a new Notion installation will be automatically granted administrator authorization.  <a class="reference internal" href="../Reference/reference.html#users-and-groups"><em>Users and Groups</em></a> gives more detail on configuration of other users and permissions for individual pools.</p>
+<p>The new user will automatically be logged in.  The first user of a new Notion installation will be automatically granted administrator authorization.  <a class="reference internal" href="../Reference/operations.html#users-and-groups"><em>Users and Groups</em></a> gives more detail on configuration of other users and permissions for individual pools.</p>
 <div class="section" id="goal">
 <h3>Goal<a class="headerlink" href="#goal" title="Permalink to this headline">¶</a></h3>
 <p>The goal of this tutorial is to introduce several of Notion&#8217;s concepts including <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a>, <a class="reference internal" href="../Reference/reference.html#devices"><em>Device</em></a>, and <a class="reference internal" href="../Reference/reference.html#anonymization"><em>Anonymization</em></a>.  Once a simple <a class="reference internal" href="../Reference/reference.html#pools"><em>Pool</em></a> is configured, test images will be sent to the Pool, both with and without anonymization.</p>
@@ -330,7 +339,7 @@ INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</s
 </div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
-<p>The tutorial continues with <a class="reference internal" href="anonymization.html#anonymizationintro"><em>Anonymization</em></a></p>
+<p>Learn you some <a class="reference internal" href="dicom.html#dicom"><em>DICOM</em></a> for great good!</p>
 </div>
 </div>
 
@@ -340,7 +349,7 @@ INFO - <span class="nb">test</span><span class="o">(</span>1<span class="o">)</s
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="anonymization.html" class="btn btn-neutral float-right" title="Anonymziation">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="dicom.html" class="btn btn-neutral float-right" title="DICOM Configuration">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>

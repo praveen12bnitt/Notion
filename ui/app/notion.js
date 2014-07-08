@@ -18,6 +18,7 @@ function (str){
   return this.indexOf(str) != -1;
 };
 
+// Notifications
 
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
 
@@ -304,28 +305,33 @@ notionApp.config(function ($httpProvider) {
           $scope.poolCollection.fetch({remove:true, async:false})
 
           $scope.permission = {};
-          for ( var i = 0; i < $scope.poolCollection.length; i++ ) {
-            var poolKey = $scope.poolCollection.at(i).get('poolKey')
-            var check = {
-              'admin' : 'pool:admin:' + poolKey,
-              'coordinator' : 'pool:coordinator:' + poolKey,
-              'edit' : 'pool:edit:' + poolKey,
-              'query' : 'pool:query:' + poolKey,
-              'download' : 'pool:download:' + poolKey
-            };
-            $http.post('/rest/user/permission', {permission: check}, { key: poolKey } ).success(function(result, status, headers, config) {
-              var poolKey = config.key;
-              $scope.permission[poolKey] = result;
-              console.log(config.key + "Permissions for " + poolKey, result)
-            }).error();
+
+          $scope.fetchPermissions = function() {
+
+            for ( var i = 0; i < $scope.poolCollection.length; i++ ) {
+              var poolKey = $scope.poolCollection.at(i).get('poolKey')
+              var check = {
+                'admin' : 'pool:admin:' + poolKey,
+                'coordinator' : 'pool:coordinator:' + poolKey,
+                'edit' : 'pool:edit:' + poolKey,
+                'query' : 'pool:query:' + poolKey,
+                'download' : 'pool:download:' + poolKey
+              };
+              $http.post('/rest/user/permission', {permission: check}, { key: poolKey } ).success(function(result, status, headers, config) {
+                var poolKey = config.key;
+                $scope.permission[poolKey] = result;
+                console.log(config.key + "Permissions for " + poolKey, result)
+              }).error();
+            }
           }
+          $scope.fetchPermissions();
 
           p = $scope.poolCollection;
           $scope.newPoolKey = false;
 
           $scope.refresh = function() {
             $scope.poolCollection.fetch({remove:true, success: function() {
-              $scope.$apply();
+              $scope.fetchPermissions();
             }});
           };
 
@@ -344,9 +350,7 @@ notionApp.config(function ($httpProvider) {
                   $scope.poolCollection.add( $scope.pool)
                   $scope.pool.save ( $scope.model )
                   $modalInstance.close()
-                  $scope.poolCollection.fetch({remove:true, success: function() {
-                    $scope.$apply();
-                  }})
+                  $scope.refresh()
                 };
                 $scope.cancel = function() { $modalInstance.dismiss() };
               }
@@ -449,7 +453,12 @@ notionApp.config(function ($httpProvider) {
           $scope.ctpScript = $scope.ctp.get("script")
           $scope.saveCTP = function() {
             $scope.ctp.set('script', $scope.ctpScript);
-            $scope.ctp.sync("update", $scope.ctp)
+            $scope.ctp.sync("update", $scope.ctp).done ( function(data) {
+              toastr.success ( "Saved CTP script" )
+            })
+            .fail ( function ( xhr, status, error ) {
+              toastr.error ( "Failed to save script: " + status );
+            });
           }
 
           // Scripts
@@ -462,7 +471,12 @@ notionApp.config(function ($httpProvider) {
           $scope.saveScript = function(){
             console.log ( "Saving script ", $scope.script)
             $scope.scriptModel.set("script", $scope.script)
-            $scope.scriptModel.sync('update', $scope.scriptModel);
+            $scope.scriptModel.sync('update', $scope.scriptModel).done ( function(data) {
+              toastr.success ( "Saved Anonymization script" )
+            })
+            .fail ( function ( xhr, status, error ) {
+              toastr.error ( "Failed to save script: " + status );
+            });
           };
           $scope.aceLoaded = function(editor) {
             console.log ( "Ace loaded" )
@@ -494,6 +508,7 @@ notionApp.config(function ($httpProvider) {
                 console.log("Tried script, got back ", data)
                 $scope.$apply ( function() {
                   $scope.tryResult = data.result
+                  toastr.success("Script result: " + data.result)
                 })
               }
             });
