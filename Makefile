@@ -4,7 +4,6 @@ versionDir=Notion-$(build)
 dir=zip-temp/$(versionDir)
 DATE := $(shell /bin/date +%F-%T)
 
-# The Log4j setup
 
 dist: build
 	./gradlew jar
@@ -21,15 +20,9 @@ build:
 	(cd ui/ && make clean install)
 	(cd Documentation && make clean install)
 
-watch:
-	(cd Documentation && while :; do make html ; sleep 5s; done)
-
 install: dist
 	${MAKE} sync
 	${MAKE} restart
-
-server:
-	./gradlew jar
 
 sync:
 	rsync -arvz zip-temp/$(versionDir)/ qin@qia:/research/images/Notion/$(versionDir)-$(DATE)
