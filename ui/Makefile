@@ -2,7 +2,6 @@
 watch: config
 	gulp watch
 
-
 install: config
 	env BUILD=production gulp build
 	rsync -r public ../src/main/resources/

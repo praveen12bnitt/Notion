@@ -17,7 +17,7 @@
         <td>{{group.name}}</td>
         <td>{{group.description.trunc()}}</td>
         <td>
-        <div w11k-select w11k-select-options="user.userKey as user.username + ' ' + user.email for user in users"
+        <div w11k-select w11k-select-options="user.userKey as user.username + ' (' + user.email + ')' for user in users"
             ng-model="group.userKeys">
         </div>
       </td>

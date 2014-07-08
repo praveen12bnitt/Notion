@@ -24,66 +24,49 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     connectlr = require('connect-livereload'),
     express = require('express'),
-    exec = require('child_process').exec,
-    server = lr();
+    exec = require('child_process').exec;
 
-gulp.task("default", ['watch'], function() {
-})
-
-gulp.task("build", ['ace', 'assets', 'vendor', 'app', 'style', 'bootstrap'], function() {
-})
+var server = null;
 
 
+// These are the assets we need to build
+assets = {
+  app: ['app/**'],
+  docs: ['../Documentation/**/*.rst']
+}
+
+refreshBrowser = function() {
+  // Hmmp, some magic here, just hit the lr server with *.html
+  server.changed({ body: { files: ['*.html'] } });
+}
+
+gulp.task("default", ['watch']);
 gulp.task("watch", ['lr-server', 'build'], function() {
   console.log("\nStarting webserver and watching files\n")
-  gulp.watch ( ['app/*.js', 'app/partials/**', 'app/assets/*.html', 'app/*.html'], ['app'])
-  gulp.watch ( ['../Documentation/**/*.rst'], ['docs'])
+  gulp.watch ( assets.app, ['app']).on('change', function(event) {
+    refreshBrowser();
+  });
+  gulp.watch ( assets.docs, ['docs'])
 })
+
+
+gulp.task("build", ['app'], function() {
+})
+
 
 gulp.task('docs', function() {
   exec('make docs', function (err, stdout, stderr) {
-    // console.log(stdout);
-    // console.log(stderr);
     console.log("bumping the Docs server")
-    // Hmmp, some magic here, just hit the lr server with *.html
-    server.changed({
-      body: {
-        files: ['*.html']
-      }
-    });
+    refreshBrowser();
   });
 })
 
 // All the rest
-gulp.task('app', ['assets'], function() {
-
+gulp.task('app', ['vendor'], function() {
   // Just for backbone
-  gulp.src('app/*.js')
-  .pipe(gulp.dest('public/js'));
-
-  gulp.src('app/*.html')
-  .pipe(gulp.dest('public/'));
-
-  // Copy partials
-  gulp.src('app/partials/**')
-  .pipe(gulp.dest('public/partials'))
-  .pipe(refresh(server))
-
+  gulp.src(assets.app)
+  .pipe(gulp.dest('public/'))
 })
-
-// CSS using Styl
-gulp.task('style', function() {
-  gulp.src([
-    'app/styles/*.css',
-    'bower_components/font-awesome/css/font-awesome*.css',
-    'bower_components/w11k-select/dist/w11k-select.css',
-    'bower_components/toastr/toastr.css'
-    ])
-  .pipe(gulp.dest('public/css'));
-
-  gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
-})
-
 
 // Vended source
 gulp.task('vendor', function() {
@@ -107,27 +90,26 @@ gulp.task('vendor', function() {
   .pipe(uglify({outSourceMap: true}))
   .pipe(gulp.dest('public/js'))
 
-})
-
-gulp.task('ace', function() {
   gulp.src('bower_components/ace-builds/src-noconflict/**')
   .pipe(gulp.dest("public/js/ace"))
-})
 
-gulp.task('bootstrap', function() {
   gulp.src('bower_components/bootstrap/dist/**')
   .pipe(gulp.dest("public/"))
-})
 
-// Assets
-gulp.task('assets', function() {
-  gulp.src('app/assets/**')
-  .pipe(gulp.dest("public/"))
+  gulp.src([
+    'bower_components/font-awesome/css/font-awesome*.css',
+    'bower_components/w11k-select/dist/w11k-select.css',
+    'bower_components/toastr/toastr.css'
+    ])
+  .pipe(gulp.dest('public/css'));
+
+  gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 
 })
 
 
 gulp.task('lr-server', function() {
+  server = lr();
   server.listen(35729, function(err) {
     if (err) return console.log(err);
   });
@@ -136,7 +118,7 @@ gulp.task('lr-server', function() {
   var app = express();
   app.use ( connectlr() );
   app.use(express.static('../Documentation/_build/html'));
-  console.log ( "\nStarting documentation server on \n\thttp://localhost:8400\n")
+  console.log ( "\nStarting documentation server on\n\n\thttp://localhost:8400\n")
   app.listen(8400);
 
 });

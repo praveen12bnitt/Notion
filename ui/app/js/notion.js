@@ -348,9 +348,15 @@ notionApp.config(function ($httpProvider) {
                 $scope.save = function() {
                   $scope.pool.set ( $scope.model )
                   $scope.poolCollection.add( $scope.pool)
-                  $scope.pool.save ( $scope.model )
+                  $scope.pool.save ( $scope.model ).done ( function(data) {
+                    toastr.success ("Saved new pool")
+                    $scope.refresh();
+                  })
+                  .fail ( function ( xhr, status, error ) {
+                    toastr.error ( "Failed to save pool: " + status );
+                  });
+
                   $modalInstance.close()
-                  $scope.refresh()
                 };
                 $scope.cancel = function() { $modalInstance.dismiss() };
               }

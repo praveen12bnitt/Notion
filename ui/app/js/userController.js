@@ -13,6 +13,6 @@ notionApp.controller ( 'UserController', function($scope,$timeout,$stateParams, 
     })
     .fail ( function ( xhr, status, error ) {
       toastr.error ( "Failed to save: " + status );
-    });
+    }); 
   }
 });
