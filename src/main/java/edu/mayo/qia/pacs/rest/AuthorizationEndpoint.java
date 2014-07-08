@@ -41,16 +41,18 @@ public class AuthorizationEndpoint extends Endpoint {
   @Path("users/{id: [1-9][0-9]*}")
   @UnitOfWork
   @RequiresPermissions("admin:user:edit")
-  public Response updateUser(@PathParam("id") int id, User user) {
+  public Response updateUser(@PathParam("id") int id, User u) {
+    User user = userDAO.get(id);
+    user.isAdmin = u.isAdmin;
     userDAO.update(user);
-    return Response.ok().build();
+    return Response.ok(new SimpleResponse("message", "success")).build();
   }
 
   @GET
   @Path("permission/{permission}")
   /** Does this user have a particular permission */
   public Response checkPermission(@Auth Subject subject, @PathParam("permission") String permission) {
-    return Response.ok().build();
+    return Response.ok(new SimpleResponse("message", "success")).build();
   }
 
   @Path("group")
