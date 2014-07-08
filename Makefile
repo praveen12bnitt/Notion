@@ -17,6 +17,7 @@ dist: build
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
 build:
+	rm -rf src/main/resources/public
 	(cd ui/ && make install)
 	(cd Documentation && make install)
 
