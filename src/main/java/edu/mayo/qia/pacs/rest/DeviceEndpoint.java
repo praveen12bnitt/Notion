@@ -1,5 +1,9 @@
 package edu.mayo.qia.pacs.rest;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.dropwizard.hibernate.UnitOfWork;
 
 import javax.ws.rs.Consumes;
@@ -19,8 +23,12 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.resource.PerRequest;
 
@@ -42,6 +50,9 @@ public class DeviceEndpoint {
 
   @Autowired
   JdbcTemplate template;
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   public int poolKey;
 
@@ -80,6 +91,47 @@ public class DeviceEndpoint {
       return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
     }
     return Response.ok(device).build();
+  }
+
+  /** Does a DICOM triplet match any devices? */
+  @POST
+  @Path("match")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response testDevice(Device device) {
+    ObjectNode json = objectMapper.createObjectNode();
+    final String remoteHostName = device.hostName;
+    final String callingAET = device.applicationEntityTitle;
+    final int remotePort = device.port;
+    final ArrayNode devices = json.putArray("device");
+    final AtomicBoolean canQuery = new AtomicBoolean(false);
+    final AtomicBoolean canRetreve = new AtomicBoolean(false);
+
+    template.query("select Device.ApplicationEntityTitle AS AET, Device.HostName AS HN, Device.Port AS P from Device where Device.PoolKey = ?", new Object[] { poolKey }, new RowCallbackHandler() {
+
+      @Override
+      public void processRow(ResultSet rs) throws SQLException {
+        ObjectNode d = devices.addObject();
+        String AET = rs.getString("AET");
+        String HN = rs.getString("HN");
+        int P = rs.getInt("P");
+        d.put("applicationEntityTitle", AET);
+        d.put("hostName", HN);
+        d.put("port", P);
+        d.put("name", AET + "@" + HN + ":" + P);
+        boolean query = remoteHostName.matches(HN) && callingAET.matches(AET);
+        boolean retrieve = remoteHostName.equalsIgnoreCase(HN) && callingAET.equals(AET) && remotePort == P;
+        d.put("query", query);
+        d.put("store", query);
+        d.put("retrieve", retrieve);
+        canQuery.compareAndSet(false, query);
+        canRetreve.compareAndSet(false, retrieve);
+      }
+    });
+    json.put("query", canQuery.get());
+    json.put("store", canQuery.get());
+    json.put("retrieve", canRetreve.get());
+    return Response.ok(json).build();
   }
 
   /** Create a Device. */
