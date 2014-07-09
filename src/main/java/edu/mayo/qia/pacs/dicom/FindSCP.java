@@ -73,7 +73,7 @@ import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 @Component
 public class FindSCP extends DicomService implements CFindSCP {
   static Logger logger = LoggerFactory.getLogger(FindSCP.class);
-  public static String[] PresentationContexts = new String[] { UID.PatientRootQueryRetrieveInformationModelFIND, UID.StudyRootQueryRetrieveInformationModelFIND };
+  public static String[] PresentationContexts = new String[] { UID.StudyRootQueryRetrieveInformationModelFIND, UID.PatientRootQueryRetrieveInformationModelFIND };
 
   @Autowired
   JdbcTemplate template;
