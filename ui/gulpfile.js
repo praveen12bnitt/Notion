@@ -13,10 +13,8 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     notify = require('gulp-notify'),
     cache = require('gulp-cache'),
-    refresh = require('gulp-livereload'),
     livereload = require('gulp-livereload'),
     uglify = require('gulp-uglify'),
-    lr = require('tiny-lr'),
     streamqueue = require('streamqueue'),
     styl = require('gulp-styl'),
     stylus = require('gulp-stylus'),
@@ -26,33 +24,38 @@ var gulp = require('gulp'),
     express = require('express'),
     exec = require('child_process').exec;
 
-var server = null;
 
 
 // These are the assets we need to build
 assets = {
   app: ['app/**'],
+  partials: ['app/partials/**'],
+  js: ['app/js/**'],
   docs: ['../Documentation/**/*.rst']
 }
 
-refreshBrowser = function() {
-  // Hmmp, some magic here, just hit the lr server with *.html
-  server.changed({ body: { files: ['*.html'] } });
-}
+
+
+//
+// refreshBrowser = function() {
+//   // Hmmp, some magic here, just hit the lr server with *.html
+//   server.changed({ body: { files: ['*.html'] } });
+// }
 
 gulp.task("default", ['watch']);
-gulp.task("watch", ['lr-server', 'build'], function() {
+gulp.task("watch", [], function() {
   console.log("\nStarting webserver and watching files\n")
-  gulp.watch ( assets.app, ['app']).on('change', function(event) {
-    refreshBrowser();
-  });
+  livereload.listen();
+  // gulp.watch ( assets.app, ['app'])
+  gulp.watch ( assets.partials, ['partials'])
+  gulp.watch ( assets.js, ['js'])
+
+  // .on('change', livereload.changed)
   gulp.watch ( assets.docs, ['docs'])
 })
 
-
 gulp.task("build", ['app'], function() {
 })
-
 
 gulp.task('docs', function() {
   exec('make docs', function (err, stdout, stderr) {
@@ -61,11 +64,24 @@ gulp.task('docs', function() {
   });
 })
 
+gulp.task('partials', [], function() {
+gulp.src(assets.partials)
+.pipe(gulp.dest('public/partials'))
+.pipe(livereload());
+});
+
+gulp.task('js', [], function() {
+gulp.src(assets.js)
+.pipe(gulp.dest('public/js'))
+.pipe(livereload());
+});
+
+
 // All the rest
 gulp.task('app', ['vendor'], function() {
   // Just for backbone
-  gulp.src(assets.app)
-  .pipe(gulp.dest('public/'))
+gulp.src('app/**')
+.pipe(gulp.dest('public/'))
 })
 
 // Vended source
@@ -87,7 +103,7 @@ gulp.task('vendor', function() {
     'bower_components/w11k-select/dist/w11k-select.js',
     'bower_components/w11k-select/dist/w11k-select.tpl.js'
     ])
-  .pipe(uglify({outSourceMap: true}))
+  .pipe(uglify())
   .pipe(gulp.dest('public/js'))
 
   gulp.src('bower_components/ace-builds/src-noconflict/**')
@@ -108,11 +124,7 @@ gulp.task('vendor', function() {
 })
 
 
-gulp.task('lr-server', function() {
-  server = lr();
-  server.listen(35729, function(err) {
-    if (err) return console.log(err);
-  });
+gulp.task('docs-server', function() {
 
   // Start an Express server for the docs
   var app = express();

@@ -40,8 +40,25 @@
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
+
+          <div class="input-group">
+            <input type="text" class="form-control" ng-model="testDeviceFull" placeholder="AET@Hostname:port" ng-enter="testDeviceMatch()">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" ng-click="testDeviceMatch()">Test</button>
+            </span>
+          </div>
+          <div>
+
+            <div class="row">
+              <div class="col-md-4">Store: <i class="fa" ng-class="{'fa-check': testResult.store, 'fa-times': !testResult.store}"></i>
+              </div>
+              <div class="col-md-4">Query: <i class="fa" ng-class="{'fa-check': testResult.query, 'fa-times': !testResult.query}"></i></div>
+              <div class="col-md-4"> Retrieve: <i class="fa" ng-class="{'fa-check': testResult.retrieve, 'fa-times': !testResult.retrieve}"></i></div>
+            </div>
+          </div>
+          </div>
+          </div>
+
 
       <div class="panel panel-default">
         <div class="panel-heading">
