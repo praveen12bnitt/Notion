@@ -18,6 +18,7 @@ function (str){
   return this.indexOf(str) != -1;
 };
 
+
 // Notifications
 
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
@@ -120,6 +121,24 @@ notionApp.config(function ($httpProvider) {
     }
     ]);
   });
+
+
+
+// Extra directive
+notionApp.directive('ngEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});
+
 
   notionApp.constant('EVENTS', {
     loginSuccess: 'auth-login-success',
@@ -365,7 +384,7 @@ notionApp.config(function ($httpProvider) {
 
         });
 
-        notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, $state, $modal) {
+        notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, $state, $modal, $http) {
           $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
           console.log ( "PoolController for ", $stateParams.poolKey )
           console.log ( "Pool is: ", $scope.pool)
@@ -425,7 +444,6 @@ notionApp.config(function ($httpProvider) {
             });
           };
 
-
           $scope.deleteDevice = function(device) {
             $scope.device = device
             $scope.deviceModel = device.toJSON()
@@ -451,6 +469,25 @@ notionApp.config(function ($httpProvider) {
             });
           };
 
+          // Test a DICOM triplet against all the defined devices
+          $scope.testResult = { query: false, retrieve: false, store: false };
+          $scope.testDeviceMatch = function() {
+
+            var re = /([^@]*)@([^:]*):(\d*)/;
+            var t = re.exec ( $scope.testDeviceFull)
+            console.log(t)
+            if ( t == null || t.length != 4 ) {
+              toastr.error ("Could not parse DICOM information: " + $scope.testDeviceFull + "<br> Should be AET@Hostname:port")
+              return;
+            }
+            var testDevice = { applicationEntityTitle: t[1], hostName: t[2], port: t[3]};
+            console.log("checking " + $scope.testDevice + " to server")
+            $http.post ( '/rest/pool/' + $scope.pool.get('poolKey') + '/device/match', testDevice)
+            .success(function(data,status){
+              console.log("Got test data back", data);
+              $scope.testResult = data
+             });
+          }
 
           // CTP Configuration
           $scope.ctp = new CTPModel();
