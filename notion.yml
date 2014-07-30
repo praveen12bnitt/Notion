@@ -45,6 +45,7 @@ notion:
   host: myst.mayo.edu
   dicomPort: 11117
   imageDirectory: ../Working/LocalPACS/Images
+  allowRegistration: false
 
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
