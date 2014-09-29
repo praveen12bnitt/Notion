@@ -29,6 +29,11 @@ notionApp.controller("RootController", function($scope, $state) {
 })
 
 notionApp.controller ( "LoginController", function ( $scope, $state, $timeout,$location,$http,$window) {
+  $scope.allowRegistration = false;
+  $http.get('/rest/user/').success(function(data){
+    console.log("user", data)
+    $scope.allowRegistration = data.allowRegistration
+  })
   $scope.login = function() {
     $http.post('/rest/user/login', $scope.user ).success(function(result) {
       console.log("logged in")
