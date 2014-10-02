@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs.rest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import io.dropwizard.hibernate.UnitOfWork;
 
@@ -119,7 +120,10 @@ public class DeviceEndpoint {
         d.put("hostName", HN);
         d.put("port", P);
         d.put("name", AET + "@" + HN + ":" + P);
-        boolean query = remoteHostName.matches(HN) && callingAET.matches(AET);
+        boolean matchHostName = Pattern.compile(HN, Pattern.CASE_INSENSITIVE).matcher(remoteHostName).matches();
+        boolean matchAETitle = Pattern.compile(AET).matcher(callingAET).matches();
+
+        boolean query = matchHostName && matchAETitle;
         boolean retrieve = remoteHostName.equalsIgnoreCase(HN) && callingAET.equals(AET) && remotePort == P;
         d.put("query", query);
         d.put("store", query);
