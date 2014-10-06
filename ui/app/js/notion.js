@@ -9,7 +9,7 @@ function(n){
 
 String.prototype.startsWith = String.prototype.startsWith ||
 function (str){
-  return this.indexOf(str) == 0;
+  return this.indexOf(str) === 0;
 };
 
 
@@ -24,8 +24,8 @@ function (str){
 notionApp = angular.module('notionApp', ['ui.router', 'ui.bootstrap', 'ui.ace', 'w11k.select', 'w11k.select.template']);
 
 notionApp.config(function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.otherwise('/pools/index')
-  $urlRouterProvider.when('', '/pools/index')
+  $urlRouterProvider.otherwise('/pools/index');
+  $urlRouterProvider.when('', '/pools/index');
 
   $stateProvider
   .state('root', {
@@ -184,9 +184,9 @@ notionApp.directive('ngEnter', function () {
               if ( u === undefined ) {
                 return false;
               }
-              var r = u.username != null;
+              var r = u.username !== null;
               // console.log("isLoggedIn:", u, r);
-              return u.username != null;
+              return u.username !== null;
             },
             logout: function(success, error) {
               $http.post("/rest/user/logout")
@@ -228,25 +228,14 @@ notionApp.directive('ngEnter', function () {
                 return false;
               },
               user: u
-            }
-          })
+            };
+          });
 
           notionApp.run(['$rootScope', '$state', 'authorization', function( $rootScope, $state, authorization ) {
-            console.log ( "run from notionApp", authorization.isLoggedIn() )
+            console.log ( "run from notionApp", authorization.isLoggedIn() );
 
             $rootScope.$on("$stateChangeStart", function(e, toState, toParams, fromState, fromParams) {
               return;
-              if ( !toState.data ) {
-                console.log("No authorization data...", toState)
-                return;
-              }
-              if ( !authorization.isPermitted(toState.data.access)) {
-                e.preventDefault();
-                console.log ("not logged in")
-                // return $state.transitionTo('root.login')
-              } else {
-                console.log ("User", authorization, " is permitted to ", toState)
-              }
             });
           }]);
 
@@ -258,7 +247,7 @@ notionApp.directive('ngEnter', function () {
             };
             $http.post('/rest/user/permission', {permission: check} ).success(function(result) {
               $scope.permission = result;
-              console.log("Permissions", result)
+              console.log("Permissions", result);
             }).error();
 
             var heartbeat = function() {
@@ -266,7 +255,7 @@ notionApp.directive('ngEnter', function () {
                 if ( authorization.isLoggedIn() ) {
                   console.log ( "Logged in, all is well!" );
                   // $scope.user = authorization.user
-                  $scope.user = $.extend(true, {}, authorization.user)
+                  $scope.user = $.extend(true, {}, authorization.user);
 
                   $timeout(heartbeat,60000);
                 } else {
@@ -276,19 +265,19 @@ notionApp.directive('ngEnter', function () {
               });
             };
             heartbeat();
-            console.log("Creating RootController")
-            $scope.name = "RootController"
+            console.log("Creating RootController");
+            $scope.name = "RootController";
             $scope.loggedIn = true;
 
 
             $scope.settings = function(){
-              console.log ( "Configuration of settings")
+              console.log ( "Configuration of settings");
               $modal.open({
                 templateUrl: 'partials/settings.html',
                 scope: $scope,
                 controller: function($scope,$modalInstance) {
-                  console.log("Settings controller")
-                  $scope.updateUser = $.extend(true,{},$scope.user)
+                  console.log("Settings controller");
+                  $scope.updateUser = $.extend(true,{},$scope.user);
                   $scope.save = function() {
                     $http.put("/rest/user/update", $scope.updateUser)
                     .success(function() {
@@ -297,9 +286,9 @@ notionApp.directive('ngEnter', function () {
                     }
                   );
                 };
-                $scope.close = function() { $modalInstance.dismiss() }
+                $scope.close = function() { $modalInstance.dismiss(); };
               }
-            })
+            });
           };
 
           $scope.logout = function() {
@@ -312,23 +301,23 @@ notionApp.directive('ngEnter', function () {
             }).error(function() {
               // $window.location.href = "login.html";
             });
-          }
-        })
+          };
+        });
 
 
         notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal, authorization, $http) {
-          console.log("Creating PoolsController")
-          $scope.name = "PoolsController"
+          console.log("Creating PoolsController");
+          $scope.name = "PoolsController";
           $scope.poolCollection = new PoolCollection();
           // Make the first one syncrhonous
-          $scope.poolCollection.fetch({remove:true, async:false})
+          $scope.poolCollection.fetch({remove:true, async:false});
 
           $scope.permission = {};
 
           $scope.fetchPermissions = function() {
 
             for ( var i = 0; i < $scope.poolCollection.length; i++ ) {
-              var poolKey = $scope.poolCollection.at(i).get('poolKey')
+              var poolKey = $scope.poolCollection.at(i).get('poolKey');
               var check = {
                 'admin' : 'pool:admin:' + poolKey,
                 'coordinator' : 'pool:coordinator:' + poolKey,
@@ -339,10 +328,10 @@ notionApp.directive('ngEnter', function () {
               $http.post('/rest/user/permission', {permission: check}, { key: poolKey } ).success(function(result, status, headers, config) {
                 var poolKey = config.key;
                 $scope.permission[poolKey] = result;
-                console.log(config.key + "Permissions for " + poolKey, result)
+                console.log(config.key + "Permissions for " + poolKey, result);
               }).error();
             }
-          }
+          };
           $scope.fetchPermissions();
 
           p = $scope.poolCollection;
@@ -361,23 +350,23 @@ notionApp.directive('ngEnter', function () {
               scope: $scope,
               controller: function($scope,$modalInstance) {
                 $scope.pool = new PoolModel();
-                $scope.model = $scope.pool.toJSON()
-                $scope.title = "Create a new pool"
-                $scope.hideAETitle = false
+                $scope.model = $scope.pool.toJSON();
+                $scope.title = "Create a new pool";
+                $scope.hideAETitle = false;
                 $scope.save = function() {
-                  $scope.pool.set ( $scope.model )
-                  $scope.poolCollection.add( $scope.pool)
+                  $scope.pool.set ( $scope.model );
+                  $scope.poolCollection.add( $scope.pool);
                   $scope.pool.save ( $scope.model ).done ( function(data) {
-                    toastr.success ("Saved new pool")
+                    toastr.success ("Saved new pool");
                     $scope.refresh();
                   })
                   .fail ( function ( xhr, status, error ) {
                     toastr.error ( "Failed to save pool: " + status );
                   });
 
-                  $modalInstance.close()
+                  $modalInstance.close();
                 };
-                $scope.cancel = function() { $modalInstance.dismiss() };
+                $scope.cancel = function() { $modalInstance.dismiss(); };
               }
             });
           };
@@ -385,86 +374,86 @@ notionApp.directive('ngEnter', function () {
         });
 
         notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, $state, $modal, $http) {
-          $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey)
-          console.log ( "PoolController for ", $stateParams.poolKey )
-          console.log ( "Pool is: ", $scope.pool)
+          $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey);
+          console.log ( "PoolController for ", $stateParams.poolKey );
+          console.log ( "Pool is: ", $scope.pool);
           $scope.model = $scope.pool.toJSON();
 
           // Grab the devices
           $scope.deviceCollection = new DeviceCollection();
           $scope.deviceCollection.urlRoot = '/rest/pool/' + $stateParams.poolKey + '/device';
-          $scope.deviceCollection.fetch({async:false})
-          console.log( $scope.deviceCollection )
-          pool = $scope.pool
-          devices = $scope.deviceCollection
+          $scope.deviceCollection.fetch({async:false});
+          console.log( $scope.deviceCollection );
+          pool = $scope.pool;
+          devices = $scope.deviceCollection;
 
           $scope.edit = function() {
             $modal.open ( {
               templateUrl: 'partials/pool.edit.html',
               scope: $scope,
               controller: function($scope, $modalInstance) {
-                $scope.title = "Edit " + $scope.pool.get('name')
-                $scope.hideAETitle = true
+                $scope.title = "Edit " + $scope.pool.get('name');
+                $scope.hideAETitle = true;
                 $scope.save = function() {
-                  $scope.pool.save ( $scope.model )
-                  $modalInstance.close()
+                  $scope.pool.save ( $scope.model );
+                  $modalInstance.close();
                 };
-                $scope.cancel = function() { $modalInstance.dismiss() };
+                $scope.cancel = function() { $modalInstance.dismiss(); };
               }
             });
           };
 
           // Devices
           $scope.editDevice = function(device) {
-            console.log("EditDevice")
-            var newDevice = !device
+            console.log("EditDevice");
+            var newDevice = !device;
             if ( !device ) {
-              console.log("Create new device")
-              device = new DeviceModel()
+              console.log("Create new device");
+              device = new DeviceModel();
             }
-            $scope.device = device
-            $scope.deviceModel = device.toJSON()
+            $scope.device = device;
+            $scope.deviceModel = device.toJSON();
             $modal.open ( {
               templateUrl: 'partials/device.edit.html',
               scope: $scope,
               controller: function($scope, $modalInstance) {
                 if ( newDevice ) {
-                  $scope.title = "Create a new device"
+                  $scope.title = "Create a new device";
                 } else {
-                  $scope.title = "Edit the device"
+                  $scope.title = "Edit the device";
                 }
                 $scope.save = function(){
-                  device.set ( $scope.deviceModel )
-                  $scope.deviceCollection.add(device)
+                  device.set ( $scope.deviceModel );
+                  $scope.deviceCollection.add(device);
                   device.save();
                   $modalInstance.close();
                 };
-                $scope.cancel = function() { $modalInstance.dismiss() };
+                $scope.cancel = function() { $modalInstance.dismiss(); };
               }
             });
           };
 
           $scope.deleteDevice = function(device) {
-            $scope.device = device
-            $scope.deviceModel = device.toJSON()
+            $scope.device = device;
+            $scope.deviceModel = device.toJSON();
             $modal.open ({
               templateUrl: 'partials/modal.html',
               controller: function($scope, $modalInstance) {
-                $scope.title = "Delete device?"
-                $scope.message = "Delete the device: " + device.format()
+                $scope.title = "Delete device?";
+                $scope.message = "Delete the device: " + device.format();
                 $scope.ok = function(){
                   device.destroy({
                     success: function(model, response) {
-                      console.log("Dismissing modal")
+                      console.log("Dismissing modal");
                       $modalInstance.dismiss();
                       $scope.$apply();
                     },
                     error: function(model, response) {
-                      alert ( "Failed to delete Device: " + response.message )
+                      alert ( "Failed to delete Device: " + response.message );
                     }
-                  })
+                  });
                 };
-                $scope.cancel = function() { $modalInstance.dismiss() };
+                $scope.cancel = function() { $modalInstance.dismiss(); };
               }
             });
           };
@@ -474,55 +463,55 @@ notionApp.directive('ngEnter', function () {
           $scope.testDeviceMatch = function() {
 
             var re = /([^@]*)@([^:]*):(\d*)/;
-            var t = re.exec ( $scope.testDeviceFull)
-            console.log(t)
-            if ( t == null || t.length != 4 ) {
-              toastr.error ("Could not parse DICOM information: " + $scope.testDeviceFull + "<br> Should be AET@Hostname:port")
+            var t = re.exec ( $scope.testDeviceFull);
+            console.log(t);
+            if ( t === null || t.length != 4 ) {
+              toastr.error ("Could not parse DICOM information: " + $scope.testDeviceFull + "<br> Should be AET@Hostname:port");
               return;
             }
             var testDevice = { applicationEntityTitle: t[1], hostName: t[2], port: t[3]};
-            console.log("checking " + $scope.testDevice + " to server")
+            console.log("checking " + $scope.testDevice + " to server");
             $http.post ( '/rest/pool/' + $scope.pool.get('poolKey') + '/device/match', testDevice)
             .success(function(data,status){
               console.log("Got test data back", data);
-              $scope.testResult = data
+              $scope.testResult = data;
              });
-          }
+          };
 
           // CTP Configuration
           $scope.ctp = new CTPModel();
           $scope.ctp.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/ctp';
-          $scope.ctp.fetch({async:false})
-          $scope.ctpScript = $scope.ctp.get("script")
+          $scope.ctp.fetch({async:false});
+          $scope.ctpScript = $scope.ctp.get("script");
           $scope.saveCTP = function() {
             $scope.ctp.set('script', $scope.ctpScript);
             $scope.ctp.sync("update", $scope.ctp).done ( function(data) {
-              toastr.success ( "Saved CTP script" )
+              toastr.success ( "Saved CTP script" );
             })
             .fail ( function ( xhr, status, error ) {
               toastr.error ( "Failed to save script: " + status );
             });
-          }
+          };
 
           // Scripts
           $scope.scriptModel = new ScriptModel();
           $scope.scriptModel.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/script';
-          $scope.scriptModel.fetch({async:false})
+          $scope.scriptModel.fetch({async:false});
           $scope.script = $scope.scriptModel.get("script");
-          console.log("Got script: ", $scope.scriptModel)
+          console.log("Got script: ", $scope.scriptModel);
 
           $scope.saveScript = function(){
-            console.log ( "Saving script ", $scope.script)
-            $scope.scriptModel.set("script", $scope.script)
+            console.log ( "Saving script ", $scope.script);
+            $scope.scriptModel.set("script", $scope.script);
             $scope.scriptModel.sync('update', $scope.scriptModel).done ( function(data) {
-              toastr.success ( "Saved Anonymization script" )
+              toastr.success ( "Saved Anonymization script" );
             })
             .fail ( function ( xhr, status, error ) {
               toastr.error ( "Failed to save script: " + status );
             });
           };
           $scope.aceLoaded = function(editor) {
-            console.log ( "Ace loaded" )
+            console.log ( "Ace loaded" );
             editor.commands.addCommand({
               name: 'save',
               bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
@@ -539,25 +528,25 @@ notionApp.directive('ngEnter', function () {
 
           $scope.tryScript = function() {
             // Cal the rest API and give it a go
-            console.log ( "Trying script on the server")
-            $scope.scriptModel.set("script", $scope.script)
-            var url = "/rest/pool/" + $scope.pool.get('poolKey') + '/script/try'
+            console.log ( "Trying script on the server");
+            $scope.scriptModel.set("script", $scope.script);
+            var url = "/rest/pool/" + $scope.pool.get('poolKey') + '/script/try';
             $.ajax ({
               contentType: 'application/json',
               type: 'PUT',
               url: url,
               data: JSON.stringify($scope.scriptModel),
               success: function ( data ) {
-                console.log("Tried script, got back ", data)
+                console.log("Tried script, got back ", data);
                 $scope.$apply ( function() {
-                  $scope.tryResult = data.result
-                  toastr.success("Script result: " + data.result)
-                })
+                  $scope.tryResult = data.result;
+                  toastr.success("Script result: " + data.result);
+                });
               }
             });
-          }
+          };
 
         });
 
 
-        console.log ("Build notion app")
+        console.log ("Build notion app");
