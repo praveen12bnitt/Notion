@@ -20,7 +20,7 @@ shiro:
 # In production, assets are bundled in the Jar
 assets:
   overrides:
-    /: /Users/blezek/Source/Notion/ui/public
+    /: ui/public
 
 
 server:
