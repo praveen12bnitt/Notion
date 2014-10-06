@@ -3,5 +3,5 @@ var gulp = require ('gulp');
 
 gulp.task ( 'html', function() {
   gulp.src('app/**')
-  .pipe ( gulp.dest( './build/') );
+  .pipe ( gulp.dest( './public/') );
 });

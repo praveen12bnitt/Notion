@@ -1,5 +1,5 @@
 var gulp = require('gulp'),
-  uglify = require('gulp-uglify')
+  uglify = require('gulp-uglify');
 
 
 
@@ -23,13 +23,13 @@ gulp.task('vendor', function() {
     'bower_components/w11k-select/dist/w11k-select.tpl.js'
     ])
   .pipe(uglify())
-  .pipe(gulp.dest('public/js'))
+  .pipe(gulp.dest('public/js'));
 
   gulp.src('bower_components/ace-builds/src-noconflict/**')
-  .pipe(gulp.dest("public/js/ace"))
+  .pipe(gulp.dest("public/js/ace"));
 
   gulp.src('bower_components/bootstrap/dist/**')
-  .pipe(gulp.dest("public/"))
+  .pipe(gulp.dest("public/"));
 
   gulp.src([
     'bower_components/font-awesome/css/font-awesome*.css',
@@ -40,4 +40,4 @@ gulp.task('vendor', function() {
 
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 
-})
+});

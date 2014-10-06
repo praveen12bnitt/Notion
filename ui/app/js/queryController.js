@@ -14,15 +14,32 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   // 'fetch-pending' - fetching
   // 'fetch-done' - done fetching
   $scope.mode = 'setup'
+  $scope.query = null;
 
   $scope.connectorCollection = new ConnectorCollection();
   $scope.connectorCollection.fetch({async:false});
   $scope.connectors = $scope.connectorCollection.toJSON();
+  $scope.connectorKey = $scope.connectors[0].connectorKey;
+
+  console.log("Getting prior queries!");
+  $scope.queries = new QueryCollection();
+  $scope.queries.urlRoot = 'rest/pool/' + $scope.pool.get('poolKey') + "/query";
+  $scope.queries.fetch({
+    success: function() { $timeout(function(){$scope.$apply();},0); }
+  });
 
   $scope.refresh = function(){
     console.log ( $scope.query )
-    $scope.query.fetch({'async':false});
+    $scope.query.fetch({
+      success: function() { console.log("Fetched query"); $scope.$apply(); }
+    });
   };
+
+  $scope.selectQuery = function(id) {
+    $scope.query = $scope.queries.get(id);
+    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+    $scope.mode = 'query-pending';
+  }
 
   $scope.fetchAll = function(item){
     $.each(item.items, function(index,value){
@@ -35,12 +52,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   }
 
   var successCallback = function(data) {
-      console.log("Create query")
-      $scope.query = new QueryModel(data);
-      $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-      $scope.mode = 'query-pending'
-      queryTick();
-    };
+    console.log("Create query")
+    $scope.query = new QueryModel(data);
+    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+    $scope.mode = 'query-pending'
+    queryTick();
+  };
 
   $scope.submitIndividual = function() {
     var data = {
@@ -94,6 +111,10 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   $scope.reset = function() {
     $scope.query = null;
     $scope.mode = 'setup';
+    $scope.queries.fetch({
+      success: function() { $timeout(function(){$scope.$apply();},0); }
+    });
+
   }
 
   $scope.fetch = function(){
@@ -116,7 +137,18 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       console.log("fetch failed", response)
     }
   );
-
 };
+
+$scope.doQuery = function(){
+  console.log("doQuery! " + $scope.query.urlRoot)
+  $.ajax({
+    url: $scope.query.urlRoot + "/query",
+    type: 'PUT',
+    data: {},
+    success: successCallback
+  });
+};
+
+
 
 });

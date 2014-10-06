@@ -18,12 +18,12 @@ ConnectorCollection = Backbone.Collection.extend({
 PoolModel = Backbone.Model.extend({
   idAttribute: "poolKey",
   // urlRoot: '/rest/pool',
-defaults: {
-  'name' : null,
-  'anonymize' : false,
-  'applicationEntityTitle' : null,
-  'description' : "This is a new Pool"
-}
+  defaults: {
+    'name' : null,
+    'anonymize' : false,
+    'applicationEntityTitle' : null,
+    'description' : "This is a new Pool"
+  }
 });
 
 PoolCollection = Backbone.Collection.extend({
@@ -65,6 +65,7 @@ QueryModel = Backbone.Model.extend({
     // return '/rest/pool/' + this.get('poolKey') + '/query/' + this.get('queryKey')
     return this.urlRoot;
   },
+  urlRoot: function() { return 'rest/pool' + this.get('poolKey') + '/query/' },
   parse: function(response) {
     // Sort the items
     response.items.sort ( function(a,b){
@@ -78,6 +79,19 @@ QueryModel = Backbone.Model.extend({
     return response;
   }
 });
+QueryCollection = Backbone.Collection.extend({
+  model: QueryModel,
+  url: function () { console.log("QueryCollection url"); return this.urlRoot; },
+  parse: function(response) {
+    var m = [];
+    for(var i = 0; i < response.queries.length; i++) {
+      m.push(new QueryModel(response.queries[i]))
+    }
+    this.set ( m )
+    return this.models;
+  }
+});
+
 
 ScriptModel = Backbone.Model.extend({
 });
