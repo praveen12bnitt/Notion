@@ -42,6 +42,10 @@ public final class Pool {
   public Set<Device> devices = new HashSet<Device>();
 
   @JsonIgnore
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "pool")
+  public Set<Query> queries = new HashSet<Query>();
+
+  @JsonIgnore
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
   public Script script;

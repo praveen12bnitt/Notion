@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -430,7 +431,7 @@ public class PoolContainer {
   }
 
   public void processAnonymizationMap() {
-    Notion.context.getBean("executor", Executor.class).execute(new Runnable() {
+    Notion.context.getBean("executor", ExecutorService.class).execute(new Runnable() {
 
       @Override
       public void run() {
