@@ -229,7 +229,6 @@ public class QueryEndpoint {
   @Path("/{id: [1-9][0-9]*}/excel")
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getExcel(@PathParam("id") int id) {
     Session session = sessionFactory.getCurrentSession();
     final Query query;
@@ -245,6 +244,6 @@ public class QueryEndpoint {
     };
 
     String fn = poolManager.getContainer(poolKey).getPool().applicationEntityTitle + "-Query-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()) + ".xlsx";
-    return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
+    return Response.ok(stream).type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").header("content-disposition", "attachment; filename = " + fn).build();
   }
 }

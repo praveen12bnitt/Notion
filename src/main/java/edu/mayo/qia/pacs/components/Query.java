@@ -28,9 +28,12 @@ import javax.persistence.Transient;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -196,6 +199,7 @@ public class Query {
         Thread.currentThread().setName("Query " + device);
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "query pending", queryKey);
+        template.update("update QUERY set LastQueryTimestamp = ? where QueryKey = ?", new Date(), queryKey);
         template.update("update QUERYITEM set Status = ? where QueryKey = ?", "query pending", queryKey);
         for (Item item : items) {
           template.update("delete from QUERYRESULT where QueryItemKey = ?", item.queryItemKey);
@@ -382,20 +386,59 @@ public class Query {
     header.createCell(6, Cell.CELL_TYPE_STRING).setCellValue("StudyDescription");
     header.createCell(7, Cell.CELL_TYPE_STRING).setCellValue("AnonymizedID");
     header.createCell(8, Cell.CELL_TYPE_STRING).setCellValue("AnonymizedName");
+
+    DataFormat fmt = workbook.createDataFormat();
+    CellStyle textStyle = workbook.createCellStyle();
+    textStyle.setDataFormat(fmt.getFormat("@"));
+
+    for (int i = 0; i < 9; i++) {
+      sheet.setDefaultColumnStyle(i, textStyle);
+    }
+
     template.query("select * from QUERYITEM where QueryKey = ?", new Object[] { queryKey }, new RowCallbackHandler() {
+      int rowNumber = 1;
 
       @Override
       public void processRow(ResultSet rs) throws SQLException {
-        XSSFRow row = sheet.createRow(1);
-        row.createCell(0, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("PatientName"));
-        row.createCell(1, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("PatientID"));
-        row.createCell(2, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("AccessionNumber"));
-        row.createCell(3, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("PatientBirthDate"));
-        row.createCell(4, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("StudyDate"));
-        row.createCell(5, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("ModalitiesInStudy"));
-        row.createCell(6, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("StudyDescription"));
-        row.createCell(7, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("AnonymizedID"));
-        row.createCell(8, Cell.CELL_TYPE_STRING).setCellValue(rs.getString("AnonymizedName"));
+        XSSFRow row = sheet.createRow(rowNumber);
+        rowNumber++;
+        XSSFCell cell;
+        cell = row.createCell(0, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("PatientName"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(1, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("PatientID"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(2, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("AccessionNumber"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(3, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("PatientBirthDate"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(4, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("StudyDate"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(5, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("ModalitiesInStudy"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(6, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("StudyDescription"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(7, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("AnonymizedID"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell = row.createCell(8, Cell.CELL_TYPE_STRING);
+        cell.setCellType(Cell.CELL_TYPE_STRING);
+        cell.setCellValue(rs.getString("AnonymizedName"));
+        cell.setCellType(Cell.CELL_TYPE_STRING);
 
       }
     });
