@@ -9,10 +9,10 @@ dist: build
 	./gradlew jar
 	rm -rf zip-temp
 	mkdir -p $(dir)
-	cp -r build/libs/lib $(dir)
-	cp notion $(dir)
-	cp build/libs/Notion.jar $(dir)/Notion.jar
-	cp Readme.md notion.example.yml $(dir)
+	rsync -r build/libs/lib $(dir)
+	rsync notion $(dir)
+	rsync build/libs/Notion.jar $(dir)/Notion.jar
+	rsync Readme.md notion.example.yml $(dir)
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
 build:
