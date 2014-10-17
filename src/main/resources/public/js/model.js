@@ -28,7 +28,7 @@ PoolModel = Backbone.Model.extend({
 
 PoolCollection = Backbone.Collection.extend({
   model: PoolModel,
-  url: '/rest/pool',
+  url: function() { console.log ( "PoolCollection.url "); return '/rest/pool' },
   parse: function(response) {
     var m = [];
     for(var i = 0; i < response.pool.length; i++) {
