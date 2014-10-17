@@ -18,6 +18,9 @@ function (str){
   return this.indexOf(str) != -1;
 };
 
+// for some unknown reason, we have to do this first under Chrome?
+var poolCollection = new PoolCollection();
+poolCollection.fetch();
 
 // Notifications
 
@@ -309,8 +312,7 @@ notionApp.directive('ngEnter', function () {
           console.log("Creating PoolsController");
           $scope.name = "PoolsController";
           $scope.poolCollection = new PoolCollection();
-          // Make the first one syncrhonous
-          $scope.poolCollection.fetch({remove:true, async:false});
+          $scope.poolCollection.fetch({async: false} );
 
           $scope.permission = {};
 
@@ -332,17 +334,18 @@ notionApp.directive('ngEnter', function () {
               }).error();
             }
           };
-          $scope.fetchPermissions();
 
-          p = $scope.poolCollection;
           $scope.newPoolKey = false;
 
           $scope.refresh = function() {
+            console.log ( "calling refresh on ", $scope.poolCollection)
             $scope.poolCollection.fetch({remove:true, success: function() {
               $scope.fetchPermissions();
+              p = $scope.poolCollection;
+
             }});
           };
-
+          $scope.refresh();
 
           $scope.newPool = function() {
             $modal.open ({
