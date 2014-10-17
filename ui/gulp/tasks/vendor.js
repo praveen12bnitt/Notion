@@ -22,7 +22,7 @@ gulp.task('vendor', function() {
     'bower_components/w11k-select/dist/w11k-select.js',
     'bower_components/w11k-select/dist/w11k-select.tpl.js'
     ])
-  .pipe(uglify())
+  // .pipe(uglify())
   .pipe(gulp.dest('public/js'));
 
   gulp.src('bower_components/ace-builds/src-noconflict/**')
