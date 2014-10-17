@@ -1,1 +1,134 @@
-"use strict";angular.module("w11k.dropdownToggle",[]),angular.module("w11k.dropdownToggle").directive("w11kDropdownToggle",["$document",function(n){var e,o=function(n){n.stopPropagation()};return{restrict:"A",controller:["$scope","$element",function(i,t){function r(n,e){var o={isPrevented:!1},t={prevent:function(){o.isPrevented=!0}};return angular.isFunction(n)&&(angular.isDefined(e)?i.$apply(function(){n(t)}):n(t)),o}function c(){t.parent().off("click",o),n.off("click",l),angular.isFunction(s)&&(s(),s=void 0)}var a=this;a.isOpen=!1;var s;a.shared={},a.open=function(c){var u=!0;if(e&&(u=e.close()),c&&(c.preventDefault(),c.stopPropagation()),a.isOpen===!1&&u){var p=r(a.shared.onOpen,c);p.isPrevented===!1&&(t.parent().addClass("open"),t.parent().on("click",o),n.on("click",l),s=i.$on("$locationChangeSuccess",function(){a.close()}),a.isOpen=!0,e=a)}return a.isOpen},a.toggle=function(){a.isOpen?a.close():a.open()};var l=function(){i.$apply(function(){a.close()})};a.close=function(n){if(a.isOpen){var o=r(a.shared.onClose,n);o.isPrevented===!1&&(t.parent().removeClass("open"),c(),a.isOpen=!1,e=null)}return!a.isOpen},i.$on("$destroy",function(){c()})}],link:function(n,e,o,i){function t(n){n.open=i.open,n.close=i.close,n.toggle=i.toggle,n.isOpen=function(){return i.isOpen}}var r=function(e){e.preventDefault(),e.stopPropagation(),n.$apply(function(){i.toggle()})};e.on("click",r),n.$on("$destroy",function(){e.off("click",r)}),o.$observe("w11kDropdownToggle",function(e){if(angular.isDefined(e)&&""!==e){var o=n.$eval(e);angular.isObject(o)&&(i.shared=o,t(o))}})}}}]);
+/**
+ * w11k-dropdownToggle - v0.1.1 - 2014-03-29
+ * https://github.com/w11k/w11k-dropdownToggle
+ *
+ * Copyright (c) 2014 WeigleWilczek GmbH
+ */
+"use strict";
+
+angular.module("w11k.dropdownToggle", []);
+
+angular.module("w11k.dropdownToggle").directive("w11kDropdownToggle", [ "$document", function($document) {
+    var currentOpenDropdownCtrl;
+    var preventCloseMenu = function(domEvent) {
+        domEvent.stopPropagation();
+    };
+    return {
+        restrict: "A",
+        controller: [ "$scope", "$element", function($scope, $element) {
+            var ctrl = this;
+            ctrl.isOpen = false;
+            var removeLocationChangeSuccessListener;
+            function executeCallback(callback, domEvent) {
+                var result = {
+                    isPrevented: false
+                };
+                var event = {
+                    prevent: function() {
+                        result.isPrevented = true;
+                    }
+                };
+                if (angular.isFunction(callback)) {
+                    if (angular.isDefined(domEvent)) {
+                        $scope.$apply(function() {
+                            callback(event);
+                        });
+                    } else {
+                        callback(event);
+                    }
+                }
+                return result;
+            }
+            ctrl.shared = {};
+            ctrl.open = function(domEvent) {
+                var allDropdownsClosed = true;
+                if (currentOpenDropdownCtrl) {
+                    allDropdownsClosed = currentOpenDropdownCtrl.close();
+                }
+                if (domEvent) {
+                    domEvent.preventDefault();
+                    domEvent.stopPropagation();
+                }
+                if (ctrl.isOpen === false && allDropdownsClosed) {
+                    var callbackResult = executeCallback(ctrl.shared.onOpen, domEvent);
+                    if (callbackResult.isPrevented === false) {
+                        $element.parent().addClass("open");
+                        $element.parent().on("click", preventCloseMenu);
+                        $document.on("click", domClose);
+                        removeLocationChangeSuccessListener = $scope.$on("$locationChangeSuccess", function() {
+                            ctrl.close();
+                        });
+                        ctrl.isOpen = true;
+                        currentOpenDropdownCtrl = ctrl;
+                    }
+                }
+                return ctrl.isOpen;
+            };
+            ctrl.toggle = function() {
+                if (ctrl.isOpen) {
+                    ctrl.close();
+                } else {
+                    ctrl.open();
+                }
+            };
+            var domClose = function() {
+                $scope.$apply(function() {
+                    ctrl.close();
+                });
+            };
+            function removeHandlers() {
+                $element.parent().off("click", preventCloseMenu);
+                $document.off("click", domClose);
+                if (angular.isFunction(removeLocationChangeSuccessListener)) {
+                    removeLocationChangeSuccessListener();
+                    removeLocationChangeSuccessListener = undefined;
+                }
+            }
+            ctrl.close = function(domEvent) {
+                if (ctrl.isOpen) {
+                    var callbackResult = executeCallback(ctrl.shared.onClose, domEvent);
+                    if (callbackResult.isPrevented === false) {
+                        $element.parent().removeClass("open");
+                        removeHandlers();
+                        ctrl.isOpen = false;
+                        currentOpenDropdownCtrl = null;
+                    }
+                }
+                return !ctrl.isOpen;
+            };
+            $scope.$on("$destroy", function() {
+                removeHandlers();
+            });
+        } ],
+        link: function(scope, element, attrs, ctrl) {
+            var domToggle = function(domEvent) {
+                domEvent.preventDefault();
+                domEvent.stopPropagation();
+                scope.$apply(function() {
+                    ctrl.toggle();
+                });
+            };
+            element.on("click", domToggle);
+            scope.$on("$destroy", function() {
+                element.off("click", domToggle);
+            });
+            function shareCtrlFunctions(shared) {
+                shared.open = ctrl.open;
+                shared.close = ctrl.close;
+                shared.toggle = ctrl.toggle;
+                shared.isOpen = function() {
+                    return ctrl.isOpen;
+                };
+            }
+            attrs.$observe("w11kDropdownToggle", function(attrValue) {
+                if (angular.isDefined(attrValue) && attrValue !== "") {
+                    var shared = scope.$eval(attrValue);
+                    if (angular.isObject(shared)) {
+                        ctrl.shared = shared;
+                        shareCtrlFunctions(shared);
+                    }
+                }
+            });
+        }
+    };
+} ]);
