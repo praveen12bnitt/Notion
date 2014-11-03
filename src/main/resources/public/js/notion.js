@@ -18,6 +18,18 @@ function (str){
   return this.indexOf(str) != -1;
 };
 
+// Connect the AJAX error function
+$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
+  var destination = settings.url;
+  toastr.error("REST command failed.  This likely indicates a problem with the server.  Notion was trying to reach " + destination + ' <p>Reload <a href="index.html">here</a></p>', "Network Error", { positionClass: "toast-top-full-width", hideDuration: "1000000" });
+  console.error("REST failed, see following for details");
+  console.error("jQuery event:", event);
+  console.error("XHR:", jqxhr);
+  console.error("Settings:", settings);
+  console.error("Thrown error:", thrownError);
+});
+
+
 // for some unknown reason, we have to do this first under Chrome?
 var poolCollection = new PoolCollection();
 poolCollection.fetch();

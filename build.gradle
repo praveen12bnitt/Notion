@@ -135,13 +135,21 @@ sourceSets {
     }
   }
 }
+
+// Test configuration
+// NB: using './gradlew test --debug-jvm' will instruct gradle to startup,
+// then pause the JVM waiting for a debug connection on 5005
+// To run a single test: ./gradlew test -Dtest.single=ResourceTest
 test {
   useJUnit();
-
+  // Always run the tests
+  outputs.upToDateWhen { false }
+  // testLogging.showStandardStreams = true
+  maxHeapSize = "1g"
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '1.11'
+  gradleVersion = '2.0'
 }
 
 artifacts {

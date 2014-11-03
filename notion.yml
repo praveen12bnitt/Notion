@@ -51,5 +51,6 @@ logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
   level: INFO
   # Logger-specific levels.
-#  loggers:
+  loggers:
+    org.hibernate.engine.internal: ERROR
     # org.hibernate.SQL: ALL
