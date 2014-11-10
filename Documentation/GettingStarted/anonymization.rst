@@ -1,13 +1,11 @@
 .. include:: /global.rst
 
 
+.. _AnonymizationIntro:
+
 Anonymziation
 =============
 
-.. _AnonymizationIntro:
-
-Anonymization
--------------
 
 To turn on Anonymization, click the :tt:`Edit` icon next to the Pool info on this page http://localhost:8080/index.html#/pools/pool/1.  In the dialog box, check :tt:`Use Anonymizer`, click :tt:`Save changes` and :tt:`close`.  Now our Pool display looks somewhat different with two new sections: :tt:`CTP Configuration` and :tt:`Anonymization Rules`.  Opening up the :tt:`CTP Configuration` reveals an editor for the CTP configuration used by the pool.  The particular file is for the `CTP DICOM anonymizer <http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer>`_ configuration stored on the Notion server.  Editing and saving the file will change how anonymization is handled on the Notion server.
 
@@ -181,8 +179,3 @@ The moment we've all been waiting for (yea right).  With our anonymizer in place
 	Anonymized and non-anonymized images.  :tt:`MRA-0068` is the original patient study, and :tt:`Study-00001` is the anonymized version.
 
 If the same images were sent again, they would receive the same PatientID, AccessionNumber and Study Description.
-
-Next Steps
-----------
-
-The :ref:`next tutorial <UsingConnectors>` is using :ref:`Connectors` between pools.

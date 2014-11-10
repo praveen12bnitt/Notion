@@ -39,7 +39,7 @@ public class Item {
   public String accessionNumber;
   public String patientBirthDate;
   public String studyDate;
-  public String modalitiesInStudy;
+  public String modalitiesInStudy = "";
   public String studyDescription;
   public String anonymizedName;
   public String anonymizedID;

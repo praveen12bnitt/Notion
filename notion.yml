@@ -20,7 +20,7 @@ shiro:
 # In production, assets are bundled in the Jar
 assets:
   overrides:
-    /: /Users/blezek/Source/Notion/ui/public
+    /: ui/public
 
 
 server:
@@ -42,13 +42,15 @@ email:
 
 
 notion:
-  host: myst.mayo.edu:8080
+  host: myst.mayo.edu
   dicomPort: 11117
   imageDirectory: ../Working/LocalPACS/Images
+  allowRegistration: true
 
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
   level: INFO
   # Logger-specific levels.
-#  loggers:
+  loggers:
+    org.hibernate.engine.internal: ERROR
     # org.hibernate.SQL: ALL

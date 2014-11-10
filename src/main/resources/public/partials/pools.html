@@ -12,7 +12,7 @@
           </thead>
           <tr ng-repeat="pool in poolCollection.models">
             <td>
-              {{pool.get('name')}}
+              {{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}<br />
               <a ng-show='permission[pool.id].edit' ui-sref='root.pools.pool({poolKey: pool.id})'>detail</a>
               <a ng-show='permission[pool.id].query' ui-sref='root.pools.query({poolKey: pool.id})'>query</a><br />
               <a ng-show='permission[pool.id].query' ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>

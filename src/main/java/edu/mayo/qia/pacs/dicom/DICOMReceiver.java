@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
@@ -159,7 +160,11 @@ public class DICOMReceiver implements AssociationListener, Managed {
             String AET = rs.getString("AET");
             String HN = rs.getString("HN");
             info.poolKey = rs.getInt("PK");
-            if (remoteHostName.matches(HN) && callingAET.matches(AET)) {
+            // Hostnames _must_ be case insensitive, but AETitles are case
+            // sensitive
+            boolean matchHostName = Pattern.compile(HN, Pattern.CASE_INSENSITIVE).matcher(remoteHostName).matches();
+            boolean matchAETitle = Pattern.compile(AET).matcher(callingAET).matches();
+            if (matchHostName && matchAETitle) {
               info.canConnect = true;
             }
           }

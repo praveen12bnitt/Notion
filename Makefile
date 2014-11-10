@@ -2,30 +2,33 @@ include BuildProperties.properties
 build=$(build.major).$(build.minor).$(build.patch)
 versionDir=Notion-$(build)
 dir=zip-temp/$(versionDir)
+DATE := $(shell /bin/date +%F-%T)
 
 
-# The Log4j setup
-
-dist:
-	(cd ui/ && make install)
-	(cd Documentation && make install)
+dist: build
 	./gradlew jar
 	rm -rf zip-temp
 	mkdir -p $(dir)
-	cp -r build/libs/lib $(dir)
-	cp notion $(dir)
-	cp build/libs/Notion.jar $(dir)/Notion.jar
-	cp Readme.md notion.example.yml $(dir)
+	rsync -r build/libs/lib $(dir)
+	rsync notion $(dir)
+	rsync build/libs/Notion.jar $(dir)/Notion.jar
+	rsync Readme.md notion.example.yml $(dir)
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
-watch:
-	(cd Documentation && while :; do make html ; sleep 5s; done)
+build:
+	rm -rf src/main/resources/public
+	(cd ui/ && make clean install)
+	(cd Documentation && make clean install)
 
 install: dist
 	${MAKE} sync
-
-server:
-	./gradlew jar
+	${MAKE} restart
 
 sync:
-	rsync -arvz zip-temp/$(versionDir) qin@qia:/research/images/Notion
+	rsync -arvz zip-temp/$(versionDir)/ qin@qia:/research/images/Notion/$(versionDir)-$(DATE)
+	ssh qin@qia "cd /research/images/Notion ;ln -sfn $(versionDir)-$(DATE) Notion"
+
+restart:
+	ssh qia sudo /sbin/service notion restart
+
+.PHONY: build dist install watch server sync restart

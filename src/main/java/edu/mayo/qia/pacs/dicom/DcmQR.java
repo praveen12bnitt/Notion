@@ -2,7 +2,6 @@ package edu.mayo.qia.pacs.dicom;
 
 //package org.dcm4che2.tool.dcmmover;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -50,9 +49,9 @@ public class DcmQR {
   private static final String STUDY_QR_LEVEL_STR = "STUDY";
   private static final String SERIES_QR_LEVEL_STR = "SERIES";
 
-  private static final String[] STUDY_LEVEL_FIND_CUID = { UID.StudyRootQueryRetrieveInformationModelFIND, UID.PatientRootQueryRetrieveInformationModelFIND, UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
+  private static final String[] STUDY_LEVEL_FIND_CUID = { UID.StudyRootQueryRetrieveInformationModelFIND, UID.PatientRootQueryRetrieveInformationModelFIND };
 
-  private static final String[] STUDY_LEVEL_MOVE_CUID = { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE, UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired };
+  private static final String[] STUDY_LEVEL_MOVE_CUID = { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE };
 
   // NB: added StudyDescription for Notion's sake
   private static final int[] STUDY_RETURN_KEYS = { Tag.StudyDate, Tag.StudyTime, Tag.PatientID, Tag.PatientName, Tag.AccessionNumber, Tag.StudyID, Tag.StudyInstanceUID, Tag.NumberOfStudyRelatedSeries, Tag.NumberOfStudyRelatedInstances,

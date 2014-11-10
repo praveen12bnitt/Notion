@@ -13,9 +13,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import edu.mayo.qia.pacs.Notion;
+import edu.mayo.qia.pacs.NotionConfiguration;
 
 @Entity
 @Table
@@ -38,9 +42,32 @@ public final class Pool {
   public Set<Device> devices = new HashSet<Device>();
 
   @JsonIgnore
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "pool")
+  public Set<Query> queries = new HashSet<Query>();
+
+  @JsonIgnore
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "pool")
   // @JoinColumn(name = "PoolKey")
   public Script script;
+
+  @Transient
+  public int getPort() {
+    if (Notion.context != null) {
+      return Notion.context.getBean("configuration", NotionConfiguration.class).notion.dicomPort;
+    } else {
+      return 0;
+    }
+  };
+
+  @Transient
+  public String getHost() {
+    if (Notion.context != null) {
+      return Notion.context.getBean("configuration", NotionConfiguration.class).notion.host;
+    } else {
+      return "unknown";
+    }
+
+  }
 
   @JsonIgnore
   public Script getScript() {

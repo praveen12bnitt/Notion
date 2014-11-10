@@ -38,6 +38,8 @@ To add a Connector, click on the ``Connectors`` link on the menu bar and then th
 
 Click Save to save the Connector and enable it for use.  A Connector is accessible from any Pool.
 
+**NB:** The Device used in a connector **must not** use a regular expression.  The query and retieve require a correct Application Entity Title, full hostname and valid port.  See :ref:`DICOM` for details.
+
 Performing a Query
 ^^^^^^^^^^^^^^^^^^
 

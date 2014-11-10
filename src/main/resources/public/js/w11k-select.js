@@ -1,1 +1,821 @@
-"use strict";angular.module("w11k.select",["pasvaz.bindonce","w11k.dropdownToggle","w11k.select.template"]),angular.module("w11k.select").constant("w11kSelectConfig",{common:{templateUrl:"w11k-select.tpl.html"},instance:{required:!1,multiple:!0,disabled:!1,header:{placeholder:"",text:void 0},filter:{active:!0,placeholder:"Filter",select:{active:!0,text:void 0},deselect:{active:!0,text:void 0}},style:{marginBottom:"10px",maxHeight:void 0}}}),angular.module("w11k.select").factory("optionParser",["$parse",function(e){var t=/^\s*(.*?)(?:\s+as\s+(.*?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+(.*)$/;return{parse:function(n){var r=n.match(t);if(!r){var i='"value" [as "label"] for "item" in "collection"';throw new Error("Expected options in form of '"+i+"' but got \""+n+'".')}var o={value:e(r[1]),label:e(r[2]||r[1]),item:r[3],collection:e(r[4])};return o}}}]),angular.module("w11k.select").directive("w11kSelect",["w11kSelectConfig","$parse","$document","optionParser","$filter","$timeout","$window",function(e,t,n,r,i,o,l){var a=angular.element(l);return{restrict:"A",replace:!1,templateUrl:e.common.templateUrl,scope:{},require:"ngModel",link:function(c,u,f,s){function d(){if(g(),b(),!I){if(c.config.filter.select.active&&c.config.filter.select.text){var e=angular.element(u[0].querySelector(".select-filtered-text"));e.text(c.config.filter.select.text)}if(c.config.filter.deselect.active&&c.config.filter.deselect.text){var t=angular.element(u[0].querySelector(".deselect-filtered-text"));t.text(c.config.filter.deselect.text)}if(c.config.header.placeholder){var n=angular.element(u[0].querySelector(".header-placeholder"));n.text(c.config.header.placeholder)}I=!0}}function g(){var e=j.filter(function(e){return e.selected});c.config.multiple===!1&&e.length>0&&(c.deselectAll(),e[0].selected=!0)}function p(e,t){if(angular.isFunction(e.parents)){var r=e.parents(t);if(r.length>0)return r[0]}else{var i="MatchesSelector",o=["matches","matchesSelector","moz"+i,"webkit"+i,"ms"+i,"o"+i];for(var l in o){var a=o[l];if(angular.isFunction(e[0][a])){for(var c=e[0].parentNode;c!==n[0];){if(c[a](t))return c;c=c.parentNode}return}}}}function v(e){27===e.keyCode&&c.dropdown.close()}function m(){if(angular.isDefined(c.config.style.maxHeight))N.style.maxHeight=c.style.maxHeight;else{var e=w();N.style.maxHeight=e+"px"}}function h(){N.style.maxHeight=""}function w(){var e,t,n,r=N.getBoundingClientRect().top,i=l.innerHeight||l.document.documentElement.clientHeight;if(angular.isDefined(R)?(t=R.innerHeight||R.clientHeight,n=R.getBoundingClientRect().top):(t=l.innerHeight||l.document.documentElement.clientHeight,n=0),c.config.style.marginBottom.indexOf("px")<0)throw new Error("Illegal Value for w11kSelectStyle.marginBottom");var o,a,u=parseFloat(c.config.style.marginBottom.slice(0,-2));t+n>i?(o=i,a=0):(o=t,a=n),e=o-(r-a)-u;var f=93;return f>e&&(e=f),e}function $(){if(angular.isDefined(c.config.header.text))T.text(c.$parent.$eval(c.config.header.text));else{var e=j.filter(function(e){return e.selected}),t=e.map(function(e){return e.label});T.text(t.join(", "))}}function y(){B&&(z=K(j,c.filter.values,!1),c.options.visible=z.slice(0,G))}function x(e,t){var n=t.map(function(e){return W(e)});return e.map(function(e){var t,r=P(e),i=W(r),o=A(e);return t=-1!==n.indexOf(i)?!0:!1,{hash:i.toString(36),label:o,model:e,selected:t}})}function S(){var e=Q.collection(c.$parent),t=s.$viewValue;j=x(e,t),y(),k()}function b(){var e=O(j);s.$setViewValue(e),$()}function k(){var e=O(j);angular.forEach(s.$parsers,function(t){e=t(e)}),t(f.ngModel).assign(c.$parent,e)}function E(){var e=s.$viewValue;angular.forEach(j,function(t){var n=F(t);t.selected=-1!==e.indexOf(n)?!0:!1}),H(e),$()}function C(e){var t;return t=angular.isArray(e)?e:angular.isDefined(e)?[e]:[],H(t),t}function D(e){if(!angular.isUndefined(e)){var t;return t=c.config.multiple?e:e[0]}}function H(e){var t=!1;return c.config.required===!0&&e.length>0?t=!0:c.config.required===!1&&(t=!0),s.$setValidity("required",t),t?e:void 0}function q(){var e=s.$viewValue;return!(angular.isArray(e)&&e.length>0)}function O(e){var t=e.filter(function(e){return e.selected}),n=t.map(F);return n}function F(e){return P(e.model)}function P(e){var t={};return t[Q.item]=e,Q.value(t)}function A(e){var t={};return t[Q.item]=e,Q.label(t)}function V(e){return angular.forEach(arguments,function(t){t!==e&&angular.forEach(t,function(t,n){e[n]&&e[n].constructor&&e[n].constructor===Object?V(e[n],t):e[n]=t})}),e}var B=!1,j=[],z=[];c.options={visible:[]},c.filter={values:{}},c.config=angular.copy(e.instance);var I=!1;c.$watch(function(){return c.$parent.$eval(f.w11kSelectConfig)},function(e){angular.isArray(e)?(V.apply(null,[c.config].concat(e)),d()):angular.isObject(e)&&(V(c.config,e),d())},!0);var M="visibility",U=angular.element(u[0].querySelector(".dropdown-menu")),N=u[0].querySelector(".dropdown-menu .content"),R=p(u,".w11k-select-adjust-height-to"),T=angular.element(u[0].querySelector(".header-text"));c.dropdown={onOpen:function(e){return c.config.disabled?void e.prevent():(B===!1&&(B=!0,y()),n.on("keyup",v),U.css(M,"hidden"),o(function(){m(),U.css(M,"visible"),c.config.filter.active&&o(function(){u[0].querySelector(".dropdown-menu input").focus()})}),void a.on("resize",m))},onClose:function(){c.filter.values.label="",o(function(){h()}),n.off("keyup",v),a.off("resize",m)}},c.$on("$destroy",function(){n.off("keyup",v),a.off("resize",m)});var K=i("filter"),G=80,J=.5*G;c.showMoreOptions=function(){c.options.visible=z.slice(0,c.options.visible.length+J)},c.$watch("filter.values.label",function(){y()}),c.clearFilter=function(){c.filter.values={}},c.onKeyPressedInFilter=function(e){13===e.keyCode&&(e.preventDefault(),e.stopPropagation(),c.selectFiltered())},c.selectFiltered=function(e){angular.isDefined(e)&&(e.preventDefault(),e.stopPropagation()),c.config.multiple?angular.forEach(z,function(e){e.selected=!0}):1===z.length&&(z[0].selected=!0),b()},c.deselectFiltered=function(e){angular.isDefined(e)&&(e.preventDefault(),e.stopPropagation()),angular.forEach(z,function(e){e.selected=!1}),b()},c.deselectAll=function(e){angular.isDefined(e)&&(e.preventDefault(),e.stopPropagation()),angular.forEach(j,function(e){e.selected=!1}),b()};var L=f.w11kSelectOptions,Q=r.parse(L);c.select=function(e){c.config.multiple?e.selected=!e.selected:(c.deselectAll(),e.selected=!0,c.dropdown.close()),b()},c.$watchCollection(function(){return Q.collection(c.$parent)},function(e){angular.isDefined(e)&&S()}),c.onOptionStateClick=function(e){e.stopPropagation()},c.onOptionStateChange=function(){b()},c.isEmpty=q,s.$isEmpty=q,s.$render=E,s.$formatters.push(C),s.$parsers.push(H),s.$parsers.push(D);var W=function(){var e=function(e){for(var t=0,n=0;n<e.length;n++)t=(t<<5)-t+e.charCodeAt(n)|0;return t},t=function(t){var n=t.toString();return e(n)},n=function(e){var n=0;for(var i in e)e.hasOwnProperty(i)&&(n+=t(i+r(e[i])));return n},r=function(r){var i={string:e,number:t,"boolean":t,object:n},o=typeof r;return null===r||void 0===r?0:void 0!==i[o]?i[o](r)+t(o):0};return r}()}}}]),angular.module("w11k.select").directive("infiniteScroll",["$timeout",function(e){return{link:function(t,n,r){var i=0,o=!0,l=!1,a=function(){f(!0)},c=n[0];if(1!==c.children.length)throw new Error("scroll container has to have exactly one child!");var u=c.children[0],f=function(e){var n=u.clientHeight-c.scrollTop,a=n<=c.clientHeight*(i+1);a&&o?e?t.$apply(function(){t.$eval(r.infiniteScroll)}):t.$eval(r.infiniteScroll):a&&(l=!0)};return r.$observe("infiniteScrollDistance",function(e){i=parseFloat(e)}),r.$observe("infiniteScrollDisabled",function(e){o=!e,o&&l&&(l=!1,f())}),n.on("scroll",a),t.$on("$destroy",function(){n.off("scroll",a)}),e(function(){r.infiniteScrollImmediateCheck&&t.$eval(r.infiniteScrollImmediateCheck)&&f()})}}}]);
+/**
+ * w11k-select - v0.4.5 - 2014-07-07
+ * https://github.com/w11k/w11k-select
+ *
+ * Copyright (c) 2014 WeigleWilczek GmbH
+ */
+'use strict';
+
+angular.module('w11k.select', [
+  'pasvaz.bindonce',
+  'w11k.dropdownToggle',
+  'w11k.select.template'
+]);
+
+angular.module('w11k.select').constant('w11kSelectConfig', {
+  common: {
+    /**
+     * path to template
+     * do not change if you're using w11k-select.tpl.js
+     * adjust if you want to use your own template or
+     */
+    templateUrl: 'w11k-select.tpl.html'
+  },
+  instance: {
+    /** for form validation */
+    required: false,
+    /** single or multiple select */
+    multiple: true,
+    /** disable user interaction */
+    disabled: false,
+    /** all the configuration for the header (visible if dropdown closed) */
+    header: {
+      /** text to show if no item selected (plain text, no evaluation, no data-binding) */
+      placeholder: '',
+      /**
+       * text to show if item(s) selected (expression, evaluated against user scope)
+       * make sure to enclose your expression withing quotes, otherwise it will be evaluated too early
+       * default: undefined evaluates to a comma separated representation of selected items
+       * example: ng-model="options.selected" w11k-select-config="{header: {placeholder: 'options.selected.length'}}"
+       */
+      text: undefined
+    },
+    /** all the configuration for the filter section within the dropdown */
+    filter: {
+      /** activate filter input to search for options */
+      active: true,
+      /** text to show if no filter is applied */
+      placeholder: 'Filter',
+      /** 'select all filtered options' button */
+      select: {
+        /** show select all button */
+        active: true,
+        /**
+         * label for select all button
+         * default: undefined evaluates to 'all'
+         */
+        text: undefined
+      },
+      /** 'deselect all filtered options' button */
+      deselect: {
+        /** show deselect all button */
+        active: true,
+        /**
+         * label for deselect all button
+         * default: undefined evaluates to 'none'
+         */
+        text: undefined
+      }
+    },
+    /** values for dynamically calculated styling of dropdown */
+    style: {
+      /** margin-bottom for automatic height adjust */
+      marginBottom: '10px',
+      /** static or manually calculated max height (disables internal height calculation) */
+      maxHeight: undefined
+    }
+  }
+});
+
+angular.module('w11k.select').factory('optionParser', ['$parse', function ($parse) {
+
+  //                     value      as   label     for   item                    in   collection
+  var OPTIONS_EXP = /^\s*(.*?)(?:\s+as\s+(.*?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+(.*)$/;
+
+  return {
+    parse: function (input) {
+
+      var match = input.match(OPTIONS_EXP);
+      if (!match) {
+        var expected = '"value" [as "label"] for "item" in "collection"';
+        throw new Error('Expected options in form of \'' + expected + '\' but got "' + input + '".');
+      }
+
+      var result = {
+        value: $parse(match[1]),
+        label: $parse(match[2] || match[1]),
+        item: match[3],
+        collection: $parse(match[4])
+      };
+
+      return result;
+    }
+  };
+}]);
+
+angular.module('w11k.select').directive('w11kSelect', [
+  'w11kSelectConfig', '$parse', '$document', 'optionParser', '$filter', '$timeout', '$window',
+  function (w11kSelectConfig, $parse, $document, optionParser, $filter, $timeout, $window) {
+
+    var jqWindow = angular.element($window);
+
+    return {
+      restrict: 'A',
+      replace: false,
+      templateUrl: w11kSelectConfig.common.templateUrl,
+      scope: {},
+      require: 'ngModel',
+      link: function (scope, element, attrs, controller) {
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * internal model
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        var hasBeenOpened = false;
+        var options = [];
+        var optionsFiltered = [];
+
+        scope.options = {
+          visible: []
+        };
+
+        scope.filter = {
+          values: {}
+        };
+
+        scope.config = angular.copy(w11kSelectConfig.instance);
+
+        // marker to read some parts of the config only once
+        var configRead = false;
+
+        scope.$watch(
+          function () {
+            return scope.$parent.$eval(attrs.w11kSelectConfig);
+          },
+          function (newConfig) {
+            if (angular.isArray(newConfig)) {
+              extendDeep.apply(null, [scope.config].concat(newConfig));
+              applyConfig();
+            }
+            else if (angular.isObject(newConfig)) {
+              extendDeep(scope.config, newConfig);
+              applyConfig();
+            }
+          },
+          true
+        );
+
+        function applyConfig() {
+          checkSelection();
+          setViewValue();
+
+          if (!configRead) {
+            if (scope.config.filter.select.active && scope.config.filter.select.text) {
+              var jqSelectFilteredButton = angular.element(element[0].querySelector('.select-filtered-text'));
+              jqSelectFilteredButton.text(scope.config.filter.select.text);
+            }
+
+            if (scope.config.filter.deselect.active && scope.config.filter.deselect.text) {
+              var jqDeselectFilteredButton = angular.element(element[0].querySelector('.deselect-filtered-text'));
+              jqDeselectFilteredButton.text(scope.config.filter.deselect.text);
+            }
+
+            if (scope.config.header.placeholder) {
+              var jqHeaderPlaceholder = angular.element(element[0].querySelector('.header-placeholder'));
+              jqHeaderPlaceholder.text(scope.config.header.placeholder);
+            }
+
+            configRead = true;
+          }
+        }
+
+        function checkSelection() {
+          var selectedOptions = options.filter(function (option) {
+            return  option.selected;
+          });
+          if (scope.config.multiple === false && selectedOptions.length > 0) {
+            scope.deselectAll();
+            selectedOptions[0].selected = true;
+          }
+        }
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * dropdown
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        function getParent(element, selector) {
+          // with jQuery
+          if (angular.isFunction(element.parents)) {
+            var container = element.parents(selector);
+            if (container.length > 0) {
+              return container[0];
+            }
+
+            return;
+          }
+
+          // without jQuery
+          var matchesSelector = 'MatchesSelector';
+          var matchFunctions = [
+            'matches',
+            'matchesSelector',
+            'moz' + matchesSelector,
+            'webkit' + matchesSelector,
+            'ms' + matchesSelector,
+            'o' + matchesSelector
+          ];
+
+          for (var index in matchFunctions) {
+            var matchFunction = matchFunctions[index];
+            if (angular.isFunction(element[0][matchFunction])) {
+              var parent1 = element[0].parentNode;
+              while (parent1 !== $document[0]) {
+                if (parent1[matchFunction](selector)) {
+                  return parent1;
+                }
+                parent1 = parent1.parentNode;
+              }
+
+              return;
+            }
+          }
+
+          return;
+        }
+
+        function onEscPressed(event) {
+          if (event.keyCode === 27) {
+            scope.dropdown.close();
+          }
+        }
+
+        function adjustHeight() {
+          if (angular.isDefined(scope.config.style.maxHeight)) {
+            domDropDownContent.style.maxHeight = scope.style.maxHeight;
+          }
+          else {
+            var maxHeight = calculateDynamicMaxHeight();
+            domDropDownContent.style.maxHeight = maxHeight + 'px';
+
+          }
+        }
+
+        function resetHeight() {
+          domDropDownContent.style.maxHeight = '';
+        }
+
+        function calculateDynamicMaxHeight() {
+          var maxHeight;
+
+          var contentOffset = domDropDownContent.getBoundingClientRect().top;
+
+          var windowHeight = $window.innerHeight || $window.document.documentElement.clientHeight;
+
+          var containerHeight;
+          var containerOffset;
+
+          if (angular.isDefined(domHeightAdjustContainer)) {
+            containerHeight = domHeightAdjustContainer.innerHeight || domHeightAdjustContainer.clientHeight;
+            containerOffset = domHeightAdjustContainer.getBoundingClientRect().top;
+          }
+          else {
+            containerHeight = $window.innerHeight || $window.document.documentElement.clientHeight;
+            containerOffset = 0;
+          }
+
+          if (scope.config.style.marginBottom.indexOf('px') < 0) {
+            throw new Error('Illegal Value for w11kSelectStyle.marginBottom');
+          }
+          var marginBottom = parseFloat(scope.config.style.marginBottom.slice(0, -2));
+
+          var referenceHeight;
+          var referenceOffset;
+
+          if (containerHeight + containerOffset > windowHeight) {
+            referenceHeight = windowHeight;
+            referenceOffset = 0;
+          }
+          else {
+            referenceHeight = containerHeight;
+            referenceOffset = containerOffset;
+          }
+
+          maxHeight = referenceHeight - (contentOffset - referenceOffset) - marginBottom;
+
+          var minHeightFor3Elements = 93;
+          if (maxHeight < minHeightFor3Elements) {
+            maxHeight = minHeightFor3Elements;
+          }
+
+          return maxHeight;
+        }
+
+        var visibility = 'visibility';
+        var jqDropDownMenu = angular.element(element[0].querySelector('.dropdown-menu'));
+        var domDropDownContent = element[0].querySelector('.dropdown-menu .content');
+        var domHeightAdjustContainer = getParent(element, '.w11k-select-adjust-height-to');
+        var jqHeaderText = angular.element(element[0].querySelector('.header-text'));
+
+        scope.dropdown = {
+          onOpen: function ($event) {
+            if (scope.config.disabled) {
+              $event.prevent();
+              return;
+            }
+
+            if (hasBeenOpened === false) {
+              hasBeenOpened = true;
+              filterOptions();
+            }
+
+            $document.on('keyup', onEscPressed);
+
+            jqDropDownMenu.css(visibility, 'hidden');
+            $timeout(function () {
+              adjustHeight();
+              jqDropDownMenu.css(visibility, 'visible');
+              
+              if (scope.config.filter.active) {
+                // use timeout to open dropdown first and then set the focus,
+                // otherwise focus won't be set because element is not visible
+                $timeout(function () {
+                  element[0].querySelector('.dropdown-menu input').focus();
+                });
+              }
+            });
+            jqWindow.on('resize', adjustHeight);
+          },
+          onClose: function () {
+            // important: set properties of filter.values to empty strings not to null,
+            // otherwise angular's filter won't work
+            scope.filter.values.label = '';
+
+            $timeout(function () {
+              resetHeight();
+            });
+            $document.off('keyup', onEscPressed);
+            jqWindow.off('resize', adjustHeight);
+          }
+        };
+
+        scope.$on('$destroy', function () {
+          $document.off('keyup', onEscPressed);
+          jqWindow.off('resize', adjustHeight);
+        });
+
+        function updateHeader() {
+          if (angular.isDefined(scope.config.header.text)) {
+            jqHeaderText.text(scope.$parent.$eval(scope.config.header.text));
+          }
+          else {
+            var optionsSelected = options.filter(function (option) {
+              return option.selected;
+            });
+
+            var selectedOptionsLabels = optionsSelected.map(function (option) {
+              return option.label;
+            });
+
+            jqHeaderText.text(selectedOptionsLabels.join(', '));
+          }
+        }
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * filter
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        var filter = $filter('filter');
+        var initialLimitTo = 80;
+        var increaseLimitTo = initialLimitTo * 0.5;
+
+        function filterOptions() {
+          if (hasBeenOpened) {
+            // false as third parameter: use contains to compare
+            optionsFiltered = filter(options, scope.filter.values, false);
+            scope.options.visible = optionsFiltered.slice(0, initialLimitTo);
+          }
+        }
+
+        scope.showMoreOptions = function () {
+          scope.options.visible = optionsFiltered.slice(0, scope.options.visible.length + increaseLimitTo);
+        };
+
+        scope.$watch('filter.values.label', function () {
+          filterOptions();
+        });
+
+        scope.clearFilter = function () {
+          scope.filter.values = {};
+        };
+
+        scope.onKeyPressedInFilter = function ($event) {
+          // on enter
+          if ($event.keyCode === 13) {
+            $event.preventDefault();
+            $event.stopPropagation();
+
+            scope.selectFiltered();
+          }
+        };
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * buttons
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        scope.selectFiltered = function ($event) {
+          if (angular.isDefined($event)) {
+            $event.preventDefault();
+            $event.stopPropagation();
+          }
+
+          if (scope.config.multiple) {
+            angular.forEach(optionsFiltered, function (option) {
+              option.selected = true;
+            });
+          }
+          else if (optionsFiltered.length === 1) {
+            optionsFiltered[0].selected = true;
+          }
+
+          setViewValue();
+        };
+
+        scope.deselectFiltered = function ($event) {
+          if (angular.isDefined($event)) {
+            $event.preventDefault();
+            $event.stopPropagation();
+          }
+
+          angular.forEach(optionsFiltered, function (option) {
+            option.selected = false;
+          });
+
+          setViewValue();
+        };
+
+        scope.deselectAll = function ($event) {
+          if (angular.isDefined($event)) {
+            $event.preventDefault();
+            $event.stopPropagation();
+          }
+
+          angular.forEach(options, function (option) {
+            option.selected = false;
+          });
+
+          setViewValue();
+        };
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * options
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        var optionsExp = attrs.w11kSelectOptions;
+        var optionsExpParsed = optionParser.parse(optionsExp);
+
+        function collection2options(collection, viewValue) {
+          var viewValueHashes = viewValue.map(function (selectedValue) {
+            return hashCode(selectedValue);
+          });
+
+          return collection.map(function (option) {
+            var optionValue = modelElement2value(option);
+            var optionValueHash = hashCode(optionValue);
+            var optionLabel = modelElement2label(option);
+
+            var selected;
+            if (viewValueHashes.indexOf(optionValueHash) !== -1) {
+              selected = true;
+            }
+            else {
+              selected = false;
+            }
+
+            return {
+              hash: optionValueHash.toString(36),
+              label: optionLabel,
+              model: option,
+              selected: selected
+            };
+          });
+        }
+
+        function updateOptions() {
+          var collection = optionsExpParsed.collection(scope.$parent);
+          var viewValue = controller.$viewValue;
+
+          options = collection2options(collection, viewValue);
+
+          filterOptions();
+          updateNgModel();
+        }
+
+        scope.select = function (option) {
+          if (option.selected === false && scope.config.multiple === false) {
+            scope.deselectAll();
+            option.selected = true;
+            scope.dropdown.close();
+            setViewValue();
+          }
+          else if (option.selected && scope.config.required === false && scope.config.multiple === false) {
+            option.selected = false;
+            scope.dropdown.close();
+            setViewValue();
+          }
+          else if (scope.config.multiple) {
+            option.selected = !option.selected;
+            setViewValue();
+          }
+        };
+
+        // watch for changes of options collection made outside
+        scope.$watchCollection(
+          function () {
+            return optionsExpParsed.collection(scope.$parent);
+          },
+          function (newVal) {
+            if (angular.isDefined(newVal)) {
+              updateOptions();
+            }
+          }
+        );
+
+        // called on click to a checkbox of an option
+        scope.onOptionStateClick = function ($event, option) {
+          // we have to stop propagation, otherwise selected state will be toggled twice
+          // because of click handler of list element
+          $event.stopPropagation();
+
+          if (option.selected && scope.config.required && scope.config.multiple === false) {
+            $event.preventDefault();
+          }
+
+          scope.select(option);
+        };
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * ngModel
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        function setViewValue() {
+          var selectedValues = options2model(options);
+
+          controller.$setViewValue(selectedValues);
+          updateHeader();
+        }
+
+        function updateNgModel() {
+          var value = options2model(options);
+
+          angular.forEach(controller.$parsers, function (fn) {
+            value = fn(value);
+          });
+
+          $parse(attrs.ngModel).assign(scope.$parent, value);
+        }
+
+        function render() {
+          var viewValue = controller.$viewValue;
+
+          angular.forEach(options, function (option) {
+            var optionValue = option2value(option);
+
+            if (viewValue.indexOf(optionValue) !== -1) {
+              option.selected = true;
+            }
+            else {
+              option.selected = false;
+            }
+          });
+
+          validateRequired(viewValue);
+          updateHeader();
+        }
+
+        function external2internal(modelValue) {
+          var viewValue;
+
+          if (angular.isArray(modelValue)) {
+            viewValue = modelValue;
+          }
+          else if (angular.isDefined(modelValue)) {
+            viewValue = [modelValue];
+          }
+          else {
+            viewValue = [];
+          }
+
+          validateRequired(viewValue);
+
+          return viewValue;
+        }
+
+        function internal2external(viewValue) {
+          if (angular.isUndefined(viewValue)) {
+            return;
+          }
+
+          var modelValue;
+
+          if (scope.config.multiple) {
+            modelValue = viewValue;
+          }
+          else {
+            modelValue = viewValue[0];
+          }
+
+          return modelValue;
+        }
+
+        function validateRequired(viewValue) {
+          var valid = false;
+
+          if (scope.config.required === true && viewValue.length > 0) {
+            valid =  true;
+          }
+          else if (scope.config.required === false) {
+            valid = true;
+          }
+
+          controller.$setValidity('required', valid);
+          if (valid) {
+            return viewValue;
+          }
+        }
+
+        function isEmpty() {
+          var value = controller.$viewValue;
+          return !(angular.isArray(value) && value.length > 0);
+        }
+
+        scope.isEmpty = isEmpty;
+
+        controller.$isEmpty = isEmpty;
+
+        controller.$render = render;
+        controller.$formatters.push(external2internal);
+
+        controller.$parsers.push(validateRequired);
+        controller.$parsers.push(internal2external);
+
+
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * helper functions
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+        function options2model(options) {
+          var selectedOptions = options.filter(function (option) {
+            return  option.selected;
+          });
+
+          var selectedValues = selectedOptions.map(option2value);
+
+          return selectedValues;
+        }
+
+        function option2value(option) {
+          return modelElement2value(option.model);
+        }
+
+        function modelElement2value(modelElement) {
+          var context = {};
+          context[optionsExpParsed.item] = modelElement;
+
+          return optionsExpParsed.value(context);
+        }
+
+        function modelElement2label(modelElement) {
+          var context = {};
+          context[optionsExpParsed.item] = modelElement;
+
+          return optionsExpParsed.label(context);
+        }
+
+        function extendDeep(dst) {
+          angular.forEach(arguments, function (obj) {
+            if (obj !== dst) {
+              angular.forEach(obj, function (value, key) {
+                if (dst[key] && dst[key].constructor && dst[key].constructor === Object) {
+                  extendDeep(dst[key], value);
+                } else {
+                  dst[key] = value;
+                }
+              });
+            }
+          });
+          return dst;
+        }
+
+        // inspired by https://github.com/stuartbannerman/hashcode
+        var hashCode = (function () {
+          var stringHash = function (string) {
+            var result = 0;
+            for (var i = 0; i < string.length; i++) {
+              result = (((result << 5) - result) + string.charCodeAt(i)) | 0;
+            }
+            return result;
+          };
+
+          var primitiveHash = function (primitive) {
+            var string = primitive.toString();
+            return stringHash(string);
+          };
+
+          var objectHash = function (obj) {
+            var result = 0;
+            for (var property in obj) {
+              if (obj.hasOwnProperty(property)) {
+                result += primitiveHash(property + hash(obj[property]));
+              }
+            }
+            return result;
+          };
+
+          var hash = function (value) {
+            var typeHashes = {
+              'string' : stringHash,
+              'number' : primitiveHash,
+              'boolean' : primitiveHash,
+              'object' : objectHash
+              // functions are excluded because they are not representative of the state of an object
+              // types 'undefined' or 'null' will have a hash of 0
+            };
+
+            var type = typeof value;
+
+            if (value === null || value === undefined) {
+              return 0;
+            }
+            else if (typeHashes[type] !== undefined) {
+              return typeHashes[type](value) + primitiveHash(type);
+            }
+            else {
+              return 0;
+            }
+          };
+
+          return hash;
+        })();
+      }
+    };
+  }
+]);
+
+angular.module('w11k.select').directive('infiniteScroll', ['$timeout', function ($timeout) {
+  return {
+    link: function (scope, element, attrs) {
+      var scrollDistance   = 0;
+      var scrollEnabled    = true;
+      var checkImmediatelyWhenEnabled = false;
+
+      var onDomScrollHandler = function () {
+        onScrollHandler(true);
+      };
+
+      var scrollContainer = element[0];
+
+      if (scrollContainer.children.length !== 1) {
+        throw new Error('scroll container has to have exactly one child!');
+      }
+
+      var content = scrollContainer.children[0];
+
+      var onScrollHandler = function (apply) {
+
+        var distanceToBottom  = content.clientHeight - scrollContainer.scrollTop;
+        var shouldScroll  = distanceToBottom <= scrollContainer.clientHeight * (scrollDistance + 1);
+
+        if (shouldScroll && scrollEnabled) {
+          if (apply) {
+            scope.$apply(function () {
+              scope.$eval(attrs.infiniteScroll);
+            });
+          }
+          else {
+            scope.$eval(attrs.infiniteScroll);
+          }
+        }
+        else if (shouldScroll) {
+          checkImmediatelyWhenEnabled = true;
+        }
+      };
+
+      attrs.$observe('infiniteScrollDistance', function (value) {
+        scrollDistance = parseFloat(value);
+      });
+
+
+      attrs.$observe('infiniteScrollDisabled', function (value) {
+        scrollEnabled = !value;
+
+        if (scrollEnabled && checkImmediatelyWhenEnabled) {
+          checkImmediatelyWhenEnabled = false;
+          onScrollHandler();
+        }
+      });
+
+      element.on('scroll', onDomScrollHandler);
+      scope.$on('$destroy', function () {
+        element.off('scroll', onDomScrollHandler);
+      });
+
+      return $timeout(function () {
+        if (attrs.infiniteScrollImmediateCheck) {
+          if (scope.$eval(attrs.infiniteScrollImmediateCheck)) {
+            onScrollHandler();
+          }
+        }
+      });
+    }
+  };
+}]);
