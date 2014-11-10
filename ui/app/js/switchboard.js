@@ -1,6 +1,5 @@
 // The purpose of this file is to check if the user is logged in and re-direct appropriately.
 
-
 $.getJSON('/rest/user/')
   .done(function(data,textStatus,jqXHR){
     console.log ( "got data: ", data);

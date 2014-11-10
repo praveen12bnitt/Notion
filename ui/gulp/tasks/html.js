@@ -2,6 +2,6 @@ var gulp = require ('gulp');
 
 
 gulp.task ( 'html', function() {
-  gulp.src('app/*.html')
+  gulp.src('app/**')
   .pipe ( gulp.dest( './public/') );
 });
