@@ -37,7 +37,7 @@ notionApp.controller ( "LoginController", function ( $scope, $state, $timeout,$l
   $scope.login = function() {
     $http.post('/rest/user/login', $scope.user ).success(function(result) {
       console.log("logged in");
-      $location.url("index.html");
+      $location.url("notion.html");
       $window.location.href = "./";
     }).error( function(result) {
       console.log("login failed");
