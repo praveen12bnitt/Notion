@@ -37,8 +37,8 @@ notionApp.controller ( "LoginController", function ( $scope, $state, $timeout,$l
   $scope.login = function() {
     $http.post('/rest/user/login', $scope.user ).success(function(result) {
       console.log("logged in");
-      $location.url("index.html");
-      $window.location.href = "./";
+      $location.url("notion.html");
+      $window.location.href = "notion.html";
     }).error( function(result) {
       console.log("login failed");
       $scope.error = result.message;
@@ -59,7 +59,7 @@ notionApp.controller ( "RegisterController", function ( $scope, $state, $http, $
         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
       }).success(function(data, status, headers, config) {
         console.log(data);
-        $location.url("index.html");
+        $location.url("notion.html");
         $window.location.href = "./";
       }).error(function(data, status, headers, config) {
         $scope.error = data.message;
