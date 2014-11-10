@@ -5,10 +5,8 @@ $.getJSON('/rest/user/')
     console.log ( "got data: ", data);
     // Are we logged in?
     if ( data.isAuthenticated ) {
-      alert ( "Redirecting to notion.html");
       window.location = "notion.html";
     } else {
-      alert ( "Redirecting to login.html");
       window.location = "login.html";
     }
   })

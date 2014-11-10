@@ -59,7 +59,7 @@ notionApp.controller ( "RegisterController", function ( $scope, $state, $http, $
         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
       }).success(function(data, status, headers, config) {
         console.log(data);
-        $location.url("index.html");
+        $location.url("notion.html");
         $window.location.href = "./";
       }).error(function(data, status, headers, config) {
         $scope.error = data.message;
