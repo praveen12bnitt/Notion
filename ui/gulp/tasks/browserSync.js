@@ -7,4 +7,4 @@ gulp.task('browserSync', ['build'], function() {
     proxy: "localhost:11118"
   };
   browserSync ( config);
-  });
+});
