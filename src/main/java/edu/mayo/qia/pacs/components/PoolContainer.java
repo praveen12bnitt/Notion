@@ -249,6 +249,10 @@ public class PoolContainer {
     process(importFile);
   }
 
+  String noNulls(String in) {
+    return in != null ? in : "";
+  }
+
   public void process(File incoming) throws Exception, IOException {
     synchronized (this) {
       // Handle one per container
@@ -339,8 +343,8 @@ public class PoolContainer {
           template
               .update(
                   "insert into ANONYMIZATIONMAPTEMP ( PoolKey, OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ? )",
-                  pool.poolKey, originalTags.getString(Tag.PatientName), tags.getString(Tag.PatientName), originalTags.getString(Tag.PatientID), tags.getString(Tag.PatientID), originalTags.getString(Tag.AccessionNumber),
-                  tags.getString(Tag.AccessionNumber), originalTags.getString(Tag.PatientBirthDate), tags.getString(Tag.PatientBirthDate));
+                  pool.poolKey, noNulls(originalTags.getString(Tag.PatientName)), noNulls(tags.getString(Tag.PatientName)), noNulls(originalTags.getString(Tag.PatientID)), noNulls(tags.getString(Tag.PatientID)),
+                  noNulls(originalTags.getString(Tag.AccessionNumber)), noNulls(tags.getString(Tag.AccessionNumber)), noNulls(originalTags.getString(Tag.PatientBirthDate)), noNulls(tags.getString(Tag.PatientBirthDate)));
         }
       } catch (Exception e) {
         logger.error("Caught exception", e);
