@@ -56,8 +56,8 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 @ContextConfiguration(initializers = { PACSTest.class })
 public class PACSTest implements ApplicationContextInitializer<GenericApplicationContext> {
   static Logger logger = Logger.getLogger(PACSTest.class);
-  static int DICOMPort = findFreePort(51117);
-  static int RESTPort = findFreePort(51118);
+  static int DICOMPort = findFreePort(50117);
+  static int RESTPort = findFreePort(50118);
   static int DBPort = findFreePort(58084);
   static File tempDirectory = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
   static Client client;
