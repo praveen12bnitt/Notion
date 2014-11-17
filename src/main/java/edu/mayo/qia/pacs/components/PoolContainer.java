@@ -299,7 +299,7 @@ public class PoolContainer {
         }
         session.saveOrUpdate(study);
 
-        // Find the Instance
+        // Find the Series
         query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
         query.setInteger("studykey", study.StudyKey);
         query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
@@ -321,6 +321,10 @@ public class PoolContainer {
           instance.series = series;
         } else {
           instance.update(tags);
+          // Update the file path, delete the existing file
+          File existingFile = new File(this.poolDirectory, instance.FilePath);
+          instance.FilePath = relativePath.getPath();
+          existingFile.delete();
         }
         session.saveOrUpdate(instance);
 

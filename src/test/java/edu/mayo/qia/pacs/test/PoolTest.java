@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.net.ConfigurationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.dicom.DcmQR;
+import edu.mayo.qia.pacs.dicom.TagLoader;
 
 @Component
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -60,10 +63,8 @@ public class PoolTest extends PACSTest {
   @Test
   public void createPool() {
     // CURL Code
-    /*
-     * curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
-     */
+    /* curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
@@ -195,6 +196,37 @@ public class PoolTest extends PACSTest {
     assertEquals("PatientName", "Gone", response.getString(Tag.PatientName));
     assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+  }
+
+  @Test
+  public void updateAccessionNumber() throws IOException, ConfigurationException, InterruptedException {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    PoolContainer container = poolManager.getContainer(pool.poolKey);
+
+    device = createDevice(device);
+
+    List<File> testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
+
+    // Change the anonymizer and continue
+    String script = "var tags = {AccessionNumber: '42', PatientName: 'Gone', PatientID: '1234' }; tags;";
+    createScript(new Script(pool, script));
+
+    testSeries = sendDICOM(aet, aet, "TOF/*001.dcm");
+
+    // See how many series we have, and check the images on disk
+    List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ?", new Object[] { pool.poolKey }, String.class);
+    for (String path : filePaths) {
+      assertTrue("File exists " + path, new File(container.getPoolDirectory(), path).exists());
+      // See if it has the new accession number
+      DicomObject tags = TagLoader.loadTags(new File(container.getPoolDirectory(), path));
+      assertTrue("File: " + path + " has AccessionNumber", tags.contains(Tag.AccessionNumber));
+      assertEquals("File: " + path + " has AccessionNumber == 42", "42", tags.getString(Tag.AccessionNumber));
+    }
+
   }
 
 }
