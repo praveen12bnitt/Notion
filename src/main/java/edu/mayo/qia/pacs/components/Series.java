@@ -62,7 +62,6 @@ public final class Series {
     InstitutionalDepartmentName = tags.getString(Tag.InstitutionalDepartmentName);
     PerformingPhysicianName = tags.getString(Tag.PerformingPhysicianName);
     NumberOfSeriesRelatedInstances = tags.getInt(Tag.NumberOfSeriesRelatedInstances, 0);
-
   }
 
 }
