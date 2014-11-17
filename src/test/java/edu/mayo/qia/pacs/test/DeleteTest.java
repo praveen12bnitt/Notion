@@ -57,4 +57,5 @@ public class DeleteTest extends PACSTest {
     assertEquals("INSTANCE", new Integer(0),
         template.queryForObject("select count(*) from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ?", new Object[] { pool.poolKey }, Integer.class));
   }
+
 }
