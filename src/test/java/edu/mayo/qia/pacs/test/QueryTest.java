@@ -123,6 +123,7 @@ public class QueryTest extends PACSTest {
       query = Query.constructQuery("QueryTemplate.xlsx", is);
       query.pool = pool;
       query.destinationPool = pool;
+      query.queryPool = pool;
       query.device = device;
       session.save(query);
       assertEquals(2, query.items.size());
