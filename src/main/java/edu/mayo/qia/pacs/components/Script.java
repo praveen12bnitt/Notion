@@ -9,6 +9,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -16,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Script {
+  static Logger logger = Logger.getLogger(Script.class);
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,9 +57,17 @@ public class Script {
     script = inScript.script;
   }
 
-  public static String createDefaultScript() {
-    return "// Default anonymization script\n" + " var tags = {\n" + "   PatientName: anonymizer.lookup('PatientName', tags.PatientName ) || 'PN-' + anonymizer.sequenceNumber ( 'PatientName', tags.PatientName),\n"
-        + "   PatientID: anonymizer.lookup('PatientID', tags.PatientID ) || anonymizer.sequenceNumber ( 'PatientID', tags.PatientID),\n"
-        + "   AccessionNumber: anonymizer.lookup('AccessionNumber', tags.AccessionNumber ) || anonymizer.sequenceNumber ( 'AccessionNumber', tags.AccessionNumber),\n" + " };\n" + " // 1234\n" + "tags;\n";
+  static String defaultScript;
+
+  public static synchronized String createDefaultScript() {
+    if (defaultScript == null) {
+      ClassPathResource resource = new ClassPathResource("DefaultAnonymizer.js");
+      try {
+        defaultScript = IOUtils.toString(resource.getInputStream());
+      } catch (Exception e) {
+        logger.error("Error copying the anonymizer script", e);
+      }
+    }
+    return defaultScript;
   }
 }

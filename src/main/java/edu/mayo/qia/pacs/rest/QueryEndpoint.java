@@ -63,7 +63,6 @@ public class QueryEndpoint {
   public int poolKey;
 
   @GET
-  @Path("/")
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -126,6 +125,39 @@ public class QueryEndpoint {
     return getQuery(id);
   }
 
+  void linkQuery(Connector connector, Query query) throws Exception {
+    Session session = sessionFactory.getCurrentSession();
+
+    int destinationPoolKey = connector.destinationPoolKey;
+    int deviceKey = connector.queryDeviceKey;
+    int queryPoolKey = connector.queryPoolKey;
+
+    Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
+    if (pool == null) {
+      throw new Exception("Could not load the pool");
+    }
+
+    Pool queryPool = (Pool) session.byId(Pool.class).load(queryPoolKey);
+    if (queryPool == null) {
+      throw new Exception("Could not load the query Pool");
+    }
+
+    Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
+    if (destinationPool == null) {
+      throw new Exception("Could not load the destination");
+    }
+
+    Device device = (Device) session.byId(Device.class).load(deviceKey);
+
+    if (device == null || device.pool.poolKey != queryPoolKey) {
+      throw new Exception("Could not load the device");
+    }
+    query.pool = pool;
+    query.device = device;
+    query.destinationPool = destinationPool;
+    query.queryPool = queryPool;
+  }
+
   @PUT
   @Path("/simple")
   @UnitOfWork
@@ -133,30 +165,12 @@ public class QueryEndpoint {
     Session session = sessionFactory.getCurrentSession();
     try {
       Connector connector = (Connector) session.byId(Connector.class).load(json.get("connectorKey").asInt());
-
-      int destinationPoolKey = connector.destinationPoolKey;
-      int deviceKey = connector.queryDeviceKey;
-      int queryPoolKey = connector.queryPoolKey;
-
-      Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
-      if (pool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-      }
-
-      Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
-      if (destinationPool == null) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
-      }
-
-      Device device = (Device) session.byId(Device.class).load(deviceKey);
-
-      if (device == null || device.pool.poolKey != queryPoolKey) {
-        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-      }
       Query query = Query.constructQuery(json);
-      query.pool = pool;
-      query.device = device;
-      query.destinationPool = destinationPool;
+      try {
+        linkQuery(connector, query);
+      } catch (Exception e) {
+        return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", e.getMessage())).build();
+      }
       session.save(query);
       session.getTransaction().commit();
       query.executeQuery();
@@ -180,30 +194,12 @@ public class QueryEndpoint {
     Session session = sessionFactory.getCurrentSession();
     Query query;
     Connector connector = (Connector) session.byId(Connector.class).load(connectorKey);
-
-    int destinationPoolKey = connector.destinationPoolKey;
-    int deviceKey = connector.queryDeviceKey;
-    int queryPoolKey = connector.queryPoolKey;
-
-    Pool pool = (Pool) session.byId(Pool.class).load(poolKey);
-    if (pool == null) {
-      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
-    }
-
-    Pool destinationPool = (Pool) session.byId(Pool.class).load(destinationPoolKey);
-    if (destinationPool == null) {
-      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the destination")).build();
-    }
-
-    Device device = (Device) session.byId(Device.class).load(deviceKey);
-
-    if (device == null || device.pool.poolKey != queryPoolKey) {
-      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the device")).build();
-    }
     query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);
-    query.pool = pool;
-    query.device = device;
-    query.destinationPool = destinationPool;
+    try {
+      linkQuery(connector, query);
+    } catch (Exception e) {
+      return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", e.getMessage())).build();
+    }
     session.save(query);
     session.getTransaction().commit();
     query.executeQuery();

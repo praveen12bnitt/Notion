@@ -79,6 +79,10 @@ public class Query {
   public Pool destinationPool;
 
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
+  @JoinColumn(name = "QueryPoolKey")
+  public Pool queryPool;
+
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
   @JoinColumn(name = "DeviceKey")
   public Device device;
 
@@ -207,11 +211,11 @@ public class Query {
         for (final Item item : items) {
           template.update("update QUERYITEM set Status = ? where QueryItemKey = ?", "working", item.queryItemKey);
 
-          DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
+          DcmQR dcmQR = new DcmQR(queryPool.applicationEntityTitle);
           dcmQR.setRemoteHost(device.hostName);
           dcmQR.setRemotePort(device.port);
           dcmQR.setCalledAET(device.applicationEntityTitle);
-          dcmQR.setCalling(destinationPool.applicationEntityTitle);
+          dcmQR.setCalling(queryPool.applicationEntityTitle);
 
           // Add our query parameters
           Map<String, String> map = item.getTagMap();
