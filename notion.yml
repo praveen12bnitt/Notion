@@ -52,5 +52,7 @@ logging:
   level: INFO
   # Logger-specific levels.
   loggers:
-    org.hibernate.engine.internal: ERROR
+    org.hibernate.engine: ERROR
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: ERROR
+    org.apache.shiro.realm.AuthorizingRealm: ERROR
     # org.hibernate.SQL: ALL
