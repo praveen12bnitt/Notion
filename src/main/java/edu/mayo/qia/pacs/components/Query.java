@@ -332,11 +332,11 @@ public class Query {
               continue;
             }
             template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fetching", result.queryResultKey);
-            DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
+            DcmQR dcmQR = new DcmQR(queryPool.applicationEntityTitle);
             dcmQR.setRemoteHost(device.hostName);
             dcmQR.setRemotePort(device.port);
             dcmQR.setCalledAET(device.applicationEntityTitle);
-            dcmQR.setCalling(destinationPool.applicationEntityTitle);
+            dcmQR.setCalling(queryPool.applicationEntityTitle);
             dcmQR.setMoveDest(destinationPool.applicationEntityTitle);
             try {
               // Create the entries
@@ -361,6 +361,7 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: " + e.toString(), result.queryResultKey);
             } catch (Exception e) {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: unknown exception " + e.toString(), result.queryResultKey);
+              logger.error("Error doing query", e);
             }
           }
         }
