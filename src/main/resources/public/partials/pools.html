@@ -14,7 +14,7 @@
             <td>
               {{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}<br />
               <a ng-show='permission[pool.id].edit' ui-sref='root.pools.pool({poolKey: pool.id})'>detail</a>
-              <a ng-show='permission[pool.id].query' ui-sref='root.pools.query({poolKey: pool.id})'>query</a><br />
+              <a ng-show='permission[pool.id].query' ui-sref='root.pools.query({poolKey: pool.id})'>query</a>
               <a ng-show='permission[pool.id].query' ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
               <a ng-show='permission[pool.id].query' ui-sref='root.pools.studies({poolKey: pool.id})'>studies</a>
               <a ng-show='permission[pool.id].admin' ui-sref="root.pools.authorization({poolKey: pool.id})">permissions</a>
