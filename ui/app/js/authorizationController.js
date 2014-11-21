@@ -2,6 +2,7 @@ console.log("In authorizationController.js");
 
 notionApp.controller ( 'AuthorizationController', function($scope,$timeout,$stateParams, $state, $modal, $http) {
   $scope.name = "AuthorizationController";
+$scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey);
 
   $scope.groupRoleCollection = new GroupRoleCollection();
   $scope.groupRoleCollection.urlRoot = "/rest/pool/" + $stateParams.poolKey + "/grouprole";
