@@ -331,17 +331,25 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "", result.queryResultKey);
               continue;
             }
+
             template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fetching", result.queryResultKey);
-            DcmQR dcmQR = new DcmQR(destinationPool.applicationEntityTitle);
+            DcmQR dcmQR = new DcmQR(queryPool.applicationEntityTitle);
             dcmQR.setRemoteHost(device.hostName);
             dcmQR.setRemotePort(device.port);
             dcmQR.setCalledAET(device.applicationEntityTitle);
-            dcmQR.setCalling(destinationPool.applicationEntityTitle);
+            dcmQR.setCalling(queryPool.applicationEntityTitle);
             dcmQR.setMoveDest(destinationPool.applicationEntityTitle);
             try {
+              if (destinationPool.anonymize) {
+                throw new Exception("Destination pool " + destinationPool.name + "/" + destinationPool.applicationEntityTitle + " is anonymizing, this move will fail.  Please turn off anonymization on the destination pool");
+              }
               // Create the entries
-              anonymizer.setValue("PatientName", result.patientName, item.anonymizedName);
-              anonymizer.setValue("PatientID", result.patientID, item.anonymizedID);
+              if (item.anonymizedName != null) {
+                anonymizer.setValue("PatientName", result.patientName, item.anonymizedName);
+              }
+              if (item.anonymizedID != null) {
+                anonymizer.setValue("PatientID", result.patientID, item.anonymizedID);
+              }
               dcmQR.qrStudy(result.studyInstanceUID);
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "moving", result.queryResultKey);
 
@@ -361,6 +369,7 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: " + e.toString(), result.queryResultKey);
             } catch (Exception e) {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: unknown exception " + e.toString(), result.queryResultKey);
+              logger.error("Error doing query", e);
             }
           }
         }

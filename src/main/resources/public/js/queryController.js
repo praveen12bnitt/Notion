@@ -1,6 +1,6 @@
 
 notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams, $state, $modal, $http) {
-  $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey);
+  $scope.pool = $scope.$parent.pool;
   console.log ( "QueryController for ", $stateParams.poolKey );
   console.log ( "Pool is: ", $scope.pool);
   $scope.model = $scope.pool.toJSON();

@@ -189,9 +189,12 @@ public class PoolContainer {
   }
 
   public void deleteStudy(String studyInstanceUID) {
-    Integer studyKey = template.queryForObject("select StudyKey from STUDY where PoolKey = ? and StudyInstanceUID = ?", new Object[] { pool.poolKey, studyInstanceUID }, Integer.class);
-    if (studyKey != null) {
-      deleteStudy(studyKey);
+    int count = template.queryForObject("select count(StudyKey) from STUDY where PoolKey = ? and StudyInstanceUID = ?", new Object[] { pool.poolKey, studyInstanceUID }, Integer.class);
+    if (count > 0) {
+      Integer studyKey = template.queryForObject("select StudyKey from STUDY where PoolKey = ? and StudyInstanceUID = ?", new Object[] { pool.poolKey, studyInstanceUID }, Integer.class);
+      if (studyKey != null) {
+        deleteStudy(studyKey);
+      }
     }
   }
 
