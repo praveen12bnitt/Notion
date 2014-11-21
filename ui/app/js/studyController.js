@@ -1,6 +1,6 @@
 
 notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateParams, $state, $modal) {
-  $scope.pool = $scope.$parent.poolCollection.get($stateParams.poolKey);
+  $scope.pool = $scope.$parent.pool;
   $scope.numberOfItems = 1;
   $scope.pageSize = 50;
 

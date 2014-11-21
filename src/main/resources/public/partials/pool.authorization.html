@@ -1,15 +1,4 @@
 <div>
-  <div class="page-header">
-  <h1><small>Permissions for {{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}</small></h1>
-<!-- This should really be moved into a different controller / template,
-     but for the moment we are not going to do it.  Famous last words.
-     DJB 11/2014 -->
-<a ng-show='permission[pool.id].edit' ui-sref='root.pools.pool({poolKey: pool.id})'>detail</a>
-<a ng-show='permission[pool.id].query' ui-sref='root.pools.query({poolKey: pool.id})'>query</a>
-<a ng-show='permission[pool.id].query' ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
-<a ng-show='permission[pool.id].query' ui-sref='root.pools.studies({poolKey: pool.id})'>studies</a>
-<a ng-show='permission[pool.id].admin' ui-sref="root.pools.authorization({poolKey: pool.id})">permissions</a>
-</div>
 
   <h3>Permissions <i class="fa fa-plus-circle" ng-click="editGroupRole()"></i></h3>
   <table class="table table-striped table-hover table-condensed">

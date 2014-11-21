@@ -4,26 +4,20 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-3">
-      <table class='table'>
-        <thead>
-          <tr><th>Pools
-            <i ng-show="$parent.permission.admin" class="fa fa-plus-circle" ng-click="newPool()"></a>
-            </tr>
-          </thead>
-          <tr ng-repeat="pool in poolCollection.models">
-            <td>
-              {{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}<br />
-              <a ng-show='permission[pool.id].edit' ui-sref='root.pools.pool({poolKey: pool.id})'>detail</a>
-              <a ng-show='permission[pool.id].query' ui-sref='root.pools.query({poolKey: pool.id})'>query</a>
-              <a ng-show='permission[pool.id].query' ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
-              <a ng-show='permission[pool.id].query' ui-sref='root.pools.studies({poolKey: pool.id})'>studies</a>
-              <a ng-show='permission[pool.id].admin' ui-sref="root.pools.authorization({poolKey: pool.id})">permissions</a>
-            </td>
-          </tr>
-        </table>
-      </div>
-      <div class="col-md-9">
-        <div ui-view></div>
-      </div>
+
+      <h3>Pools
+        <i ng-show="$parent.permission.admin" class="fa fa-plus-circle" ng-click="newPool()"></i>
+      </h3>
+      <hr/>
+      <ul class="nav nav-pills nav-stacked" ng-repeat="pool in poolCollection.models">
+        <li role="presentation" ng-class="{active: $state.includes('root.pools.pool', {poolKey: '' + pool.id})}">
+          <a ui-sref='root.pools.pool({poolKey: pool.id})'>{{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}</a>
+        </li>
+      </ul>
+
+    </div>
+    <div class="col-md-9">
+      <div ui-view></div>
     </div>
   </div>
+</div>
