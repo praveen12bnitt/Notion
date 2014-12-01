@@ -52,7 +52,13 @@ logging:
   level: INFO
   # Logger-specific levels.
   loggers:
+    # Set this logger to debug if you would like to see the SQL hibernate generates
+    org.hibernate.SQL: DEBUG
+
     org.hibernate.engine: ERROR
+
+    # Suppress hibernat statistics
     org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: ERROR
+
+    # Suppress Shiro info messages
     org.apache.shiro.realm.AuthorizingRealm: ERROR
-    # org.hibernate.SQL: ALL
