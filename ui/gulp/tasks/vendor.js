@@ -1,12 +1,10 @@
 var gulp = require('gulp'),
   uglify = require('gulp-uglify');
 
-
-
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'bower_components/jquery/dist/jquery.js',
+    'bower_components/jquery/jquery.js',
     'bower_components/toastr/toastr.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
