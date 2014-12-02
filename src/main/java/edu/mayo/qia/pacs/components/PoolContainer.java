@@ -283,7 +283,10 @@ public class PoolContainer {
       logger.debug("Final path: " + outFile);
       outFile.getParentFile().mkdirs();
 
-      // Insert
+      // Start a transaction
+      /* to debug:
+       * select * from syscs_diag.lock_table;
+       * select * from syscs_diag.transaction_table; */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -298,9 +301,13 @@ public class PoolContainer {
           study = new Study(tags);
           study.pool = pool;
         } else {
+          logger.error("Is Study dirty?: " + session.isDirty());
           study.update(tags);
+          logger.error("Is Study dirty now?: " + session.isDirty());
         }
         session.saveOrUpdate(study);
+        session.getTransaction().commit();
+        session.beginTransaction();
 
         // Find the Series
         query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
@@ -314,6 +321,8 @@ public class PoolContainer {
           series.update(tags);
         }
         session.saveOrUpdate(series);
+        session.getTransaction().commit();
+        session.beginTransaction();
 
         // Find the Instance
         query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
@@ -330,6 +339,8 @@ public class PoolContainer {
           existingFile.delete();
         }
         session.saveOrUpdate(instance);
+        session.getTransaction().commit();
+        session.beginTransaction();
 
         // Copy the file, remove later
         Files.copy(inFile, outFile);
@@ -342,7 +353,7 @@ public class PoolContainer {
         if (originalFile.exists()) {
           originalFile.delete();
         }
-        session.getTransaction().commit();
+        // session.getTransaction().commit();
 
         if (pool.anonymize) {
 

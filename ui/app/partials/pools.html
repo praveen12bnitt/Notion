@@ -11,7 +11,7 @@
       <hr/>
       <ul class="nav nav-pills nav-stacked" ng-repeat="pool in poolCollection.models">
         <li role="presentation" ng-class="{active: $state.includes('root.pools.pool', {poolKey: '' + pool.id})}">
-          <a ui-sref='root.pools.pool({poolKey: pool.id})'>{{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}</a>
+          <a ui-sref='root.pools.pool.detail({poolKey: pool.id})'>{{pool.get('name')}} / {{pool.get('applicationEntityTitle')}}@{{pool.get('host')}}:{{pool.get('port')}}</a>
         </li>
       </ul>
 
