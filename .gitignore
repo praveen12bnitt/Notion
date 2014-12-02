@@ -1,6 +1,4 @@
 bin
-derby.log
-PACS.log
 Documentation/_build
 MQ
 doc/
@@ -22,5 +20,10 @@ ui/public.brunch
 /bin
 build
 TEST-NOTION
-.gradle/1.11/taskArtifacts
+.gradle/
+.settings/
+Notion*.zip
 NotionPACS
+.classpath
+*.log*
+
