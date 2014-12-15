@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
@@ -70,7 +71,9 @@ public class DICOMReceiver implements AssociationListener, Managed {
   @Autowired
   MoveSCP moveSCP;
 
-  private final Executor executor = Executors.newCachedThreadPool();
+  // DJB, replaced with Notion's
+  // private final Executor executor = Executors.newCachedThreadPool();
+  private Executor executor = Notion.executor;
 
   private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
