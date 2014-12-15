@@ -86,4 +86,27 @@ public class StudiesTest extends PACSTest {
     assertTrue(dir.getName().startsWith("MRA-0068/23274-2008-06-18/"));
     unzip.close();
   }
+
+  @Test
+  public void zipStudies() throws Exception {
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, false);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    sendDICOM(aet, aet, "TOF/*001.dcm");
+
+    // Delete, need to use the Form object
+    URI uri = UriBuilder.fromUri(baseUri).path("/pool/" + pool.poolKey + "/studies/zip").build();
+    ClientResponse response = client.resource(uri).get(ClientResponse.class);
+    assertEquals("Got result", 200, response.getStatus());
+    ZipInputStream unzip = new ZipInputStream(response.getEntityInputStream());
+    ZipEntry dir = unzip.getNextEntry();
+    assertTrue(dir != null);
+    assertTrue(dir.getName().startsWith(pool.name + "/"));
+    unzip.close();
+  }
+
 }

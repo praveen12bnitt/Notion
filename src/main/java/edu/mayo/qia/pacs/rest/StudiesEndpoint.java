@@ -4,6 +4,7 @@ import io.dropwizard.hibernate.UnitOfWork;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
@@ -12,18 +13,22 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -49,6 +54,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.components.Instance;
+import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Series;
 import edu.mayo.qia.pacs.components.Study;
@@ -58,6 +64,7 @@ import edu.mayo.qia.pacs.components.Study;
 @PerRequest
 public class StudiesEndpoint {
   static Logger logger = Logger.getLogger(ScriptEndpoint.class);
+  static final String regex = "[^0-9a-zA-Z_-]";
 
   @Autowired
   SessionFactory sessionFactory;
@@ -145,6 +152,51 @@ public class StudiesEndpoint {
     return Response.ok(json).build();
   }
 
+  @GET
+  @Path("/zip")
+  @UnitOfWork
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  public Response getZip(@Context UriInfo uriInfo, @DefaultValue("%") @QueryParam("PatientID") final String PatientID, @DefaultValue("%") @QueryParam("PatientName") final String PatientName,
+      @DefaultValue("%") @QueryParam("AccessionNumber") final String AccessionNumber, @DefaultValue("%") @QueryParam("StudyDescription") final String StudyDescription) throws Exception {
+    final Pool pool = poolManager.getContainer(poolKey).getPool();
+
+    StreamingOutput stream = new StreamingOutput() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public void write(OutputStream output) throws IOException {
+        Session session = sessionFactory.openSession();
+        try {
+          Query query = session.createQuery("from Study where PoolKey = :poolkey and PatientID like :PatientID and PatientName like :PatientName and AccessionNumber like :AccessionNumber and StudyDescription like :StudyDescription");
+          query.setInteger("poolkey", poolKey);
+          query.setParameter("PatientID", PatientID);
+          query.setParameter("PatientName", PatientName);
+          query.setParameter("AccessionNumber", AccessionNumber);
+          query.setParameter("StudyDescription", StudyDescription);
+          ZipOutputStream zip = new ZipOutputStream(output);
+          File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
+          String path = pool.name.replaceAll(regex, "_") + "/";
+          // Put the path to make a directory
+          zip.putNextEntry(new ZipEntry(path));
+          zip.closeEntry();
+
+          for (Study study : (List<Study>) query.list()) {
+            appendStudyToZip(path, zip, poolRootDir, study);
+
+          }
+          zip.close();
+
+        } finally {
+          session.close();
+        }
+      }
+    };
+    StringBuilder fn = new StringBuilder(pool.name.replaceAll(regex, "_"));
+    fn.append("-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()));
+    fn.append(".zip");
+    return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn).build();
+  };
+
   // Get as a ZIP file
   @GET
   @UnitOfWork
@@ -152,7 +204,6 @@ public class StudiesEndpoint {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getZip(@PathParam("id") final int id) throws Exception {
     Query query;
-    final String regex = "[^0-9a-zA-Z_-]";
     Session session = sessionFactory.getCurrentSession();
     query = session.createQuery("from Study where PoolKey = :poolkey and StudyKey = :id");
     query.setInteger("poolkey", poolKey);
@@ -171,39 +222,15 @@ public class StudiesEndpoint {
           query.setInteger("id", id);
           final Study study = (Study) query.uniqueResult();
 
-          byte[] buffer = new byte[1024];
           ZipOutputStream zip = new ZipOutputStream(output);
           File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
-          String path = study.PatientName == null ? "empty" : study.PatientName.replaceAll(regex, "_");
-
-          String sub = study.StudyID == null ? "empty" : study.StudyID.replaceAll(regex, "_") + "-";
-          DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-          path = path + "/" + sub + format.format(study.StudyDate);
-          // zip.putNextEntry(new ZipEntry(path));
-          for (Series series : study.series) {
-            String desc = series.SeriesDescription == null ? "empty" : series.SeriesDescription;
-            String seriesPath = path + "/" + desc.replaceAll(regex, "_");
-            // zip.putNextEntry(new ZipEntry(seriesPath));
-            for (Instance instance : series.instances) {
-              String instancePath = seriesPath + "/" + instance.SOPInstanceUID + ".dcm";
-              zip.putNextEntry(new ZipEntry(instancePath));
-              File f = new File(poolRootDir, instance.FilePath);
-              // Read into the zip file
-              FileInputStream in = new FileInputStream(f);
-              int len;
-              while ((len = in.read(buffer)) > 0) {
-                zip.write(buffer, 0, len);
-              }
-              in.close();
-              zip.closeEntry();
-            }
-          }
-          zip.closeEntry();
+          appendStudyToZip("", zip, poolRootDir, study);
           zip.close();
         } finally {
           session.close();
         }
       }
+
     };
     StringBuilder fn = new StringBuilder(study.PatientName.replaceAll(regex, "_"));
     fn.append("-").append(study.StudyDate == null ? "empty" : study.StudyDate.toString().replaceAll(regex, "_"));
@@ -227,4 +254,32 @@ public class StudiesEndpoint {
     return Response.status(Status.NOT_FOUND).build();
   }
 
+  private void appendStudyToZip(String basePath, ZipOutputStream zip, File poolRootDir, final Study study) throws IOException, FileNotFoundException {
+    byte[] buffer = new byte[1024];
+    String path = study.PatientName == null ? "empty" : study.PatientName.replaceAll(regex, "_");
+
+    String sub = study.StudyID == null ? "empty" : study.StudyID.replaceAll(regex, "_") + "-";
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    path = basePath + path + "/" + sub + format.format(study.StudyDate);
+    // zip.putNextEntry(new ZipEntry(path));
+    for (Series series : study.series) {
+      String desc = series.SeriesDescription == null ? "empty" : series.SeriesDescription;
+      String seriesPath = path + "/" + desc.replaceAll(regex, "_");
+      // zip.putNextEntry(new ZipEntry(seriesPath));
+      for (Instance instance : series.instances) {
+        String instancePath = seriesPath + "/" + instance.SOPInstanceUID + ".dcm";
+        zip.putNextEntry(new ZipEntry(instancePath));
+        File f = new File(poolRootDir, instance.FilePath);
+        // Read into the zip file
+        FileInputStream in = new FileInputStream(f);
+        int len;
+        while ((len = in.read(buffer)) > 0) {
+          zip.write(buffer, 0, len);
+        }
+        in.close();
+        zip.closeEntry();
+      }
+    }
+    zip.closeEntry();
+  }
 }
