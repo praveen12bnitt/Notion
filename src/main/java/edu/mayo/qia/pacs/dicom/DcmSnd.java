@@ -73,6 +73,8 @@ import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.StringUtils;
 
+import edu.mayo.qia.pacs.Notion;
+
 @SuppressWarnings("javadoc")
 public class DcmSnd {
   static Logger logger = Logger.getLogger(DcmSnd.class);
@@ -127,7 +129,8 @@ public class DcmSnd {
 
   public DcmSnd(String name) {
     device = new Device(name);
-    executor = new NewThreadExecutor(name);
+    // DJB, replaced with Notion's new NewThreadExecutor(name);
+    executor = Notion.context.getBean("executor", Executor.class);
     remoteAE.setInstalled(true);
     remoteAE.setAssociationAcceptor(true);
     remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
