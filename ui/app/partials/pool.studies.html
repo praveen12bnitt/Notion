@@ -2,33 +2,44 @@
 
   <form class="form-inline" role="form">
     <div class="form-group">
-      <label class="sr-only" for="exampleInputEmail2">Patient ID</label>
       <input type="text" ng-model="PatientID" ng-change="reload()" class="form-control" id="exampleInputEmail2" placeholder="PatientID">
     </div>
     <div class="form-group">
-      <label class="sr-only" for="exampleInputPassword2">Patient Name</label>
       <input type="text" ng-model="PatientName"  ng-change="reload()" class="form-control" id="exampleInputPassword2" placeholder="PatientName">
     </div>
     <div class="form-group">
-      <label class="sr-only" for="exampleInputPassword2">Accession Number</label>
-      <input type="text" ng-model="AccessionNumber" ng-change="reload()" class="form-control" id="exampleInputPassword2" placeholder="AccessionNumber">
+      <input type="text" ng-model="AccessionNumber" ng-change="reload()" class="form-control" placeholder="AccessionNumber">
+    </div>
+    <div class="form-group">
+      <input type="text" ng-model="StudyDescription" ng-change="reload()" class="form-control" placeholder="StudyDescription">
     </div>
     <button type="submit" class="btn btn-default" ng-click="clear()">Clear</button>
+    <a  ng-href="/rest/pool/{{pool.get('poolKey')}}/studies/{{study.StudyKey}}/zip{{params()}}">Download All</a>
   </form>
 
   <table class="table table-striped table-hover table-condensed">
     <thead>
       <tr>
-        <td>PatientID</td>
-        <td>Patient Name</td>
-        <td>Accession Number</td>
-        <td>Study Description</td>
-        <td></td>
-        <td></td>
+        <td ng-class="{ active: sortingBy('PatientID') }" ng-click="setOrderBy('PatientID')">
+          PatientID
+          <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('PatientID'), 'fa-sort-numeric-desc':sort.descending && sortingBy('PatientID')}" ></i>
+        </td>
+        <td ng-class="{ active: sortingBy('PatientName') }" ng-click="setOrderBy('PatientName')">
+          Patient Name
+          <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-alpha-asc':!sort.descending && sortingBy('PatientName'), 'fa-sort-alpha-desc':sort.descending && sortingBy('PatientName')}"></i>
+        </td>
+        <td ng-class="{ active: sortingBy('AccessionNumber') }" ng-click="setOrderBy('AccessionNumber')">
+          Accession Number
+          <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('AccessionNumber'), 'fa-sort-numeric-desc':sort.descending && sortingBy('AccessionNumber')}" ></i>
+        </td>
+        <td ng-class="{ active: sortingBy('StudyDescription') }" ng-click="setOrderBy('StudyDescription')" colspan="3">
+          Study Description
+          <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-alpha-asc':!sort.descending && sortingBy('StudyDescription'), 'fa-sort-alpha-desc':sort.descending && sortingBy('StudyDescription')}"></i>
+        </td>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="study in studies.Records | orderBy:'StudyKey'">
+      <tr ng-repeat="study in studies.Records | orderBy:sort.column:sort.descending">
         <td>{{study.PatientID}}</td>
         <td>{{study.PatientName}}</td>
         <td>{{study.AccessionNumber}}</td>

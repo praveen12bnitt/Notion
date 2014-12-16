@@ -194,8 +194,8 @@ public class QueryEndpoint {
     Session session = sessionFactory.getCurrentSession();
     Query query;
     Connector connector = (Connector) session.byId(Connector.class).load(connectorKey);
-    query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);
     try {
+      query = Query.constructQuery(fileDetail.getFileName(), spreadSheetInputStream);
       linkQuery(connector, query);
     } catch (Exception e) {
       return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", e.getMessage())).build();

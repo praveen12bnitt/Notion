@@ -41,6 +41,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     $scope.mode = 'query-pending';
   };
 
+  $scope.selectAll = function() {
+    $.each($scope.query.get('items'), function(index,value) {
+      $scope.fetchAll(value);
+    })
+  }
+
   $scope.fetchAll = function(item){
     $.each(item.items, function(index,value){
       item.items[index].doFetch = true;
@@ -67,7 +73,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     $http.put("/rest/pool/" + $scope.pool.get('poolKey') + "/query/simple", data).
     success(successCallback).
     error(function(data){
-      alert ( "Could not construct query:" + data.message);
+      alert ( "Could not construct query: " + data.message);
     });
   };
 
@@ -87,7 +93,8 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       contentType: false,
       success: successCallback,
       error: function(xhr, status, error) {
-        alert ( "Could not construct query: " + xhr.responseText );
+        var data = JSON.parse(xhr.responseText);
+        alert ( "Could not construct query: " + data.message );
       }
     });
   };

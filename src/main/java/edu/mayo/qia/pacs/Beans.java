@@ -105,7 +105,7 @@ public class Beans {
 
   @Bean
   public ExecutorService executor() {
-    return Executors.newCachedThreadPool();
+    return Notion.executor;
   }
 
   @Bean

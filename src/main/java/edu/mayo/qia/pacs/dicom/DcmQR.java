@@ -31,6 +31,8 @@ import org.dcm4che2.net.UserIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.mayo.qia.pacs.Notion;
+
 /**
  * Provides DICOM Query/Retrieve SCU capability for the DcmMover.
  * 
@@ -61,7 +63,9 @@ public class DcmQR {
 
   private static final String[] NATIVE_LE_TS = { UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian };
 
-  private Executor executor = new NewThreadExecutor("DCMQR");
+  // DJB, replace with Notion's thread pool
+  // private Executor executor = new NewThreadExecutor("DCMQR");
+  private Executor executor = Notion.context.getBean("executor", Executor.class);
 
   private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
@@ -105,7 +109,9 @@ public class DcmQR {
 
   private boolean noExtNegotiation;
 
-  Executor eventExecutor = new NewThreadExecutor("DCMQR_EVENTS");
+  // DJB, replace with Notion's thread pool
+  // Executor eventExecutor = new NewThreadExecutor("DCMQR_EVENTS");
+  Executor eventExecutor = Notion.context.getBean("executor", Executor.class);
 
   private ActionListener moveActionListener;
 
