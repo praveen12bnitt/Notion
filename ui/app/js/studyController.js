@@ -31,65 +31,62 @@ notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateP
       jtPageSize: $scope.pageSize,
       PatientID : $scope.PatientID,
       PatientName : $scope.PatientName,
+      AccessionNumber : $scope.AccessionNumber,
+      StudyDescription : $scope.StudyDescription
+    })
+    .success(function(data,status,headers) {
+      $scope.studies = data;
+      $scope.numberOfItems = data.TotalRecordCount;
+    });
+  };
+
+  $scope.params = function() {
+    var p = "?";
+    if ( $scope.PatientID ) {
+      p = p + ("PatientID=" + encodeURI($scope.PatientID)+"&");
+    }
+    if ( $scope.PatientName ) {
+      p = p + ("PatientName=" + encodeURI($scope.PatientName)+"&");
+    }
+    if ( $scope.AccessionNumber ) {
+      p = p + ("AccessionNumber=" + encodeURI($scope.AccessionNumber)+"&");
+    }
+    return p;
+  }
+
+  $scope.download = function(){
+    $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies/zip', {
+      PatientID : $scope.PatientID,
+      PatientName : $scope.PatientName,
       AccessionNumber : $scope.AccessionNumber
-    }
-  )
-  .success(function(data,status,headers) {
-    $scope.studies = data;
-    $scope.numberOfItems = data.TotalRecordCount;
-  });
-};
+    });
+  };
 
-$scope.params = function() {
-  var p = "?";
-  if ( $scope.PatientID ) {
-    p = p + ("PatientID=" + encodeURI($scope.PatientID)+"&");
-  }
-  if ( $scope.PatientName ) {
-    p = p + ("PatientName=" + encodeURI($scope.PatientName)+"&");
-  }
-  if ( $scope.AccessionNumber ) {
-    p = p + ("AccessionNumber=" + encodeURI($scope.AccessionNumber)+"&");
-  }
-  return p;
-}
+  $scope.$watch('currentPage', $scope.reload);
+  $scope.clear = function() {
+    $scope.PatientID = "";
+    $scope.PatientName = "";
+    $scope.AccessionNumber = "";
+    $scope.reload();
+  };
 
-$scope.download = function(){
-  $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies/zip', {
-    PatientID : $scope.PatientID,
-    PatientName : $scope.PatientName,
-    AccessionNumber : $scope.AccessionNumber
-  }
-);
-};
-
-$scope.$watch('currentPage', $scope.reload);
-$scope.clear = function() {
-  $scope.PatientID = "";
-  $scope.PatientName = "";
-  $scope.AccessionNumber = "";
-  $scope.reload();
-};
-$scope.deleteStudy = function(study) {
-  $scope.study = study;
-  $modal.open ({
-    templateUrl: 'partials/modal.html',
-    scope: $scope,
-    controller: function($scope, $modalInstance) {
-      $scope.title = "Delete study?";
-      $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber;
-      $scope.ok = function(){
-        $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
-        .success(function() {
-          $scope.reload();
-          $modalInstance.dismiss();
-        });
-      };
-      $scope.cancel = function() { $modalInstance.dismiss(); };
-    }
-  });
-};
-
-
-
+  $scope.deleteStudy = function(study) {
+    $scope.study = study;
+    $modal.open ({
+      templateUrl: 'partials/modal.html',
+      scope: $scope,
+      controller: function($scope, $modalInstance) {
+        $scope.title = "Delete study?";
+        $scope.message = "Delete study " + study.StudyDescription + " for " + study.PatientName + " / " + study.PatientID + " / " + study.AccessionNumber;
+        $scope.ok = function(){
+          $http.delete("/rest/pool/" + $scope.pool.get("poolKey") + "/studies/" + study.StudyKey)
+          .success(function() {
+            $scope.reload();
+            $modalInstance.dismiss();
+          });
+        };
+        $scope.cancel = function() { $modalInstance.dismiss(); };
+      }
+    });
+  };
 });

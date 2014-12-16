@@ -97,8 +97,8 @@
               <b>DICOM Server:</b> {{query.get('device').applicationEntityTitle}}@{{query.get('device').hostName}}:{{query.get('device').port}}<p/>
               <button ng-disabled="!mode.match('done') " ng-click="fetch()" class="btn btn-default">Fetch Studies</button>
               <button  ng-click="doQuery()" class="btn btn-default">Query</button>
-              <button ng-click="reset()" class="btn btn-default">Cancel</button>
               <button ng-click="selectAll()" class="btn btn-default">Select All</button>
+              <button ng-click="reset()" class="btn btn-default">Cancel</button>
               <table class="table table-striped table-hover table-condensed">
                 <thead>
                   <tr>
