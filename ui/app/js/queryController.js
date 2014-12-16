@@ -41,6 +41,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     $scope.mode = 'query-pending';
   };
 
+  $scope.selectAll = function() {
+    $.each($scope.query.get('items'), function(index,value) {
+      $scope.fetchAll(value);
+    })
+  }
+
   $scope.fetchAll = function(item){
     $.each(item.items, function(index,value){
       item.items[index].doFetch = true;
