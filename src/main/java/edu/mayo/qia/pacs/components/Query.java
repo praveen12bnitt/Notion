@@ -354,15 +354,23 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "moving", result.queryResultKey);
 
               // Initiate the move
+              MoveStatus status = new MoveStatus();
               if (pool.poolKey != destinationPool.poolKey) {
                 // Move and delete, otherwise ignore
-                if (!poolManager.getContainer(destinationPool.poolKey).moveStudyTo(result.studyInstanceUID, poolContainer)) {
+                if (!poolManager.getContainer(destinationPool.poolKey).moveStudyTo(result.studyInstanceUID, poolContainer, status)) {
                   template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: could not move study ", result.queryResultKey);
                 } else {
                   // Delete the study
                   poolManager.getContainer(destinationPool.poolKey).deleteStudy(result.studyInstanceUID);
                 }
+              } else {
+                // Fetched to ourselves, so update the StudyKey accordingly
+                Integer studyKey = template.queryForObject("select StudyKey from STUDY where PoolKey = ? and StudyInstanceUID = ?", new Object[] { pool.poolKey, result.studyInstanceUID }, Integer.class);
+                status.movedStudyKey = studyKey;
               }
+              // Update the result's StudyKey
+              template.update("update QUERYRESULT set StudyKey = ? where QueryResultKey = ?", status.movedStudyKey, result.queryResultKey);
+
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "completed", result.queryResultKey);
 
             } catch (DcmMoveException e) {
