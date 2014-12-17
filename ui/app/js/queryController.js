@@ -36,9 +36,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   };
 
   $scope.selectQuery = function(id) {
-    $scope.query = $scope.queries.get(id);
-    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-    $scope.mode = 'query-pending';
+    $state.go ( "^.queryresult", { queryKey: id})
   };
 
   $scope.selectAll = function() {
@@ -58,11 +56,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   };
 
   var successCallback = function(data) {
-    console.log("Create query");
-    $scope.query = new QueryModel(data);
-    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-    $scope.mode = 'query-pending';
-    queryTick();
+    console.log("Created query");
+    $state.go ( "^.queryresult", { queryKey: data.queryKey})
+    // $scope.query = new QueryModel(data);
+    // $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+    // $scope.mode = 'query-pending';
+    // queryTick();
   };
 
   $scope.submitIndividual = function() {
