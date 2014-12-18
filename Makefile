@@ -5,6 +5,21 @@ dir=zip-temp/$(versionDir)
 DATE := $(shell /bin/date +%F-%T)
 
 
+define help
+
+Makefile for Notion
+  install - install Notion on qia server
+  dist    - build a zipped distribution file
+  build   - build UI, documentation and Jar file
+  sync    - rsync the current build to qia server
+  restart - restart Notion on the qia server
+
+endef
+export help
+
+show-help:
+		@echo "$$help"
+
 dist: build
 	./gradlew jar
 	rm -rf zip-temp
@@ -16,6 +31,7 @@ dist: build
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
 build:
+	./gradlew jar
 	rm -rf src/main/resources/public
 	(cd ui/ && make clean install)
 	(cd Documentation && make clean install)

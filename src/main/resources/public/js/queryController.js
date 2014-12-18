@@ -36,10 +36,14 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   };
 
   $scope.selectQuery = function(id) {
-    $scope.query = $scope.queries.get(id);
-    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-    $scope.mode = 'query-pending';
+    $state.go ( "^.queryresult", { queryKey: id})
   };
+
+  $scope.selectAll = function() {
+    $.each($scope.query.get('items'), function(index,value) {
+      $scope.fetchAll(value);
+    })
+  }
 
   $scope.fetchAll = function(item){
     $.each(item.items, function(index,value){
@@ -52,11 +56,12 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   };
 
   var successCallback = function(data) {
-    console.log("Create query");
-    $scope.query = new QueryModel(data);
-    $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
-    $scope.mode = 'query-pending';
-    queryTick();
+    console.log("Created query");
+    $state.go ( "^.queryresult", { queryKey: data.queryKey})
+    // $scope.query = new QueryModel(data);
+    // $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
+    // $scope.mode = 'query-pending';
+    // queryTick();
   };
 
   $scope.submitIndividual = function() {
@@ -67,7 +72,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
     $http.put("/rest/pool/" + $scope.pool.get('poolKey') + "/query/simple", data).
     success(successCallback).
     error(function(data){
-      alert ( "Could not construct query:" + data.message);
+      alert ( "Could not construct query: " + data.message);
     });
   };
 
@@ -87,7 +92,8 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
       contentType: false,
       success: successCallback,
       error: function(xhr, status, error) {
-        alert ( "Could not construct query: " + xhr.responseText );
+        var data = JSON.parse(xhr.responseText);
+        alert ( "Could not construct query: " + data.message );
       }
     });
   };
