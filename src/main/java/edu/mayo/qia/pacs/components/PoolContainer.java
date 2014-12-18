@@ -249,14 +249,14 @@ public class PoolContainer {
   public void importFromPool(File incoming) throws Exception {
     File importFile = new File(incomingDirectory, UUID.randomUUID().toString());
     FileUtils.copyFile(incoming, importFile);
-    process(importFile);
+    process(importFile, null);
   }
 
   String noNulls(String in) {
     return in != null ? in : "";
   }
 
-  public void process(File incoming) throws Exception, IOException {
+  public void process(File incoming, MoveStatus status) throws Exception, IOException {
     synchronized (this) {
       // Handle one per container
       // Have the container process!
@@ -284,9 +284,10 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /* to debug:
-       * select * from syscs_diag.lock_table;
-       * select * from syscs_diag.transaction_table; */
+      /*
+       * to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table;
+       */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -353,7 +354,9 @@ public class PoolContainer {
         if (originalFile.exists()) {
           originalFile.delete();
         }
-        // session.getTransaction().commit();
+        if (status != null) {
+          status.movedStudyKey = study.StudyKey;
+        }
 
         if (pool.anonymize) {
 
@@ -428,7 +431,7 @@ public class PoolContainer {
     return relativePath;
   }
 
-  public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination) {
+  public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination, final MoveStatus status) {
     final AtomicBoolean successful = new AtomicBoolean(true);
     template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
         studyInstanceUID }, new RowCallbackHandler() {
@@ -441,7 +444,7 @@ public class PoolContainer {
         File tmpFile = new File(tempDir, UUID.randomUUID().toString() + ".dcm");
         try {
           Files.copy(f, tmpFile);
-          destination.process(tmpFile);
+          destination.process(tmpFile, status);
         } catch (Exception e) {
           successful.set(false);
           logger.error("Error processing file: " + f + " into pool " + pool, e);

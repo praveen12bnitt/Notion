@@ -38,4 +38,5 @@ public class Result {
   public String modalitiesInStudy;
   public String studyDescription;
   public String studyInstanceUID;
+  public Integer studyKey;
 }

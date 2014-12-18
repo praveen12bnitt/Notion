@@ -12,7 +12,7 @@
             var heartbeat = function() {
               authorization.checkLogin( function() {
                 if ( authorization.isLoggedIn() ) {
-                  console.log ( "Logged in, all is well!" );
+                  // console.log ( "Logged in, all is well!" );
                   // $scope.user = authorization.user
                   $scope.user = $.extend(true, {}, authorization.user);
 
