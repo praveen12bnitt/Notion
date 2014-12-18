@@ -118,7 +118,6 @@ var supportedModes = {
     Forth:       ["frt|fs|ldr"],
     FTL:         ["ftl"],
     Gherkin:     ["feature"],
-    Gitignore:   ["^.gitignore"],
     Glsl:        ["glsl|frag|vert"],
     golang:      ["go"],
     Groovy:      ["groovy"],
