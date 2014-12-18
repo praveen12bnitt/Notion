@@ -1,23 +1,6 @@
 
 
 
-// Helper for shortening strings
-String.prototype.trunc = String.prototype.trunc ||
-function(n){
-  return this.length>n ? this.substr(0,n-1)+'...' : this;
-};
-
-String.prototype.startsWith = String.prototype.startsWith ||
-function (str){
-  return this.indexOf(str) === 0;
-};
-
-
-String.prototype.contains = String.prototype.contains ||
-function (str){
-  return this.indexOf(str) != -1;
-};
-
 // Connect the AJAX error function
 $( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
   var destination = settings.url;
@@ -65,42 +48,50 @@ notionApp.config(function($stateProvider, $urlRouterProvider) {
       access: ['admin', 'user']
     }
   })
-.state('root.pools.pool', {
-  url: "/:poolKey",
-  templateUrl: 'partials/pool.root.html',
-  controller: 'PoolRootController',
-  data: {
-    access: ['admin', 'user']
-  }
-})
-.state('root.pools.pool.detail', {
-  url: "/detail",
-  templateUrl: 'partials/pool.detail.html',
-  controller: 'PoolController',
-  data: {
-    access: ['admin', 'user']
-  }
-})
-.state('root.pools.pool.studies', {
-  url: "/studies",
-  templateUrl: 'partials/pool.studies.html',
-  controller: 'StudyController',
-  data: {
-    access: ['admin', 'user']
-  }
-})
-.state('root.pools.pool.authorization', {
-  url: "/authorization",
-  templateUrl: 'partials/pool.authorization.html',
-  controller: 'AuthorizationController',
-  data: {
-    access: ['admin', 'user']
-  }
-})
+  .state('root.pools.pool', {
+    url: "/:poolKey",
+    templateUrl: 'partials/pool.root.html',
+    controller: 'PoolRootController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.pool.detail', {
+    url: "/detail",
+    templateUrl: 'partials/pool.detail.html',
+    controller: 'PoolController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.pool.studies', {
+    url: "/studies",
+    templateUrl: 'partials/pool.studies.html',
+    controller: 'StudyController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.pool.authorization', {
+    url: "/authorization",
+    templateUrl: 'partials/pool.authorization.html',
+    controller: 'AuthorizationController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
   .state('root.pools.pool.query', {
     url: "/query",
     templateUrl: 'partials/pool.query.html',
     controller: 'QueryController',
+    data: {
+      access: ['admin', 'user']
+    }
+  })
+  .state('root.pools.pool.queryresult', {
+    url: "/result/:queryKey",
+    templateUrl: 'partials/pool.queryresult.html',
+    controller: 'QueryResultController',
     data: {
       access: ['admin', 'user']
     }

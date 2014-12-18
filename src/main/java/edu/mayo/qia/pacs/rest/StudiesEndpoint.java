@@ -64,7 +64,7 @@ import edu.mayo.qia.pacs.components.Study;
 @PerRequest
 public class StudiesEndpoint {
   static Logger logger = Logger.getLogger(ScriptEndpoint.class);
-  static final String regex = "[^0-9a-zA-Z_-]";
+  public static final String regex = "[^0-9a-zA-Z_-]";
 
   @Autowired
   SessionFactory sessionFactory;
@@ -254,7 +254,7 @@ public class StudiesEndpoint {
     return Response.status(Status.NOT_FOUND).build();
   }
 
-  private void appendStudyToZip(String basePath, ZipOutputStream zip, File poolRootDir, final Study study) throws IOException, FileNotFoundException {
+  public static void appendStudyToZip(String basePath, ZipOutputStream zip, File poolRootDir, final Study study) throws IOException, FileNotFoundException {
     byte[] buffer = new byte[1024];
     String path = study.PatientName == null ? "empty" : study.PatientName.replaceAll(regex, "_");
 

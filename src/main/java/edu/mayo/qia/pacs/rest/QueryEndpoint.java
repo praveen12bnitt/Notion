@@ -2,6 +2,7 @@ package edu.mayo.qia.pacs.rest;
 
 import io.dropwizard.hibernate.UnitOfWork;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,6 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -41,9 +47,12 @@ import com.sun.jersey.spi.resource.PerRequest;
 
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
+import edu.mayo.qia.pacs.components.Item;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Query;
+import edu.mayo.qia.pacs.components.Result;
+import edu.mayo.qia.pacs.components.Study;
 
 @Scope("prototype")
 @Component
@@ -121,8 +130,62 @@ public class QueryEndpoint {
     if (query == null || query.pool.poolKey != poolKey) {
       return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the query")).build();
     }
+    query.status = "starting";
     query.executeQuery();
     return getQuery(id);
+  }
+
+  @GET
+  @Path("/{id: [1-9][0-9]*}/zip")
+  @UnitOfWork
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  public Response getZipForFetch(@PathParam("id") final int id) {
+    String base = "Query-Result-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
+    final String fn = base.replaceAll(StudiesEndpoint.regex, "_");
+
+    StreamingOutput stream = new StreamingOutput() {
+      @Override
+      public void write(OutputStream output) throws IOException {
+        Session session = sessionFactory.openSession();
+        Set<Integer> zippedStudies = new HashSet<Integer>();
+        try {
+          Query query;
+          query = (Query) session.byId(Query.class).load(id);
+
+          ZipOutputStream zip = new ZipOutputStream(output);
+          File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
+          String path = fn + "/";
+          // Put the path to make a directory
+          zip.putNextEntry(new ZipEntry(path));
+          zip.closeEntry();
+
+          // Find every result and append
+          for (Item item : query.items) {
+            for (Result result : item.items) {
+              if (result.doFetch && result.studyKey != null && !zippedStudies.contains(result.studyKey)) {
+                // Add it
+                zippedStudies.add(result.studyKey);
+                org.hibernate.Query q = session.createQuery("from Study where PoolKey = :poolkey and StudyKey = :id");
+                q.setInteger("poolkey", poolKey);
+                q.setInteger("id", result.studyKey);
+                final Study study = (Study) q.uniqueResult();
+                if (study != null) {
+                  StudiesEndpoint.appendStudyToZip(path, zip, poolRootDir, study);
+                }
+              }
+            }
+          }
+          zip.close();
+        } catch (Exception e) {
+          logger.error("Error constructing zip file", e);
+        } finally {
+          session.close();
+        }
+      }
+    };
+
+    return Response.ok(stream).header("content-disposition", "attachment; filename = " + fn + ".zip").build();
   }
 
   void linkQuery(Connector connector, Query query) throws Exception {
