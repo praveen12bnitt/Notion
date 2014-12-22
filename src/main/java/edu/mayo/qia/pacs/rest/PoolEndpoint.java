@@ -36,11 +36,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
+import edu.mayo.qia.pacs.components.Group;
+import edu.mayo.qia.pacs.components.GroupRole;
 import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
+import edu.mayo.qia.pacs.components.User;
+import edu.mayo.qia.pacs.db.GroupDAO;
+import edu.mayo.qia.pacs.db.GroupRoleDAO;
+import edu.mayo.qia.pacs.db.UserDAO;
 
 @Component
 @Path("/pool")
@@ -56,6 +62,15 @@ public class PoolEndpoint extends Endpoint {
 
   @Autowired
   PoolManager poolManager;
+
+  @Autowired
+  UserDAO userDAO;
+
+  @Autowired
+  GroupDAO groupDAO;
+
+  @Autowired
+  GroupRoleDAO groupRoleDAO;
 
   /** List all the pools */
   @SuppressWarnings("unchecked")
@@ -244,7 +259,7 @@ public class PoolEndpoint extends Endpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createPool(Pool pool) {
+  public Response createPool(@Auth Subject subject, Pool pool) {
 
     if (pool.name == null || pool.description == null || pool.applicationEntityTitle == null) {
       return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle, Name and Description must not be empty")).build();
@@ -268,6 +283,20 @@ public class PoolEndpoint extends Endpoint {
 
     session.save(pool);
     poolManager.newPool(pool);
+
+    // Create a group, and add this user to it
+    Group g = new Group();
+    g.description = pool.name + " -- Administrators";
+    g.name = "Administrative group for " + pool.name;
+    User user = userDAO.getFromSubject(subject);
+    g.userKeys.add(user.userKey);
+    groupDAO.create(g);
+    GroupRole gr = new GroupRole();
+    gr.poolKey = pool.poolKey;
+    gr.groupKey = g.groupKey;
+    gr.isPoolAdmin = true;
+    groupRoleDAO.create(gr);
+
     return Response.ok(pool).build();
   }
 
