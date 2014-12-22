@@ -175,6 +175,7 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
 
   $scope.deletePool = function(device) {
     var model = $scope.model;
+    var poolsController = $scope.$parent.$parent;
     $modal.open ({
       templateUrl: 'partials/modal.html',
       controller: function($scope, $modalInstance) {
@@ -184,7 +185,10 @@ notionApp.controller ( 'PoolController', function($scope,$timeout,$stateParams, 
           $http.delete ( "/rest/pool/" + model.poolKey )
           .success(function(data,status,headers,config){
               $modalInstance.dismiss();
-              $scope.$apply();
+              poolsController.refresh();
+              console.log("PoolsController", poolsController);
+              $state.go("^.^.index");
+
           })
           .error(function(data,status,headers,config){
             alert ( "Failed to delete Device: " + data.message );
