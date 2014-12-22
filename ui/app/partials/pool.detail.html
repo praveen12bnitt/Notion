@@ -11,6 +11,10 @@
         <b>Description:</b> {{model.description}}<p/>
         <b>Listening port:</b> {{model.port}}<p/>
         <b>Anonymize?</b> {{model.anonymize}}<p />
+        <div ng-show="authorization.user.isAdmin">
+          <input type="checkbox" ng-model="okToDelete"> Enable Delete</input>
+          <button ng-show="okToDelete" ng-disabled="! okToDelete" ng-click="deletePool()">Delete</button>
+        </div>
       </div>
     </div>
 

@@ -284,10 +284,8 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /*
-       * to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table;
-       */
+      /* to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table; */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -397,7 +395,7 @@ public class PoolContainer {
     });
 
     // Will cascade to all other tables
-    template.update("delete from POOL where PoolKey = ?", pool.poolKey);
+    // template.update("delete from POOL where PoolKey = ?", pool.poolKey);
 
     // Delete all the files associated with the container
     try {
@@ -405,8 +403,6 @@ public class PoolContainer {
     } catch (IOException e) {
       logger.error("Failed to delete directory", e);
     }
-    // Remove this from the manager
-    poolManager.remove(this);
   }
 
   public Pool getPool() {
