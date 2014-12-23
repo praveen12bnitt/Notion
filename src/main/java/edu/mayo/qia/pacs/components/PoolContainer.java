@@ -395,7 +395,7 @@ public class PoolContainer {
     });
 
     // Will cascade to all other tables
-    // template.update("delete from POOL where PoolKey = ?", pool.poolKey);
+    template.update("delete from POOL where PoolKey = ?", pool.poolKey);
 
     // Delete all the files associated with the container
     try {
