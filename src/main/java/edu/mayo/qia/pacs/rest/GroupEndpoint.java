@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.secnod.shiro.jaxrs.Auth;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class GroupEndpoint {
   @POST
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response createGroup(@Auth Subject subject, Group group) {
     CacheCleaner.clean();
     return Response.ok(groupDAO.create(group)).build();
@@ -49,6 +51,7 @@ public class GroupEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response getGroups(@Auth Subject subject) {
     return Response.ok(new SimpleResponse("group", groupDAO.findAll(Group.class))).build();
   }
@@ -57,6 +60,7 @@ public class GroupEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response updateGroup(@Auth Subject subject, @PathParam("id") int id, Group group) {
     CacheCleaner.clean();
     return Response.ok(groupDAO.update(group)).build();
@@ -66,6 +70,7 @@ public class GroupEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response getGroup(@Auth Subject subject, @PathParam("id") int id) {
     CacheCleaner.clean();
     return Response.ok(groupDAO.get(id)).build();
@@ -75,6 +80,7 @@ public class GroupEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response deleteGroup(@Auth Subject subject, @PathParam("id") int id) {
     groupDAO.delete(groupDAO.get(id));
     CacheCleaner.clean();
