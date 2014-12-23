@@ -123,8 +123,8 @@ public class PoolTest extends PACSTest {
     assertEquals("Status", 200, response.getStatus());
     assertEquals("Lookup", new Integer(1), template.queryForObject("select count(*) from LOOKUP where PoolKey = " + pool.poolKey, Integer.class));
 
-    PoolContainer container = poolManager.getContainer(pool.poolKey);
-    container.delete();
+    File poolDirectory = poolManager.getContainer(pool.poolKey).getPoolDirectory();
+    poolManager.deletePool(pool);
 
     assertEquals("Instance", new Integer(0), template.queryForObject("select count(*) from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = " + pool.poolKey, Integer.class));
     assertEquals("Series", new Integer(0), template.queryForObject("select count(*) from SERIES, STUDY where SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = " + pool.poolKey, Integer.class));
@@ -134,7 +134,7 @@ public class PoolTest extends PACSTest {
     assertEquals("Lookup", new Integer(0), template.queryForObject("select count(*) from LOOKUP where PoolKey = " + pool.poolKey, Integer.class));
     assertEquals("Script", new Integer(0), template.queryForObject("select count(*) from SCRIPT where PoolKey = " + pool.poolKey, Integer.class));
     for (String filePath : filePaths) {
-      File file = new File(container.getPoolDirectory(), filePath);
+      File file = new File(poolDirectory, filePath);
       assertFalse("File: " + file, file.exists());
     }
     assertNull("Manager", poolManager.getContainer(pool.poolKey));

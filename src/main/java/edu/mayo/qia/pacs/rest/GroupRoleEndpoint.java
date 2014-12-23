@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -51,6 +52,7 @@ public class GroupRoleEndpoint {
   @POST
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response createGroup(@Auth Subject subject, GroupRole group) {
     if (group.poolKey != poolKey) {
       return Response.serverError().entity("Group role is not defined in this pool").build();
@@ -61,6 +63,7 @@ public class GroupRoleEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response getGroups(@Auth Subject subject) {
     Session session = sessionFactory.getCurrentSession();
     Criteria criteria = session.createCriteria(GroupRole.class).add(Restrictions.eq("poolKey", poolKey));
@@ -73,6 +76,7 @@ public class GroupRoleEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response updateGroup(@Auth Subject subject, @PathParam("id") int id, GroupRole group) {
     if (group.poolKey != poolKey) {
       return Response.serverError().entity("Group role is not defined in this pool").build();
@@ -84,6 +88,7 @@ public class GroupRoleEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response getGroup(@Auth Subject subject, @PathParam("id") int id) {
     GroupRole group = groupRoleDAO.get(id);
     if (group.poolKey != poolKey) {
@@ -96,6 +101,7 @@ public class GroupRoleEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response deleteGroup(@Auth Subject subject, @PathParam("id") int id) {
     GroupRole group = groupRoleDAO.get(id);
     if (group.poolKey != poolKey) {

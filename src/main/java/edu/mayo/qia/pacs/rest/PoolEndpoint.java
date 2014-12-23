@@ -36,11 +36,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.core.ResourceContext;
 
+import edu.mayo.qia.pacs.components.Group;
+import edu.mayo.qia.pacs.components.GroupRole;
 import edu.mayo.qia.pacs.components.MoveRequest;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
+import edu.mayo.qia.pacs.components.User;
+import edu.mayo.qia.pacs.db.GroupDAO;
+import edu.mayo.qia.pacs.db.GroupRoleDAO;
+import edu.mayo.qia.pacs.db.UserDAO;
 
 @Component
 @Path("/pool")
@@ -56,6 +62,15 @@ public class PoolEndpoint extends Endpoint {
 
   @Autowired
   PoolManager poolManager;
+
+  @Autowired
+  UserDAO userDAO;
+
+  @Autowired
+  GroupDAO groupDAO;
+
+  @Autowired
+  GroupRoleDAO groupRoleDAO;
 
   /** List all the pools */
   @SuppressWarnings("unchecked")
@@ -82,7 +97,6 @@ public class PoolEndpoint extends Endpoint {
         + " and ( GR.IsPoolAdmin or GR.IsCoordinator )";
       // @formatter:on
       result = session.createSQLQuery(query).addEntity("p", Pool.class).setParameter("username", subject.getPrincipal().toString()).list();
-
     }
     // Test for permission
     SimpleResponse s = new SimpleResponse("pool", result);
@@ -150,7 +164,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Devices */
   @Path("/{id: [1-9][0-9]*}/device")
-  public DeviceEndpoint devices(@PathParam("id") int id) {
+  public DeviceEndpoint devices(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     DeviceEndpoint deviceEndpoint;
     deviceEndpoint = getResource(DeviceEndpoint.class);
     deviceEndpoint.poolKey = id;
@@ -159,7 +174,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Studies */
   @Path("/{id: [1-9][0-9]*}/studies")
-  public StudiesEndpoint studies(@PathParam("id") int id) {
+  public StudiesEndpoint studies(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     StudiesEndpoint studiesEndpoint;
     studiesEndpoint = getResource(StudiesEndpoint.class);
     studiesEndpoint.poolKey = id;
@@ -168,7 +184,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Lookup */
   @Path("/{id: [1-9][0-9]*}/lookup")
-  public LookupEndpoint lookup(@PathParam("id") int id) {
+  public LookupEndpoint lookup(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     LookupEndpoint endpoint;
     endpoint = getResource(LookupEndpoint.class);
     endpoint.poolKey = id;
@@ -177,7 +194,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Scripts */
   @Path("/{id: [1-9][0-9]*}/script")
-  public ScriptEndpoint scripts(@PathParam("id") int id) {
+  public ScriptEndpoint scripts(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:query:" + id);
     ScriptEndpoint scriptEndpoint;
     scriptEndpoint = getResource(ScriptEndpoint.class);
     scriptEndpoint.poolKey = id;
@@ -186,7 +204,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Query */
   @Path("/{id: [1-9][0-9]*}/query")
-  public QueryEndpoint query(@PathParam("id") int id) {
+  public QueryEndpoint query(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:coordinator:" + id);
     QueryEndpoint queryEndpoint;
     queryEndpoint = getResource(QueryEndpoint.class);
     queryEndpoint.poolKey = id;
@@ -195,7 +214,8 @@ public class PoolEndpoint extends Endpoint {
 
   /** Group / Roles */
   @Path("/{id: [1-9][0-9]*}/grouprole")
-  public GroupRoleEndpoint group(@PathParam("id") int id) {
+  public GroupRoleEndpoint group(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:admin:" + id);
     GroupRoleEndpoint endpoint;
     endpoint = getResource(GroupRoleEndpoint.class);
     endpoint.poolKey = id;
@@ -206,7 +226,8 @@ public class PoolEndpoint extends Endpoint {
   @GET
   @Path("/{id: [1-9][0-9]*}/ctp")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getCTPConfig(@PathParam("id") int id) {
+  public Response getCTPConfig(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:admin:" + id);
     PoolContainer poolContainer = poolManager.getContainer(id);
     if (poolContainer == null) {
       return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "Unknown pool")).build();
@@ -225,7 +246,8 @@ public class PoolEndpoint extends Endpoint {
   @Path("/{id: [1-9][0-9]*}/ctp")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response saveCTPConfig(@PathParam("id") int id, JsonNode json) {
+  public Response saveCTPConfig(@Auth Subject subject, @PathParam("id") int id, JsonNode json) {
+    subject.checkPermission("pool:admin:" + id);
     PoolContainer poolContainer = poolManager.getContainer(id);
     if (poolContainer == null || !json.has("script")) {
       return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "Unknown pool")).build();
@@ -244,7 +266,7 @@ public class PoolEndpoint extends Endpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response createPool(Pool pool) {
+  public Response createPool(@Auth Subject subject, Pool pool) {
 
     if (pool.name == null || pool.description == null || pool.applicationEntityTitle == null) {
       return Response.status(Response.Status.FORBIDDEN).entity(new SimpleResponse("message", "ApplicationEntityTitle, Name and Description must not be empty")).build();
@@ -268,6 +290,20 @@ public class PoolEndpoint extends Endpoint {
 
     session.save(pool);
     poolManager.newPool(pool);
+
+    // Create a group, and add this user to it
+    Group g = new Group();
+    g.description = pool.name + " -- Administrators";
+    g.name = "Administrative group for " + pool.name;
+    User user = userDAO.getFromSubject(subject);
+    g.userKeys.add(user.userKey);
+    groupDAO.create(g);
+    GroupRole gr = new GroupRole();
+    gr.poolKey = pool.poolKey;
+    gr.groupKey = g.groupKey;
+    gr.isPoolAdmin = true;
+    groupRoleDAO.create(gr);
+
     return Response.ok(pool).build();
   }
 
@@ -277,7 +313,8 @@ public class PoolEndpoint extends Endpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response modifyPool(@PathParam("id") int id, Pool update) {
+  public Response modifyPool(@Auth Subject subject, @PathParam("id") int id, Pool update) {
+    subject.checkPermission("pool:admin:" + id);
     // Look up the pool and change it
     Pool pool = null;
     Session session = sessionFactory.getCurrentSession();
@@ -300,6 +337,7 @@ public class PoolEndpoint extends Endpoint {
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
+  @RequiresPermissions({ "admin:delete" })
   public Response modifyPool(@PathParam("id") int id) {
     // Look up the pool and change it
     Session session = sessionFactory.getCurrentSession();
@@ -308,7 +346,7 @@ public class PoolEndpoint extends Endpoint {
       return Response.status(Status.NOT_FOUND).entity(new SimpleResponse("message", "Could not load the pool")).build();
     }
     // Delete
-    session.delete(pool);
+    // session.delete(pool);
     poolManager.deletePool(pool);
     return Response.ok().build();
   }

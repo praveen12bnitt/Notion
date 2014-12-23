@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ public class ConnectorEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response getConnector() {
     List<Connector> result = new ArrayList<Connector>();
     Session session = sessionFactory.getCurrentSession();
@@ -67,6 +69,7 @@ public class ConnectorEndpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response createConnector(Connector connector) {
     Session session = sessionFactory.getCurrentSession();
     session.save(connector);
@@ -78,6 +81,7 @@ public class ConnectorEndpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response updateConnector(@PathParam("id") int id, Connector connector) {
     Session session = sessionFactory.getCurrentSession();
     session.update(connector);
@@ -87,6 +91,7 @@ public class ConnectorEndpoint {
   @DELETE
   @Path("/{id: [1-9][0-9]*}")
   @Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions({ "admin" })
   public Response deleteConnector(Connector connector) {
     Session session = sessionFactory.getCurrentSession();
     session.delete(connector);
