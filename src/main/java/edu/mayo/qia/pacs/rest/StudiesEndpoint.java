@@ -38,9 +38,11 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.secnod.shiro.jaxrs.Auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -53,6 +55,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.spi.resource.PerRequest;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.components.Instance;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
@@ -80,7 +83,7 @@ public class StudiesEndpoint {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response searchStudies(@Context UriInfo uriInfo, JsonNode qParams) throws Exception {
+  public Response searchStudies(@Auth final Subject subject, @Context UriInfo uriInfo, JsonNode qParams) throws Exception {
     final Set<String> columns = new HashSet<String>(Arrays.asList(new String[] { "PatientID", "PatientName", "AccessionNumber", "StudyDescription" }));
     final Set<String> directions = new HashSet<String>();
     directions.add("ASC");
@@ -146,6 +149,7 @@ public class StudiesEndpoint {
         for (String column : new String[] { "StudyKey" }) {
           row.put(column, rs.getInt(column));
         }
+        Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=view_study value=" + row.toString());
       }
     });
 
@@ -157,7 +161,7 @@ public class StudiesEndpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getZip(@Context UriInfo uriInfo, @DefaultValue("%") @QueryParam("PatientID") final String PatientID, @DefaultValue("%") @QueryParam("PatientName") final String PatientName,
+  public Response getZip(final @Auth Subject subject, @Context UriInfo uriInfo, @DefaultValue("%") @QueryParam("PatientID") final String PatientID, @DefaultValue("%") @QueryParam("PatientName") final String PatientName,
       @DefaultValue("%") @QueryParam("AccessionNumber") final String AccessionNumber, @DefaultValue("%") @QueryParam("StudyDescription") final String StudyDescription) throws Exception {
     final Pool pool = poolManager.getContainer(poolKey).getPool();
 
@@ -182,7 +186,7 @@ public class StudiesEndpoint {
 
           for (Study study : (List<Study>) query.list()) {
             appendStudyToZip(path, zip, poolRootDir, study);
-
+            Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
           }
           zip.close();
 
@@ -202,7 +206,7 @@ public class StudiesEndpoint {
   @UnitOfWork
   @Path("/{id: [1-9][0-9]*}/zip")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getZip(@PathParam("id") final int id) throws Exception {
+  public Response getZip(@Auth final Subject subject, @PathParam("id") final int id) throws Exception {
     Query query;
     Session session = sessionFactory.getCurrentSession();
     query = session.createQuery("from Study where PoolKey = :poolkey and StudyKey = :id");
@@ -221,6 +225,7 @@ public class StudiesEndpoint {
           query.setInteger("poolkey", poolKey);
           query.setInteger("id", id);
           final Study study = (Study) query.uniqueResult();
+          Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
 
           ZipOutputStream zip = new ZipOutputStream(output);
           File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();

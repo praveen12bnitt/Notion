@@ -45,6 +45,7 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 import com.sun.jersey.spi.resource.PerRequest;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.components.Connector;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Item;
@@ -140,7 +141,7 @@ public class QueryEndpoint {
   @UnitOfWork
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getZipForFetch(@PathParam("id") final int id) {
+  public Response getZipForFetch(final @Auth Subject subject, @PathParam("id") final int id) {
     String base = "Query-Result-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
     final String fn = base.replaceAll(StudiesEndpoint.regex, "_");
 
@@ -171,6 +172,8 @@ public class QueryEndpoint {
                 q.setInteger("id", result.studyKey);
                 final Study study = (Study) q.uniqueResult();
                 if (study != null) {
+                  Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
+
                   StudiesEndpoint.appendStudyToZip(path, zip, poolRootDir, study);
                 }
               }
