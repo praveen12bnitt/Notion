@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 
@@ -51,6 +52,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
       throw new DicomServiceException(request, Status.ProcessingFailure, "Invalid or unknown association");
     }
     if (!info.canConnect) {
+      Audit.log(as.getCallingAET() + "@" + as.getSocket().getInetAddress().getHostName(), "association_rejected", "C-MOVE");
       throw new DicomServiceException(request, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
     }
 
@@ -104,7 +106,6 @@ public class MoveSCP extends DicomService implements CMoveSCP {
         public void processRow(ResultSet rs) throws SQLException {
           File f = new File(info.poolRootDirectory, rs.getString("FilePath"));
           sender.addFile(f);
-
         }
       });
     }

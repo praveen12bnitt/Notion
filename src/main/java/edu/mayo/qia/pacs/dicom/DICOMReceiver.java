@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.PoolContainer;
@@ -152,6 +153,8 @@ public class DICOMReceiver implements AssociationListener, Managed {
     if (poolManager.getContainer(association.getCalledAET()) == null) {
       info.canConnect = false;
       info.failureMessage = "Called AETitle [" + association.getCalledAET() + "] is unknown";
+      Audit.log(callingAET + "@" + remoteHostName, "association_rejected", "unknown CalledAET " + association.getCalledAET());
+
       return;
     }
     info.failureMessage = "Calling AETitle [" + association.getCallingAET() + "] is unknown";
@@ -174,6 +177,8 @@ public class DICOMReceiver implements AssociationListener, Managed {
         });
     if (info.canConnect && poolManager.getContainer(association.getCalledAET()) != null) {
       info.poolRootDirectory = poolManager.getContainer(association.getCalledAET()).getPoolDirectory();
+    } else {
+      Audit.log(callingAET + "@" + remoteHostName, "association_rejected", "device unknown to pool " + poolManager.getContainer(association.getCalledAET()).getPool().name);
     }
   }
 

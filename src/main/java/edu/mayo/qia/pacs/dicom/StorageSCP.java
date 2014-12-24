@@ -23,6 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 
@@ -35,6 +39,9 @@ public class StorageSCP extends StorageService {
 
   @Autowired
   PoolManager poolManager;
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   @Autowired
   DICOMReceiver dicomReceiver;
@@ -60,13 +67,17 @@ public class StorageSCP extends StorageService {
 
   @Override
   protected void onCStoreRQ(final Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
-    logger.info("Got request");
 
     AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
+    final String remoteDevice = as.getCallingAET() + "@" + as.getSocket().getInetAddress().getHostName();
+
     if (info == null) {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
     }
+
+    Pool pool = poolManager.getContainer(info.poolKey).getPool();
     if (!info.canConnect) {
+      Audit.log(remoteDevice, "association_rejected", "C-MOVE to " + pool);
       throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
     }
 
