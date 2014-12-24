@@ -40,8 +40,11 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Files;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
@@ -80,6 +83,9 @@ public class PoolContainer {
 
   @Autowired
   NotionConfiguration configuration;
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   private String sequenceName;
 
@@ -284,8 +290,10 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /* to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table; */
+      /*
+       * to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table;
+       */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -299,6 +307,10 @@ public class PoolContainer {
         if (study == null) {
           study = new Study(tags);
           study.pool = pool;
+
+          // Log when we get a new study
+          Audit.log(pool.toString(), "create_study", tags);
+
         } else {
           logger.error("Is Study dirty?: " + session.isDirty());
           study.update(tags);
@@ -316,6 +328,8 @@ public class PoolContainer {
         if (series == null) {
           series = new Series(tags);
           series.study = study;
+          // Log when we get a new study
+          Audit.log(pool.toString(), "create_series", tags);
         } else {
           series.update(tags);
         }
@@ -462,7 +476,7 @@ public class PoolContainer {
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-              String opn, apn, opi, api, oan, aan, opbd, apdb;
+              String opn, apn, opi, api, oan, aan, opbd, apbd;
               opn = rs.getString(1);
               apn = rs.getString(2);
               opi = rs.getString(3);
@@ -470,29 +484,40 @@ public class PoolContainer {
               oan = rs.getString(5);
               aan = rs.getString(6);
               opbd = rs.getString(7);
-              apdb = rs.getString(8);
+              apbd = rs.getString(8);
+
+              ObjectNode node = objectMapper.createObjectNode();
+              node.put("OriginalPatientName", opn);
+              node.put("AnonymizedPatientName", apn);
+              node.put("OriginalPatientID", opi);
+              node.put("AnonymizedPatientID", api);
+              node.put("OriginalAccessionNumber", oan);
+              node.put("AnonymizedAccessionNumber", aan);
+              node.put("OriginalPatientBirthDate", opbd);
+              node.put("AnonymizedPatientBirthDate", apbd);
+              Audit.log(pool.toString(), "anonymization", node);
 
               int count = template
                   .queryForObject(
                       "select count(*) from ANONYMIZATIONMAP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb }, Integer.class);
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd }, Integer.class);
 
               if (count == 0) {
                 template
                     .update(
                         "insert into ANONYMIZATIONMAP ( PoolKey, OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ? )",
-                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
               } else {
                 template
                     .update(
                         "update ANONYMIZATIONMAP set UpdatedTimestamp = current_timestamp where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
 
               }
               template
                   .update(
                       "delete from ANONYMIZATIONMAPTEMP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
 
             }
           });

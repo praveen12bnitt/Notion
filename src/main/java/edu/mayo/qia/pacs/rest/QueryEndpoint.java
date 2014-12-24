@@ -172,7 +172,7 @@ public class QueryEndpoint {
                 q.setInteger("id", result.studyKey);
                 final Study study = (Study) q.uniqueResult();
                 if (study != null) {
-                  Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
+                  Audit.log(subject.getPrincipal().toString(), "download_study", study.toJson());
 
                   StudiesEndpoint.appendStudyToZip(path, zip, poolRootDir, study);
                 }

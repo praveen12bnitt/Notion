@@ -149,7 +149,7 @@ public class StudiesEndpoint {
         for (String column : new String[] { "StudyKey" }) {
           row.put(column, rs.getInt(column));
         }
-        Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=view_study value=" + row.toString());
+        Audit.log(subject, "view_study", row);
       }
     });
 
@@ -186,7 +186,7 @@ public class StudiesEndpoint {
 
           for (Study study : (List<Study>) query.list()) {
             appendStudyToZip(path, zip, poolRootDir, study);
-            Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
+            Audit.log(subject, "download_study", study.toJson());
           }
           zip.close();
 
@@ -225,7 +225,7 @@ public class StudiesEndpoint {
           query.setInteger("poolkey", poolKey);
           query.setInteger("id", id);
           final Study study = (Study) query.uniqueResult();
-          Audit.logger.info("user=" + subject.getPrincipal().toString() + " action=download_study value=" + study.toJson().toString());
+          Audit.log(subject, "download_study", study.toJson());
 
           ZipOutputStream zip = new ZipOutputStream(output);
           File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
