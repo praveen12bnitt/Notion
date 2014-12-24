@@ -53,7 +53,7 @@ public class Anonymizer {
   @Autowired
   JdbcTemplate template;
 
-  static Map<Integer, String> fieldMap = new HashMap<Integer, String>();
+  public static Map<Integer, String> fieldMap = new HashMap<Integer, String>();
   static {
     Field[] fields = Tags.class.getDeclaredFields();
     for (Field field : fields) {
