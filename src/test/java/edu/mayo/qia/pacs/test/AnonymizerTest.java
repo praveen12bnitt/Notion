@@ -2,32 +2,18 @@ package edu.mayo.qia.pacs.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.dropwizard.testing.junit.DropwizardAppRule;
 
 import java.io.File;
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-
-import org.apache.commons.io.IOUtils;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jersey.api.client.ClientResponse;
-
-import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.Script;

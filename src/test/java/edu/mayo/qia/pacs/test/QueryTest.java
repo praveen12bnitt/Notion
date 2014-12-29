@@ -98,7 +98,7 @@ public class QueryTest extends PACSTest {
     // Get first sheet from the workbook
     Sheet sheet = workbook.getSheetAt(0);
 
-    assertEquals(3, sheet.getPhysicalNumberOfRows());
+    assertEquals(4, sheet.getPhysicalNumberOfRows());
     assertEquals(9, sheet.getRow(0).getPhysicalNumberOfCells());
 
     assertEquals("PatientName", sheet.getRow(0).getCell(0).getStringCellValue());
@@ -126,13 +126,15 @@ public class QueryTest extends PACSTest {
       query.queryPool = pool;
       query.device = device;
       session.save(query);
-      assertEquals(2, query.items.size());
+      assertEquals(3, query.items.size());
       session.getTransaction().commit();
     } finally {
       is.close();
       session.close();
     }
-    assertEquals(2, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", Integer.class, query.queryKey));
+    assertEquals(3, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", Integer.class, query.queryKey));
+    assertEquals(1, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ? and AnonymizedName is null and AnonymizedID is null", Integer.class, query.queryKey));
+
   }
 
   @Test
@@ -207,7 +209,7 @@ public class QueryTest extends PACSTest {
     }
     assertTrue(query.status.startsWith("query completed"));
 
-    assertEquals(2, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", new Object[] { query.queryKey }, Integer.class));
+    assertEquals(3, (int) template.queryForObject("select count(*) from QUERYITEM where QueryKey = ?", new Object[] { query.queryKey }, Integer.class));
 
     // Update the query to fetch any results
     int sum = 0;
