@@ -344,10 +344,10 @@ public class Query {
                 throw new Exception("Destination pool " + destinationPool.name + "/" + destinationPool.applicationEntityTitle + " is anonymizing, this move will fail.  Please turn off anonymization on the destination pool");
               }
               // Create the entries
-              if (item.anonymizedName != null) {
+              if (item.anonymizedName != null && item.anonymizedName.length() > 0) {
                 anonymizer.setValue("PatientName", result.patientName, item.anonymizedName);
               }
-              if (item.anonymizedID != null) {
+              if (item.anonymizedID != null && item.anonymizedID.length() > 0) {
                 anonymizer.setValue("PatientID", result.patientID, item.anonymizedID);
               }
               dcmQR.qrStudy(result.studyInstanceUID);
