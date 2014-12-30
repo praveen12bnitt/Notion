@@ -92,15 +92,15 @@ public class Study {
 
   public ObjectNode toJson() {
     ObjectNode node = new ObjectMapper().createObjectNode();
-    node.put("StudyInstanceUID", StudyInstanceUID.toString());
-    node.put("AccessionNumber", AccessionNumber.toString());
-    node.put("PatientID", PatientID.toString());
-    node.put("PatientName", PatientName.toString());
-    node.put("PatientBirthDate", PatientBirthDate.toString());
-    node.put("PatientSex", PatientSex.toString());
-    node.put("StudyID", StudyID.toString());
-    node.put("StudyDate", StudyDate.toString());
-    node.put("StudyTime", StudyTime.toString());
+    node.put("StudyInstanceUID", StudyInstanceUID);
+    node.put("AccessionNumber", AccessionNumber);
+    node.put("PatientID", PatientID);
+    node.put("PatientName", PatientName);
+    node.put("PatientBirthDate", PatientBirthDate == null ? "" : PatientBirthDate.toString());
+    node.put("PatientSex", PatientSex);
+    node.put("StudyID", StudyID);
+    node.put("StudyDate", StudyDate == null ? "" : StudyDate.toString());
+    node.put("StudyTime", StudyTime == null ? "" : StudyTime.toString());
     node.put("ReferringPhysicianName", ReferringPhysicianName.toString());
     node.put("StudyDescription", StudyDescription.toString());
     return node;
