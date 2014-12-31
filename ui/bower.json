@@ -27,6 +27,7 @@
     "font-awesome": "~4.0.3",
     "w11k-select": "~0.4.4",
     "notifyjs": "~0.3.2",
-    "toastr": "~2.0.3"
+    "toastr": "~2.0.3",
+    "freeboard": "Freeboard/freeboard#~1.1.0"
   }
 }

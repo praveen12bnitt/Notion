@@ -11,9 +11,6 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.net.Association;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.TaskScheduler;
@@ -32,7 +29,7 @@ import edu.mayo.qia.pacs.dicom.DICOMReceiver;
 public class PoolManager implements Managed {
   static Logger logger = Logger.getLogger(PoolManager.class);
 
-  ConcurrentMap<String, PoolContainer> poolContainers = new ConcurrentHashMap<String, PoolContainer>();
+  static ConcurrentMap<String, PoolContainer> poolContainers = new ConcurrentHashMap<String, PoolContainer>();
 
   @Autowired
   JdbcTemplate template;

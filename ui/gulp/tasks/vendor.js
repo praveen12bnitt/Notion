@@ -38,4 +38,8 @@ gulp.task('vendor', function() {
 
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 
+
+  gulp.src('bower_components/freeboard/**').pipe(gulp.dest('public/dashboard'));
+
+
 });

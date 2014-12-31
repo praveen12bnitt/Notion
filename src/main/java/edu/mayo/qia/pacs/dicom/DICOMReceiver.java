@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import org.dcm4che2.data.UID;
@@ -27,9 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 
 import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
@@ -49,6 +53,7 @@ import edu.mayo.qia.pacs.components.PoolManager;
 public class DICOMReceiver implements AssociationListener, Managed {
   static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
   private ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
+  static Counter associationCounter = Notion.metrics.counter(MetricRegistry.name("DICOMReceiver", "association", "total"));
 
   private final Device device = new Device(null);
   private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
@@ -80,6 +85,13 @@ public class DICOMReceiver implements AssociationListener, Managed {
 
   /** Standard constructor */
   public DICOMReceiver() {
+    // Register our gauges
+    Notion.metrics.register(MetricRegistry.name("DICOMReceiver", "association", "active"), new Gauge<Integer>() {
+      @Override
+      public Integer getValue() {
+        return associationMap.size();
+      }
+    });
   }
 
   @Override
@@ -134,7 +146,6 @@ public class DICOMReceiver implements AssociationListener, Managed {
     ae.addAssociationListener(this);
 
     device.startListening(executor);
-
   }
 
   @Override
@@ -177,6 +188,7 @@ public class DICOMReceiver implements AssociationListener, Managed {
         });
     if (info.canConnect && poolManager.getContainer(association.getCalledAET()) != null) {
       info.poolRootDirectory = poolManager.getContainer(association.getCalledAET()).getPoolDirectory();
+      associationCounter.inc();
     } else {
       Audit.log(callingAET + "@" + remoteHostName, "association_rejected", "device unknown to pool " + poolManager.getContainer(association.getCalledAET()).getPool().name);
     }
@@ -199,6 +211,7 @@ public class DICOMReceiver implements AssociationListener, Managed {
     File incomingRootDirectory;
     File poolRootDirectory;
     int poolKey;
+    int imageCount = 0;
   }
 
   public Map<Association, AssociationInfo> getAssociationMap() {

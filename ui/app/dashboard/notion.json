@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "allow_edit": true,
+  "plugins": [],
+  "panes": [
+    {
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 1
+      },
+      "col": {
+        "3": 2,
+        "4": 1
+      },
+      "col_width": 2,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Associations",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOMReceiver.association.active\"][\"value\"]",
+            "units": "Associations",
+            "min_value": 0,
+            "max_value": "10"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Associations",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOMReceiver.association.active\"][\"value\"]"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Associations",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOMReceiver.association.total\"][\"count\"]",
+            "sparkline": false,
+            "animate": true
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Images Received (1 Minute Rate)",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOMReceiver.image.received\"][\"m1_rate\"]"
+          }
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "Metrics",
+      "type": "JSON",
+      "settings": {
+        "url": "/rest/metrics",
+        "use_thingproxy": true,
+        "refresh": 10,
+        "method": "GET"
+      }
+    }
+  ],
+  "columns": 3
+}

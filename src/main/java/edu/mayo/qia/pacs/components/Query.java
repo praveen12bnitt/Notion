@@ -44,6 +44,8 @@ import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -95,6 +97,10 @@ public class Query {
   @JsonIgnore
   @Transient
   Future<String> fetchFuture;
+
+  @JsonIgnore
+  static Timer queryTimer = Notion.metrics.timer(MetricRegistry.name("Query", "query", "duration"));
+  static Timer fetchTimer = Notion.metrics.timer(MetricRegistry.name("Query", "fetch", "duration"));
 
   /**
    * Construct a query object and return it
@@ -201,6 +207,7 @@ public class Query {
     queryFuture = executor.submit(new Callable<String>() {
       public String call() {
         Thread.currentThread().setName("Query " + device);
+        Timer.Context context = queryTimer.time();
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "query pending", queryKey);
         template.update("update QUERY set LastQueryTimestamp = ? where QueryKey = ?", new Date(), queryKey);
@@ -273,6 +280,7 @@ public class Query {
         }
         template.update("update QUERY set Status = ? where QueryKey = ?", "query completed", queryKey);
         Thread.currentThread().setName("Idle");
+        context.stop();
         return "completed";
       }
     });
@@ -316,6 +324,8 @@ public class Query {
     fetchFuture = Notion.context.getBean("executor", ExecutorService.class).submit(new Callable<String>() {
       public String call() {
         final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
+        Timer.Context context = fetchTimer.time();
+
         template.update("update QUERY set Status = ? where QueryKey = ?", "fetch pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "fetch pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) and DoFetch = 'F'", "", queryKey);
@@ -384,6 +394,7 @@ public class Query {
         template.update("update QUERY set Status = ? where QueryKey = ?", "fetch completed", queryKey);
         logger.debug("Fetch Compeleted");
         Thread.currentThread().setName("Idle");
+        context.stop();
         return "complete";
       }
     });

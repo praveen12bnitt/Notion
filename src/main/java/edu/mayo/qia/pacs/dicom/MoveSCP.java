@@ -25,6 +25,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
 import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 
@@ -37,9 +38,6 @@ public class MoveSCP extends DicomService implements CMoveSCP {
   @Autowired
   JdbcTemplate template;
 
-  @Autowired
-  DICOMReceiver dicomReceiver;
-
   public MoveSCP() {
     super(PresentationContexts);
   }
@@ -47,6 +45,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
   @Override
   public void cmove(final Association as, final int pcid, final DicomObject command, DicomObject request) throws DicomServiceException, IOException {
 
+    DICOMReceiver dicomReceiver = Notion.context.getBean("dicomReceiver", DICOMReceiver.class);
     final AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
     if (info == null) {
       throw new DicomServiceException(request, Status.ProcessingFailure, "Invalid or unknown association");

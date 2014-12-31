@@ -73,6 +73,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
@@ -85,9 +86,6 @@ public class FindSCP extends DicomService implements CFindSCP {
 
   @Autowired
   JdbcTemplate template;
-
-  @Autowired
-  DICOMReceiver dicomReceiver;
 
   @Autowired
   PoolManager poolManager;
@@ -108,7 +106,7 @@ public class FindSCP extends DicomService implements CFindSCP {
 
   @Override
   public void cfind(final Association as, final int pcid, DicomObject rq, final DicomObject data) throws DicomServiceException, IOException {
-
+    DICOMReceiver dicomReceiver = Notion.context.getBean("dicomReceiver", DICOMReceiver.class);
     AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
 
     final String remoteDevice = as.getCallingAET() + "@" + as.getSocket().getInetAddress().getHostName();
