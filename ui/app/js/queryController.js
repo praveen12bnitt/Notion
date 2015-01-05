@@ -36,14 +36,14 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
   };
 
   $scope.selectQuery = function(id) {
-    $state.go ( "^.queryresult", { queryKey: id})
+    $state.go ( "^.queryresult", { queryKey: id});
   };
 
   $scope.selectAll = function() {
     $.each($scope.query.get('items'), function(index,value) {
       $scope.fetchAll(value);
-    })
-  }
+    });
+  };
 
   $scope.fetchAll = function(item){
     $.each(item.items, function(index,value){
@@ -57,7 +57,7 @@ notionApp.controller ( 'QueryController', function($scope,$timeout,$stateParams,
 
   var successCallback = function(data) {
     console.log("Created query");
-    $state.go ( "^.queryresult", { queryKey: data.queryKey})
+    $state.go ( "^.queryresult", { queryKey: data.queryKey});
     // $scope.query = new QueryModel(data);
     // $scope.query.urlRoot = '/rest/pool/' + $scope.pool.get('poolKey') + '/query/' + $scope.query.get('queryKey');
     // $scope.mode = 'query-pending';
