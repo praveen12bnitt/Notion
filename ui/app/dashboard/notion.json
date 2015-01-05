@@ -4,32 +4,189 @@
   "plugins": [],
   "panes": [
     {
+      "title": "DICOM Receiver",
       "width": 1,
       "row": {
-        "3": 1,
-        "4": 1
+        "3": 1
       },
       "col": {
-        "3": 2,
-        "4": 1
+        "3": 1
       },
-      "col_width": 2,
+      "col_width": 1,
       "widgets": [
         {
           "type": "gauge",
           "settings": {
-            "title": "Associations",
-            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOMReceiver.association.active\"][\"value\"]",
-            "units": "Associations",
+            "title": "Received",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m1_rate\"].toFixed(2)",
+            "units": "images/sec",
             "min_value": 0,
-            "max_value": "10"
+            "max_value": "20"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Image Recieved",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"mean_rate\"].toFixed(2)\n",
+            "sparkline": true,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images Recieved (1 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m1_rate\"].toFixed(2)",
+            "sparkline": true,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Received",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Global",
+      "width": 1,
+      "row": {
+        "3": 1
+      },
+      "col": {
+        "3": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pools",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.pool\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Studies",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.study\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Series",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.series\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.instance\"][\"value\"]",
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "title": "DICOM Sender",
+      "width": 1,
+      "row": {
+        "3": 1
+      },
+      "col": {
+        "3": 2
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Sent",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"m1_rate\"].toFixed(2)",
+            "units": "images/sec",
+            "min_value": 0,
+            "max_value": "20"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Queued",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.send.queue\"][\"count\"]",
+            "sparkline": true,
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Sent (mean rate)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"mean_rate\"].toFixed(2)",
+            "sparkline": true,
+            "animate": true,
+            "units": "images/second"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Sent",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.sent.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
           }
         },
         {
           "type": "sparkline",
           "settings": {
+            "title": "Mean sending rate",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"m1_rate\"]"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Associations",
+      "width": 1,
+      "row": {
+        "3": 11
+      },
+      "col": {
+        "3": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
             "title": "Associations",
-            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOMReceiver.association.active\"][\"value\"]"
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.associations.active\"][\"value\"]",
+            "min_value": 0,
+            "max_value": "20"
           }
         },
         {
@@ -37,16 +194,8 @@
           "settings": {
             "title": "Total Associations",
             "size": "regular",
-            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOMReceiver.association.total\"][\"count\"]",
-            "sparkline": false,
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.associations.total\"][\"count\"]",
             "animate": true
-          }
-        },
-        {
-          "type": "sparkline",
-          "settings": {
-            "title": "Images Received (1 Minute Rate)",
-            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOMReceiver.image.received\"][\"m1_rate\"]"
           }
         }
       ]
@@ -59,7 +208,7 @@
       "settings": {
         "url": "/rest/metrics",
         "use_thingproxy": true,
-        "refresh": 10,
+        "refresh": 2,
         "method": "GET"
       }
     }
