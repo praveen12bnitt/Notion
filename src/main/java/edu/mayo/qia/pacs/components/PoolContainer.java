@@ -67,7 +67,7 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 @Scope("prototype")
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
-  static Timer moveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", "move", "time"));
+  static Timer moveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", "move", "timer"));
   static Counter moveCounter = Notion.metrics.counter("Pool.move.count");
   static Timer processTimer = Notion.metrics.timer("Pool.process.timer");
 
@@ -149,10 +149,10 @@ public class PoolContainer {
     configureCTP();
 
     // Pool-specific metrics
-    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "move", "time"));
+    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "move", "timer"));
     poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.name, "move", "count"));
     poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "process", "timer"));
-    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.name, "receive", "meter"));
+    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.name, "process", "meter"));
     final Map<String, String> queryMap = new HashMap<String, String>();
     queryMap.put("instances", "select count(*) from INSTANCE, SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and SERIES.SeriesKey = INSTANCE.SeriesKey and STUDY.PoolKey = ?");
     queryMap.put("series", "select count(*) from SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and STUDY.PoolKey = ?");
@@ -328,10 +328,8 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /*
-       * to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table;
-       */
+      /* to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table; */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 

@@ -99,8 +99,8 @@ public class Query {
   Future<String> fetchFuture;
 
   @JsonIgnore
-  static Timer queryTimer = Notion.metrics.timer(MetricRegistry.name("Query", "query", "duration"));
-  static Timer fetchTimer = Notion.metrics.timer(MetricRegistry.name("Query", "fetch", "duration"));
+  static Timer queryTimer = Notion.metrics.timer(MetricRegistry.name("Query", "query", "timer"));
+  static Timer fetchTimer = Notion.metrics.timer(MetricRegistry.name("Query", "fetch", "timer"));
 
   /**
    * Construct a query object and return it
