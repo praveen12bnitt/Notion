@@ -39,7 +39,8 @@
           document.title = vars['pool'] + " -- Notion dashboard";
           $.ajax({url:"pool.json"}).done(function(data) {
             // console.log("Got data: ", data);
-            var string = data.replace ( "XX", vars['pool'] );
+            var string = data.replace ( /XX/g, vars['pool'] );
+            console.log(string);
             freeboard.loadDashboard(JSON.parse(string));
           });
         } else {
