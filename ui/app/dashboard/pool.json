@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "allow_edit": true,
+  "plugins": [],
+  "panes": [
+    {
+      "title": "XX",
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 1
+      },
+      "col": {
+        "3": 1,
+        "4": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Studies",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"Pool.XX.studies\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Series",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"Pool.XX.series\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Instances",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"Pool.XX.instances\"][\"value\"]",
+            "sparkline": true,
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 1
+      },
+      "col": {
+        "3": 2,
+        "4": 2
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pending Image Moves",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"Pool.XX.move.count\"][\"count\"]",
+            "sparkline": true,
+            "animate": true
+          }
+        },
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Processing Rate",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"Pool.XX.process.meter\"][\"m1_rate\"]",
+            "units": "Images / Second (1 Minute average)",
+            "min_value": 0,
+            "max_value": "10"
+          }
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "Metrics",
+      "type": "JSON",
+      "settings": {
+        "url": "/rest/metrics",
+        "use_thingproxy": true,
+        "refresh": 10,
+        "method": "GET"
+      }
+    }
+  ],
+  "columns": 3
+}
