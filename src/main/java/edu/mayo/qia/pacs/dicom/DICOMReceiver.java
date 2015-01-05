@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
@@ -53,7 +52,7 @@ import edu.mayo.qia.pacs.components.PoolManager;
 public class DICOMReceiver implements AssociationListener, Managed {
   static Logger logger = LoggerFactory.getLogger(DICOMReceiver.class);
   private ConcurrentHashMap<Association, AssociationInfo> associationMap = new ConcurrentHashMap<Association, AssociationInfo>();
-  static Counter associationCounter = Notion.metrics.counter(MetricRegistry.name("DICOMReceiver", "association", "total"));
+  static Counter associationCounter = Notion.metrics.counter(MetricRegistry.name("DICOM", "associations", "total"));
 
   private final Device device = new Device(null);
   private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
@@ -86,7 +85,7 @@ public class DICOMReceiver implements AssociationListener, Managed {
   /** Standard constructor */
   public DICOMReceiver() {
     // Register our gauges
-    Notion.metrics.register(MetricRegistry.name("DICOMReceiver", "association", "active"), new Gauge<Integer>() {
+    Notion.metrics.register(MetricRegistry.name("DICOM", "associations", "active"), new Gauge<Integer>() {
       @Override
       public Integer getValue() {
         return associationMap.size();

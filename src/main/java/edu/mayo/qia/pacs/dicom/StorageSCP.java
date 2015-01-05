@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -37,8 +38,9 @@ import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 @Component
 public class StorageSCP extends StorageService {
   static Logger logger = LoggerFactory.getLogger(StorageSCP.class);
-  static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOMReceiver", "image", "received"));
-  static Timer imageTimer = Notion.metrics.timer(MetricRegistry.name("DICOMReceiver", "image", "write"));
+  static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOM", "image", "received"));
+  static Timer imageTimer = Notion.metrics.timer(MetricRegistry.name("DICOM", "image", "write"));
+  static Counter imageCounter = Notion.metrics.counter("DICOM.image.received.total");
 
   @Autowired
   JdbcTemplate template;
@@ -118,6 +120,7 @@ public class StorageSCP extends StorageService {
     info.imageCount++;
     imageMeter.mark();
     context.stop();
+    imageCounter.inc();
     try {
       poolManager.processIncomingFile(as, rename);
     } catch (Exception e) {

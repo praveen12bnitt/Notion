@@ -20,7 +20,7 @@ public class Metrics {
     // Counts by DBTable
     final JdbcTemplate template = Notion.context.getBean("template", JdbcTemplate.class);
     for (final String table : new String[] { "POOL", "INSTANCE", "SERIES", "STUDY" }) {
-      Notion.metrics.register(MetricRegistry.name("DB", "table", table.toLowerCase()), new CachedGauge<Long>(10, TimeUnit.MINUTES) {
+      Notion.metrics.register(MetricRegistry.name("DB", "table", table.toLowerCase()), new CachedGauge<Long>(30, TimeUnit.SECONDS) {
         @Override
         protected Long loadValue() {
           String sql = "select count(*) from " + table;
