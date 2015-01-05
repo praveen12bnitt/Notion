@@ -39,7 +39,8 @@ gulp.task('vendor', function() {
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 
 
-  gulp.src('bower_components/freeboard/**').pipe(gulp.dest('public/dashboard'));
+  gulp.src(['bower_components/freeboard/js/**']).pipe(gulp.dest('public/dashboard/js/'));
+  gulp.src(['bower_components/freeboard/css/**']).pipe(gulp.dest('public/dashboard/css/'));
 
 
 });
