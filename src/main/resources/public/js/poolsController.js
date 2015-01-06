@@ -29,7 +29,6 @@ notionApp.controller ( 'PoolsController', function($scope,$timeout,$state,$modal
   $scope.newPoolKey = false;
 
   $scope.refresh = function() {
-    console.log ( "calling refresh on ", $scope.poolCollection)
     $scope.poolCollection.fetch({remove:true, success: function() {
       $scope.fetchPermissions();
       p = $scope.poolCollection;

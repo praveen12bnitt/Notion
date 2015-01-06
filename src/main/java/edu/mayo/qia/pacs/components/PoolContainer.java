@@ -56,6 +56,7 @@ import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.TagLoader;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 /**
  * Manage a particular pool.
@@ -70,6 +71,8 @@ public class PoolContainer {
   static Timer moveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", "move", "timer"));
   static Counter moveCounter = Notion.metrics.counter("Pool.move.count");
   static Timer processTimer = Notion.metrics.timer("Pool.process.timer");
+  RateGauge imagesProcessedPerSecond = new RateGauge();
+  RateGauge imagesMovedPerSecond = new RateGauge();
 
   // Pool versions
   Timer poolMoveTimer;
@@ -153,6 +156,9 @@ public class PoolContainer {
     poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.name, "move", "count"));
     poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "process", "timer"));
     poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.name, "process", "meter"));
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.name, "process", "rate"), imagesProcessedPerSecond);
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.name, "move", "rate"), imagesMovedPerSecond);
+
     final Map<String, String> queryMap = new HashMap<String, String>();
     queryMap.put("instances", "select count(*) from INSTANCE, SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and SERIES.SeriesKey = INSTANCE.SeriesKey and STUDY.PoolKey = ?");
     queryMap.put("series", "select count(*) from SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and STUDY.PoolKey = ?");
@@ -298,6 +304,10 @@ public class PoolContainer {
   }
 
   public void process(File incoming, MoveStatus status) throws Exception, IOException {
+    process(incoming, status, new ProcessCache());
+  }
+
+  public void process(File incoming, MoveStatus status, ProcessCache cache) throws Exception {
     synchronized (this) {
       poolReceiveMeter.mark();
       Timer.Context poolContext = poolProcessTimer.time();
@@ -335,43 +345,53 @@ public class PoolContainer {
 
       try {
 
+        // Assume that if the cache has a study, we can just use it. OTW query
+        // and update.
         Query query;
-        query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
-        query.setInteger("poolkey", pool.poolKey);
-        query.setString("suid", tags.getString(Tag.StudyInstanceUID));
-        Study study = (Study) query.uniqueResult();
+
+        Study study = cache.studies.get(tags.getString(Tag.StudyInstanceUID));
         if (study == null) {
-          study = new Study(tags);
-          study.pool = pool;
 
-          // Log when we get a new study
-          Audit.log(pool.toString(), "create_study", tags);
+          query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
+          query.setInteger("poolkey", pool.poolKey);
+          query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+          study = (Study) query.uniqueResult();
 
-        } else {
-          logger.error("Is Study dirty?: " + session.isDirty());
-          study.update(tags);
-          logger.error("Is Study dirty now?: " + session.isDirty());
+          if (study == null) {
+            study = new Study(tags);
+            study.pool = pool;
+            // Log when we get a new study
+            Audit.log(pool.toString(), "create_study", tags);
+          } else {
+            study.update(tags);
+            Audit.log(pool.toString(), "update_study", tags);
+          }
+          session.saveOrUpdate(study);
+          cache.studies.put(tags.getString(Tag.StudyInstanceUID), study);
+          session.getTransaction().commit();
+          session.beginTransaction();
         }
-        session.saveOrUpdate(study);
-        session.getTransaction().commit();
-        session.beginTransaction();
 
-        // Find the Series
-        query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
-        query.setInteger("studykey", study.StudyKey);
-        query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
-        Series series = (Series) query.uniqueResult();
+        Series series = cache.series.get(tags.getString(Tag.SeriesInstanceUID));
         if (series == null) {
-          series = new Series(tags);
-          series.study = study;
-          // Log when we get a new study
-          Audit.log(pool.toString(), "create_series", tags);
-        } else {
-          series.update(tags);
+          // Find the Series
+          query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
+          query.setInteger("studykey", study.StudyKey);
+          query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+          series = (Series) query.uniqueResult();
+          if (series == null) {
+            series = new Series(tags);
+            series.study = study;
+            // Log when we get a new study
+            Audit.log(pool.toString(), "create_series", tags);
+          } else {
+            series.update(tags);
+          }
+          session.saveOrUpdate(series);
+          cache.series.put(tags.getString(Tag.SeriesInstanceUID), series);
+          session.getTransaction().commit();
+          session.beginTransaction();
         }
-        session.saveOrUpdate(series);
-        session.getTransaction().commit();
-        session.beginTransaction();
 
         // Find the Instance
         query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
@@ -421,6 +441,7 @@ public class PoolContainer {
         poolContext.stop();
         context.stop();
         session.close();
+        imagesProcessedPerSecond.mark();
       }
     }
   }
@@ -481,10 +502,10 @@ public class PoolContainer {
 
   public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination, final MoveStatus status) {
     final AtomicBoolean successful = new AtomicBoolean(true);
-    long numberToMove = template.queryForObject("select count(INSTANCE.FilePath) from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?",
+    long numberToMove = template.queryForObject("select count(INSTANCE.FilePath) from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?",
         new Object[] { this.pool.poolKey, studyInstanceUID }, Long.class);
     moveCounter.inc(numberToMove);
-    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
+    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
         studyInstanceUID }, new RowCallbackHandler() {
 
       @Override
@@ -500,6 +521,7 @@ public class PoolContainer {
           successful.set(false);
           logger.error("Error processing file: " + f + " into pool " + pool, e);
         }
+        imagesMovedPerSecond.mark();
         moveCounter.dec();
       }
     });

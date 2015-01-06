@@ -99,7 +99,7 @@ public class Beans {
   @Bean
   public TaskScheduler taskScheduler() {
     ThreadPoolTaskScheduler s = new ThreadPoolTaskScheduler();
-    s.setPoolSize(2);
+    s.setPoolSize(10);
     return s;
   }
 

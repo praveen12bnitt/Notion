@@ -28,7 +28,7 @@ PoolModel = Backbone.Model.extend({
 
 PoolCollection = Backbone.Collection.extend({
   model: PoolModel,
-  url: function() { console.log ( "PoolCollection.url "); return '/rest/pool' },
+  url: function() { console.log ( "PoolCollection.url "); return '/rest/pool'; },
   parse: function(response) {
     var m = [];
     for(var i = 0; i < response.pool.length; i++) {
@@ -72,7 +72,7 @@ QueryModel = Backbone.Model.extend({
       return a.queryItemKey - b.queryItemKey;
     });
     for ( var i = 0; i < response.items.length; i++ ) {
-      response.items[i].items.sort ( function(a,b){
+      response.items[i].items.sort ( function(a,b) {
         return a.queryResultKey - b.queryResultKey;
       });
     }

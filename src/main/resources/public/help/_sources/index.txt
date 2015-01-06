@@ -103,6 +103,7 @@ Developer Documentation
   :maxdepth: 2
 
   Development/development
+  Development/metrics
 
 .. _ops-docs:
 

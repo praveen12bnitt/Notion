@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs.metric;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
 
 public class RateGauge implements Gauge<Double> {
 

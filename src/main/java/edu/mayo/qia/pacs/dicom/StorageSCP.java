@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 import edu.mayo.qia.pacs.metric.RateGauge;
@@ -86,7 +87,8 @@ public class StorageSCP extends StorageService {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
     }
 
-    Pool pool = poolManager.getContainer(info.poolKey).getPool();
+    PoolContainer container = poolManager.getContainer(info.poolKey);
+    Pool pool = container.getPool();
     if (!info.canConnect) {
       Audit.log(remoteDevice, "association_rejected", "C-MOVE to " + pool);
       throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
@@ -128,7 +130,7 @@ public class StorageSCP extends StorageService {
     context.stop();
     imageCounter.inc();
     try {
-      poolManager.processIncomingFile(as, rename);
+      container.process(rename, null, info.cache);
     } catch (Exception e) {
       logger.error("Error handling new instance", e);
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Failed to process image");

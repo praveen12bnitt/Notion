@@ -56,7 +56,6 @@ public class ConnectorEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response getConnector() {
     List<Connector> result = new ArrayList<Connector>();
     Session session = sessionFactory.getCurrentSession();
