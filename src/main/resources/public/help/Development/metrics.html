@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Development &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  <title>Metrics and Monitoring &mdash; Notion: a PACS for researchers 1.0 documentation</title>
   
 
   
@@ -30,8 +30,8 @@
 
   
     <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
-        <link rel="next" title="Metrics and Monitoring" href="metrics.html"/>
-        <link rel="prev" title="Concepts" href="../Reference/reference.html"/>
+        <link rel="next" title="Operations" href="../Reference/operations.html"/>
+        <link rel="prev" title="Development" href="development.html"/>
 <link rel="stylesheet" href="../_static/notion.css" />
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
 
@@ -114,14 +114,14 @@
 </li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics and Monitoring</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#dicom">DICOM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#query-fetch">Query / Fetch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#id1">Gauges</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#id2">Counters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#id3">Meters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html#id4">Timers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Metrics and Monitoring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dicom">DICOM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-fetch">Query / Fetch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Gauges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Counters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Meters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Timers</a></li>
 </ul>
 </li>
 </ul>
@@ -156,7 +156,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-    <li>Development</li>
+    <li>Metrics and Monitoring</li>
       <li class="wy-breadcrumbs-aside">
         
       </li>
@@ -165,8 +165,203 @@
 </div>
           <div role="main">
             
-  <div class="section" id="development">
-<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="metrics-and-monitoring">
+<h1>Metrics and Monitoring<a class="headerlink" href="#metrics-and-monitoring" title="Permalink to this headline">¶</a></h1>
+<p>Notion has the following <a class="reference external" href="https://dropwizard.github.io/metrics/3.1.0/">Metrics</a>.  Metrics are reported at the REST endpoint <tt class="docutils literal"><span class="pre">/rest/metrics</span></tt>.</p>
+<div class="section" id="dicom">
+<h2>DICOM<a class="headerlink" href="#dicom" title="Permalink to this headline">¶</a></h2>
+<p>Metrics recorded for DICOM.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="54%" />
+<col width="10%" />
+<col width="36%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Type</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>DICOM.image.write</td>
+<td>Timer</td>
+<td>Write images/second</td>
+</tr>
+<tr class="row-odd"><td>DICOM.image.received</td>
+<td>Meter</td>
+<td>Receive images/second</td>
+</tr>
+<tr class="row-even"><td>DICOM.image.sent</td>
+<td>Meter</td>
+<td>Sent images/second</td>
+</tr>
+<tr class="row-odd"><td>DICOM.image.send.queue</td>
+<td>Counter</td>
+<td>Pending images to send</td>
+</tr>
+<tr class="row-even"><td>DICOM.associations.active</td>
+<td>Gauge</td>
+<td># of active associations</td>
+</tr>
+<tr class="row-odd"><td>DICOM.associations.total</td>
+<td>Counter</td>
+<td># of total associations</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="query-fetch">
+<h2>Query / Fetch<a class="headerlink" href="#query-fetch" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="10%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Type</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Query.timer</td>
+<td>Timer</td>
+<td>Query time</td>
+</tr>
+<tr class="row-odd"><td>Query.counter</td>
+<td>Counter</td>
+<td># of Queries in progress</td>
+</tr>
+<tr class="row-even"><td>Fetch.timer</td>
+<td>Timer</td>
+<td>Fetch time images/second</td>
+</tr>
+<tr class="row-odd"><td>Fetch.counter</td>
+<td>Counter</td>
+<td># of Fetches in progress</td>
+</tr>
+<tr class="row-even"><td>Fetch.pending</td>
+<td>Counter</td>
+<td># of pending Fetches (Studies)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id1">
+<h2>Gauges<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dropwizard.github.io/metrics/3.1.0/manual/core/#gauges">Gauges</a> measure a single value at an instant in time.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="54%" />
+<col width="46%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>Pool.XX.studies</td>
+<td>Number of Studies in the Pool</td>
+</tr>
+<tr class="row-odd"><td>Pool.XX.series</td>
+<td>Number of Series in the Pool</td>
+</tr>
+<tr class="row-even"><td>Pool.XX.instance</td>
+<td>Number of Instances in the pool</td>
+</tr>
+<tr class="row-odd"><td>DB.table.instance</td>
+<td>Total number of Instances</td>
+</tr>
+<tr class="row-even"><td>DB.table.instance</td>
+<td>Total number of Instances</td>
+</tr>
+<tr class="row-odd"><td>DB.table.instance</td>
+<td>Total number of Instances</td>
+</tr>
+<tr class="row-even"><td>DICOM.associations.active</td>
+<td>Number of active Associations</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id2">
+<h2>Counters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dropwizard.github.io/metrics/3.1.0/manual/core/#counters">Counters</a> are a simple incrementing and decrementing 64-bit integer.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>DICOMReceiver.association.total</td>
+<td>Number of total associations since start.</td>
+</tr>
+<tr class="row-odd"><td>Pool.move.count</td>
+<td>Total number of images moved, should increment and decrement.</td>
+</tr>
+<tr class="row-even"><td>Pool.XX.move.count</td>
+<td>Number of images waiting to be moved into Pool XX</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id3">
+<h2>Meters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dropwizard.github.io/metrics/3.1.0/manual/core/#meters">Meters</a> measure the rate at which events happen.  Meters capture 1-, 5-, and 15-minute rate, and an exponentially decaying mean rate.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="45%" />
+<col width="55%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>DICOMReceiver.image.received</td>
+<td>Overall images received per second.</td>
+</tr>
+<tr class="row-odd"><td>Pool.XX.process.meter</td>
+<td>Rate of processing incoming image by Pool XX</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h2>Timers<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://dropwizard.github.io/metrics/3.1.0/manual/core/#timers">Timers</a> collect a histogram of the duration and a meter for an event.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="54%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Name</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td>DICOMReceiver.image.write</td>
+<td>Time required to write an image</td>
+</tr>
+<tr class="row-odd"><td>Pool.move.timer</td>
+<td>Time required to move an image into a Pool</td>
+</tr>
+<tr class="row-even"><td>Pool.process.timer</td>
+<td>Time required to process images into a Pool</td>
+</tr>
+<tr class="row-odd"><td>Pool.XX.process.timer</td>
+<td>Processing time for Pool XX</td>
+</tr>
+<tr class="row-even"><td>Pool.XX.move.timer</td>
+<td>Move time for Pool XX</td>
+</tr>
+<tr class="row-odd"><td>Query.query.timer</td>
+<td>Query time</td>
+</tr>
+<tr class="row-even"><td>Query.fetch.timer</td>
+<td>Fetch time</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -175,10 +370,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics and Monitoring">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../Reference/operations.html" class="btn btn-neutral float-right" title="Operations">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../Reference/reference.html" class="btn btn-neutral" title="Concepts"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="development.html" class="btn btn-neutral" title="Development"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

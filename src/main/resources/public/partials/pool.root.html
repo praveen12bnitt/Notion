@@ -23,6 +23,12 @@
     <li role="presentation" ui-sref-active="active">
       <a ng-show='permission[pool.id].query' ng-href="rest/pool/{{pool.id}}/lookup">anonymization map</a>
     </li>
+
+    <li role="presentation" ui-sref-active="active">
+      <a ng-show='permission[pool.id].admin' ng-href="dashboard/dashboard.html?pool={{pool.get('name')}}">dashboard</a>
+    </li>
+
+
   </ul>
 
 

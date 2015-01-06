@@ -52,7 +52,7 @@ notionApp.controller ( 'StudyController', function($scope,$http,$timeout,$stateP
       p = p + ("AccessionNumber=" + encodeURI($scope.AccessionNumber)+"&");
     }
     return p;
-  }
+  };
 
   $scope.download = function(){
     $http.post('/rest/pool/' + $scope.pool.get('poolKey') + '/studies/zip', {
