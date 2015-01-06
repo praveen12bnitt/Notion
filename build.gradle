@@ -15,7 +15,7 @@ mainClassName = 'edu.mayo.qia.pacs.Notion'
 
 // Set our project variables
 project.ext {
-  dropwizardVersion = '0.7.0'
+  dropwizardVersion = '0.7.1'
   springVersion = "3.2.2.RELEASE"
 
 }
@@ -29,10 +29,24 @@ repositories {
 
 configurations {
   compile.exclude module: 'hibernate-jpa-2.0-api'
+  compile.exclude group: 'com.codahale.metrics'
 }
 
 dependencies {
   compile (
+      // Force metrics to be 3.1.0
+    "io.dropwizard.metrics:metrics-core:3.1.0",
+    'io.dropwizard.metrics:metrics-json:3.1.0',
+    'io.dropwizard.metrics:metrics-servlet:3.1.0',
+    'io.dropwizard.metrics:metrics-healthchecks:3.1.0',
+    'io.dropwizard.metrics:metrics-jvm:3.1.0',
+    'io.dropwizard.metrics:metrics-jdbi:3.1.0',
+    'io.dropwizard.metrics:metrics-logback:3.1.0',
+    'io.dropwizard.metrics:metrics-servlets:3.1.0',
+    'io.dropwizard.metrics:metrics-jetty9-legacy:3.1.0',
+    'io.dropwizard.metrics:metrics-jersey:3.1.0',
+    'io.dropwizard.metrics:metrics-annotation:3.1.0',
+
     'io.dropwizard:dropwizard-core:' + dropwizardVersion,
     'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
     'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
@@ -64,10 +78,12 @@ dependencies {
     "org.springframework:spring-tx:" + springVersion,
     "org.springframework:spring-test:" + springVersion,
     "cglib:cglib-nodep:2.2.2",
-    "com.sun.jersey:jersey-client:1.18.1",
 
+    "com.sun.jersey:jersey-client:1.18.1",
     "com.sun.jersey.contribs:jersey-multipart:1.18.1",
     "com.sun.jersey.contribs:jersey-spring:1.18.1",
+
+
 
     "org.aspectj:aspectjrt:1.5.4",
     "org.aspectj:aspectjweaver:1.5.4",
@@ -106,7 +122,6 @@ dependencies {
     'org.freemarker:freemarker:2.3.20',
     'com.novaquark:metrics-influxdb:0.3.0',
     'org.influxdb:influxdb-java:1.1',
-    'io.dropwizard.metrics:metrics-json:3.1.0'
   )
 }
 
@@ -133,7 +148,7 @@ sourceSets {
   test {
     resources {
       srcDir "DICOMTestData"
-      srcDir "ui"
+      // srcDir "ui"
     }
   }
 }
