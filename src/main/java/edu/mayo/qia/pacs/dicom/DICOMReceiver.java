@@ -39,6 +39,7 @@ import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.components.PoolContainer;
 import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.components.ProcessCache;
 
 /**
  * Provides a stand-alone DICOM receiver rather than the heavyweight
@@ -207,6 +208,7 @@ public class DICOMReceiver implements AssociationListener, Managed {
     public String uuid = UUID.randomUUID().toString();
     public boolean canConnect = false;
     public String failureMessage = "Failed to connect";
+    public ProcessCache cache = new ProcessCache();
     File incomingRootDirectory;
     File poolRootDirectory;
     int poolKey;
