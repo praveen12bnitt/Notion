@@ -45,7 +45,7 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
   var queryTick = function(){
     // Actually fetch only when mode is '*-pending'
     if ( $scope.query && $scope.mode.match('pending') ) {
-      console.log("queryTick")
+      console.log("queryTick");
       $scope.query.fetch().done(function() {
         // console.log ("queryTick completed")
         if ($scope.query.get('status').match("query completed")) {
@@ -92,7 +92,7 @@ $scope.download = function() {
   // Have the browser download the completed fetch
   var url = "/rest/pool/" + $scope.pool.get('poolKey') + "/query/" + $scope.query.get('queryKey') + "/zip";
   downloadFile ( url );
-}
+};
 
 
 $scope.doQuery = function() {
@@ -116,8 +116,8 @@ var successCallback = function(data) {
 $scope.selectAll = function() {
   $.each($scope.query.get('items'), function(index,value) {
     $scope.fetchAll(value);
-  })
-}
+  });
+};
 
 $scope.fetchAll = function(item){
   $.each(item.items, function(index,value){

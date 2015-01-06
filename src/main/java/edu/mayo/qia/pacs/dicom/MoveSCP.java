@@ -24,29 +24,39 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+
 import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 @Component
 public class MoveSCP extends DicomService implements CMoveSCP {
   static Logger logger = LoggerFactory.getLogger(MoveSCP.class);
+  static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOM", "image", "sent"));
+  static Counter imageQueueCounter = Notion.metrics.counter(MetricRegistry.name("DICOM", "image", "send", "queue"));
+  static Counter imageSentCounter = Notion.metrics.counter("DICOM.image.sent.count");
+  static RateGauge imagesPerSecond;
 
   static public String[] PresentationContexts = new String[] { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE };
 
   @Autowired
   JdbcTemplate template;
 
-  @Autowired
-  DICOMReceiver dicomReceiver;
-
   public MoveSCP() {
     super(PresentationContexts);
+    imagesPerSecond = new RateGauge();
+    Notion.metrics.register("DICOM.image.sent.rate", imagesPerSecond);
   }
 
   @Override
   public void cmove(final Association as, final int pcid, final DicomObject command, DicomObject request) throws DicomServiceException, IOException {
 
+    DICOMReceiver dicomReceiver = Notion.context.getBean("dicomReceiver", DICOMReceiver.class);
     final AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
     if (info == null) {
       throw new DicomServiceException(request, Status.ProcessingFailure, "Invalid or unknown association");
@@ -106,6 +116,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
         public void processRow(ResultSet rs) throws SQLException {
           File f = new File(info.poolRootDirectory, rs.getString("FilePath"));
           sender.addFile(f);
+          imageQueueCounter.inc();
         }
       });
     }
@@ -119,6 +130,9 @@ public class MoveSCP extends DicomService implements CMoveSCP {
         response.putInt(Tag.NumberOfRemainingSuboperations, VR.US, total - current - 1);
         response.putInt(Tag.NumberOfFailedSuboperations, VR.US, 0);
         response.putInt(Tag.NumberOfWarningSuboperations, VR.US, 0);
+        imageMeter.mark();
+        imageSentCounter.inc();
+        imagesPerSecond.mark();
         try {
           if (logger.isDebugEnabled()) {
             logger.debug("Sending " + current + " of " + total + " images");
@@ -128,7 +142,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
         } catch (Exception e) {
           logger.error("Failed to write return response", e);
         }
-
+        imageQueueCounter.dec();
       }
     };
     sender.configureTransferCapability();

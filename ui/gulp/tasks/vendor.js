@@ -38,4 +38,11 @@ gulp.task('vendor', function() {
 
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
 
+
+  gulp.src(['bower_components/freeboard/js/**']).pipe(gulp.dest('public/dashboard/js/'));
+  gulp.src(['bower_components/freeboard/css/**']).pipe(gulp.dest('public/dashboard/css/'));
+  gulp.src(['bower_components/freeboard/img/**']).pipe(gulp.dest('public/dashboard/img/'));
+gulp.src(['bower_components/freeboard/plugins/**']).pipe(gulp.dest('public/dashboard/plugins/'));
+
+
 });

@@ -6,12 +6,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,6 +42,11 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.codahale.metrics.CachedGauge;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Files;
@@ -48,7 +55,6 @@ import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
-import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 import edu.mayo.qia.pacs.dicom.TagLoader;
 
 /**
@@ -61,6 +67,15 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 @Scope("prototype")
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
+  static Timer moveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", "move", "timer"));
+  static Counter moveCounter = Notion.metrics.counter("Pool.move.count");
+  static Timer processTimer = Notion.metrics.timer("Pool.process.timer");
+
+  // Pool versions
+  Timer poolMoveTimer;
+  Counter poolMoveCounter;
+  Timer poolProcessTimer;
+  Meter poolReceiveMeter;
 
   public static final int[] SortedFilename = { Tags.AccessionNumber, Tags.StudyInstanceUID, Tags.SeriesInstanceUID, Tags.SOPInstanceUID };
 
@@ -92,7 +107,7 @@ public class PoolContainer {
   public PoolContainer() {
   }
 
-  public void start(Pool pool) {
+  public void start(final Pool pool) {
     this.pool = pool;
     if (this.pool.poolKey <= 0) {
       throw new RuntimeException("PoolKey must be set!");
@@ -132,6 +147,26 @@ public class PoolContainer {
     scriptsDirectory.mkdirs();
     // Would start CTP here as well
     configureCTP();
+
+    // Pool-specific metrics
+    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "move", "timer"));
+    poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.name, "move", "count"));
+    poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "process", "timer"));
+    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.name, "process", "meter"));
+    final Map<String, String> queryMap = new HashMap<String, String>();
+    queryMap.put("instances", "select count(*) from INSTANCE, SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and SERIES.SeriesKey = INSTANCE.SeriesKey and STUDY.PoolKey = ?");
+    queryMap.put("series", "select count(*) from SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and STUDY.PoolKey = ?");
+    queryMap.put("studies", "select count(*) from STUDY where STUDY.PoolKey = ?");
+
+    for (final String table : queryMap.keySet()) {
+      Notion.metrics.register(MetricRegistry.name("Pool", pool.name, table.toLowerCase()), new CachedGauge<Long>(5, TimeUnit.MINUTES) {
+        @Override
+        protected Long loadValue() {
+          return template.queryForObject(queryMap.get(table), Long.class, pool.poolKey);
+        }
+      });
+    }
+
   }
 
   public FileObject executePipeline(FileObject fileObject) throws Exception {
@@ -264,6 +299,9 @@ public class PoolContainer {
 
   public void process(File incoming, MoveStatus status) throws Exception, IOException {
     synchronized (this) {
+      poolReceiveMeter.mark();
+      Timer.Context poolContext = poolProcessTimer.time();
+      Timer.Context context = processTimer.time();
       // Handle one per container
       // Have the container process!
       DicomObject originalTags = TagLoader.loadTags(incoming);
@@ -290,10 +328,8 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /*
-       * to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table;
-       */
+      /* to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table; */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -382,6 +418,8 @@ public class PoolContainer {
       } catch (Exception e) {
         logger.error("Caught exception", e);
       } finally {
+        poolContext.stop();
+        context.stop();
         session.close();
       }
     }
@@ -443,6 +481,9 @@ public class PoolContainer {
 
   public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination, final MoveStatus status) {
     final AtomicBoolean successful = new AtomicBoolean(true);
+    long numberToMove = template.queryForObject("select count(INSTANCE.FilePath) from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?",
+        new Object[] { this.pool.poolKey, studyInstanceUID }, Long.class);
+    moveCounter.inc(numberToMove);
     template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
         studyInstanceUID }, new RowCallbackHandler() {
 
@@ -459,6 +500,7 @@ public class PoolContainer {
           successful.set(false);
           logger.error("Error processing file: " + f + " into pool " + pool, e);
         }
+        moveCounter.dec();
       }
     });
     destination.processAnonymizationMap();

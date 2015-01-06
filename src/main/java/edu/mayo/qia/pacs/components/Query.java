@@ -24,6 +24,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.criteria.FetchParent;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -44,6 +45,9 @@ import org.dcm4che2.net.DimseRSP;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -95,6 +99,13 @@ public class Query {
   @JsonIgnore
   @Transient
   Future<String> fetchFuture;
+
+  @JsonIgnore
+  static Timer queryTimer = Notion.metrics.timer(MetricRegistry.name("Query", "timer"));
+  static Timer fetchTimer = Notion.metrics.timer(MetricRegistry.name("Fetch", "timer"));
+  static Counter queryCounter = Notion.metrics.counter(MetricRegistry.name("Query", "counter"));
+  static Counter fetchCounter = Notion.metrics.counter(MetricRegistry.name("Fetch", "counter"));
+  static Counter pendingFetchCounter = Notion.metrics.counter(MetricRegistry.name("Fetch", "pending"));
 
   /**
    * Construct a query object and return it
@@ -201,6 +212,8 @@ public class Query {
     queryFuture = executor.submit(new Callable<String>() {
       public String call() {
         Thread.currentThread().setName("Query " + device);
+        queryCounter.inc();
+        Timer.Context context = queryTimer.time();
         JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
         template.update("update QUERY set Status = ? where QueryKey = ?", "query pending", queryKey);
         template.update("update QUERY set LastQueryTimestamp = ? where QueryKey = ?", new Date(), queryKey);
@@ -273,6 +286,8 @@ public class Query {
         }
         template.update("update QUERY set Status = ? where QueryKey = ?", "query completed", queryKey);
         Thread.currentThread().setName("Idle");
+        queryCounter.dec();
+        context.stop();
         return "completed";
       }
     });
@@ -316,6 +331,9 @@ public class Query {
     fetchFuture = Notion.context.getBean("executor", ExecutorService.class).submit(new Callable<String>() {
       public String call() {
         final JdbcTemplate template = Notion.context.getBean(JdbcTemplate.class);
+        Timer.Context context = fetchTimer.time();
+        fetchCounter.inc();
+
         template.update("update QUERY set Status = ? where QueryKey = ?", "fetch pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) ", "fetch pending", queryKey);
         template.update("update QUERYRESULT set Status = ? where QueryItemKey in ( select QueryItemKey from QUERYITEM where QueryKey = ?) and DoFetch = 'F'", "", queryKey);
@@ -324,6 +342,14 @@ public class Query {
         PoolContainer poolContainer = poolManager.getContainer(pool.poolKey);
         Anonymizer anonymizer = Notion.context.getBean("anonymizer", Anonymizer.class);
         anonymizer.setPool(poolContainer.getPool());
+
+        for (final Item item : items) {
+          for (final Result result : item.items) {
+            if (result.doFetch) {
+              pendingFetchCounter.inc();
+            }
+          }
+        }
 
         for (final Item item : items) {
           for (final Result result : item.items) {
@@ -379,11 +405,14 @@ public class Query {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: unknown exception " + e.toString(), result.queryResultKey);
               logger.error("Error doing query", e);
             }
+            pendingFetchCounter.dec();
           }
         }
         template.update("update QUERY set Status = ? where QueryKey = ?", "fetch completed", queryKey);
         logger.debug("Fetch Compeleted");
+        fetchCounter.dec();
         Thread.currentThread().setName("Idle");
+        context.stop();
         return "complete";
       }
     });

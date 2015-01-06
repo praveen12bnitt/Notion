@@ -37,9 +37,10 @@ dependencies {
     'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
     'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
     'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
-'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
-'io.dropwizard:dropwizard-testing:' + dropwizardVersion,
+    'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+    'io.dropwizard:dropwizard-testing:' + dropwizardVersion,
 
+    'net.alchim31:metrics-influxdb:0.5.0',
 
     "javax.activation:activation:1.1",
     "com.fasterxml.uuid:java-uuid-generator:3.1.3",
@@ -104,7 +105,8 @@ dependencies {
     'com.bazaarvoice.dropwizard:dropwizard-configurable-assets-bundle:0.2.0-rc1',
     'org.freemarker:freemarker:2.3.20',
     'com.novaquark:metrics-influxdb:0.3.0',
-    'org.influxdb:influxdb-java:1.1'
+    'org.influxdb:influxdb-java:1.1',
+    'io.dropwizard.metrics:metrics-json:3.1.0'
   )
 }
 

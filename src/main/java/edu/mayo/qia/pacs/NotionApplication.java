@@ -11,14 +11,13 @@ import io.dropwizard.setup.Environment;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.shiro.web.env.IniWebEnvironment;
-import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.apache.shiro.web.filter.authc.UserFilter;
 import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
 import org.apache.shiro.web.filter.mgt.FilterChainManager;
@@ -26,10 +25,7 @@ import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.eclipse.jetty.server.session.SessionHandler;
-import org.quartz.Job;
 import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
@@ -43,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
+import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.sun.jersey.api.core.ResourceConfig;
@@ -74,6 +71,7 @@ import edu.mayo.qia.pacs.managed.DBWebServer;
 import edu.mayo.qia.pacs.managed.QuartzManager;
 import edu.mayo.qia.pacs.rest.AuthorizationEndpoint;
 import edu.mayo.qia.pacs.rest.ConnectorEndpoint;
+import edu.mayo.qia.pacs.rest.MetricsEndpoint;
 import edu.mayo.qia.pacs.rest.PoolEndpoint;
 import edu.mayo.qia.pacs.rest.UserEndpoint;
 
@@ -115,6 +113,7 @@ public class NotionApplication extends Application<NotionConfiguration> {
 
     // Register Joda time
     environment.getObjectMapper().registerModule(new JodaModule());
+    environment.getObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, true));
     environment.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     // init Spring context
@@ -202,16 +201,20 @@ public class NotionApplication extends Application<NotionConfiguration> {
     }
 
     environment.lifecycle().manage(context.getBean("poolManager", PoolManager.class));
-    environment.lifecycle().manage(context.getBean(DICOMReceiver.class));
+    environment.lifecycle().manage(context.getBean("dicomReceiver", DICOMReceiver.class));
 
     environment.servlets().setSessionHandler(new SessionHandler());
     environment.jersey().setUrlPattern("/rest/*");
+
+    // Start the global Metrics
+    Metrics.register();
 
     // Add a component
     environment.jersey().register(context.getBean(PoolEndpoint.class));
     environment.jersey().register(context.getBean(ConnectorEndpoint.class));
     environment.jersey().register(context.getBean(UserEndpoint.class));
     environment.jersey().register(context.getBean(AuthorizationEndpoint.class));
+    environment.jersey().register(context.getBean(MetricsEndpoint.class));
 
     QuartzManager manager = new QuartzManager(StdSchedulerFactory.getDefaultScheduler());
     environment.lifecycle().manage(manager);

@@ -23,16 +23,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 @Component
 public class StorageSCP extends StorageService {
   static Logger logger = LoggerFactory.getLogger(StorageSCP.class);
+  static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOM", "image", "received"));
+  static Timer imageTimer = Notion.metrics.timer(MetricRegistry.name("DICOM", "image", "write"));
+  static Counter imageCounter = Notion.metrics.counter("DICOM.image.received.total");
+  static RateGauge imagesPerSecond;
 
   @Autowired
   JdbcTemplate template;
@@ -42,9 +53,6 @@ public class StorageSCP extends StorageService {
 
   @Autowired
   ObjectMapper objectMapper;
-
-  @Autowired
-  DICOMReceiver dicomReceiver;
 
   public static final String[] CUIDS = { UID.BasicStudyContentNotificationSOPClassRetired, UID.StoredPrintStorageSOPClassRetired, UID.HardcopyGrayscaleImageStorageSOPClassRetired, UID.HardcopyColorImageStorageSOPClassRetired,
       UID.ComputedRadiographyImageStorage, UID.DigitalXRayImageStorageForPresentation, UID.DigitalXRayImageStorageForProcessing, UID.DigitalMammographyXRayImageStorageForPresentation, UID.DigitalMammographyXRayImageStorageForProcessing,
@@ -63,11 +71,14 @@ public class StorageSCP extends StorageService {
 
   public StorageSCP() {
     super(CUIDS);
+    imagesPerSecond = new RateGauge();
+    Notion.metrics.register("DICOM.image.received.rate", imagesPerSecond);
   }
 
   @Override
   protected void onCStoreRQ(final Association as, int pcid, DicomObject rq, PDVInputStream dataStream, String tsuid, DicomObject rsp) throws DicomServiceException {
 
+    DICOMReceiver dicomReceiver = Notion.context.getBean("dicomReceiver", DICOMReceiver.class);
     AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
     final String remoteDevice = as.getCallingAET() + "@" + as.getSocket().getInetAddress().getHostName();
 
@@ -81,6 +92,7 @@ public class StorageSCP extends StorageService {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "AET (" + as.getCalledAET() + ") is unknown");
     }
 
+    Timer.Context context = imageTimer.time();
     String cuid = rq.getString(Tag.AffectedSOPClassUID);
     String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
 
@@ -110,6 +122,11 @@ public class StorageSCP extends StorageService {
     final File rename = new File(root, uuid.toString());
     file.renameTo(rename);
     logger.info("Saving file to " + rename);
+    info.imageCount++;
+    imageMeter.mark();
+    imagesPerSecond.mark();
+    context.stop();
+    imageCounter.inc();
     try {
       poolManager.processIncomingFile(as, rename);
     } catch (Exception e) {
