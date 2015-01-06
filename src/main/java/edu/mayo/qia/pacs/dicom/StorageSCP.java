@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -34,6 +35,7 @@ import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 @Component
 public class StorageSCP extends StorageService {
@@ -41,6 +43,7 @@ public class StorageSCP extends StorageService {
   static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOM", "image", "received"));
   static Timer imageTimer = Notion.metrics.timer(MetricRegistry.name("DICOM", "image", "write"));
   static Counter imageCounter = Notion.metrics.counter("DICOM.image.received.total");
+  static RateGauge imagesPerSecond;
 
   @Autowired
   JdbcTemplate template;
@@ -68,6 +71,8 @@ public class StorageSCP extends StorageService {
 
   public StorageSCP() {
     super(CUIDS);
+    imagesPerSecond = new RateGauge();
+    Notion.metrics.register("DICOM.image.received.rate", imagesPerSecond);
   }
 
   @Override
@@ -119,6 +124,7 @@ public class StorageSCP extends StorageService {
     logger.info("Saving file to " + rename);
     info.imageCount++;
     imageMeter.mark();
+    imagesPerSecond.mark();
     context.stop();
     imageCounter.inc();
     try {

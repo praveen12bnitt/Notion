@@ -32,6 +32,7 @@ import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 @Component
 public class MoveSCP extends DicomService implements CMoveSCP {
@@ -39,6 +40,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
   static Meter imageMeter = Notion.metrics.meter(MetricRegistry.name("DICOM", "image", "sent"));
   static Counter imageQueueCounter = Notion.metrics.counter(MetricRegistry.name("DICOM", "image", "send", "queue"));
   static Counter imageSentCounter = Notion.metrics.counter("DICOM.image.sent.count");
+  static RateGauge imagesPerSecond;
 
   static public String[] PresentationContexts = new String[] { UID.StudyRootQueryRetrieveInformationModelMOVE, UID.PatientRootQueryRetrieveInformationModelMOVE };
 
@@ -47,6 +49,8 @@ public class MoveSCP extends DicomService implements CMoveSCP {
 
   public MoveSCP() {
     super(PresentationContexts);
+    imagesPerSecond = new RateGauge();
+    Notion.metrics.register("DICOM.image.sent.rate", imagesPerSecond);
   }
 
   @Override
@@ -128,6 +132,7 @@ public class MoveSCP extends DicomService implements CMoveSCP {
         response.putInt(Tag.NumberOfWarningSuboperations, VR.US, 0);
         imageMeter.mark();
         imageSentCounter.inc();
+        imagesPerSecond.mark();
         try {
           if (logger.isDebugEnabled()) {
             logger.debug("Sending " + current + " of " + total + " images");
