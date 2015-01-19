@@ -101,9 +101,8 @@ public class Study {
     node.put("StudyID", StudyID);
     node.put("StudyDate", StudyDate == null ? "" : StudyDate.toString());
     node.put("StudyTime", StudyTime == null ? "" : StudyTime.toString());
-    node.put("ReferringPhysicianName", ReferringPhysicianName.toString());
+    node.put("ReferringPhysicianName", ReferringPhysicianName == null ? "" : ReferringPhysicianName.toString());
     node.put("StudyDescription", StudyDescription.toString());
     return node;
   }
-
 }
