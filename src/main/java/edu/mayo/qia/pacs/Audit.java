@@ -43,7 +43,7 @@ public class Audit {
     ObjectNode node = Notion.context.getBean("objectMapper", ObjectMapper.class).createObjectNode();
     node.put("user", user);
     node.put("action", action);
-    node.put("value", value);
+    node.set("value", value);
     DateTimeFormatter f = ISODateTimeFormat.dateHourMinuteSecondMillis();
     node.put("timestamp", f.print(new DateTime()));
     logger.info(node.toString());

@@ -24,7 +24,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.criteria.FetchParent;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -395,9 +394,7 @@ public class Query {
                 status.movedStudyKey = studyKey;
               }
               // Update the result's StudyKey
-              template.update("update QUERYRESULT set StudyKey = ? where QueryResultKey = ?", status.movedStudyKey, result.queryResultKey);
-
-              template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "completed", result.queryResultKey);
+              template.update("update QUERYRESULT set StudyKey = ?, Status = ? where QueryResultKey = ?", status.movedStudyKey, "completed", result.queryResultKey);
 
             } catch (DcmMoveException e) {
               template.update("update QUERYRESULT set Status = ? where QueryResultKey = ?", "fail: " + e.toString(), result.queryResultKey);

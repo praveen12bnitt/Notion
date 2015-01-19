@@ -83,7 +83,7 @@ public class StudiesTest extends PACSTest {
     ZipInputStream unzip = new ZipInputStream(response.getEntityInputStream());
     ZipEntry dir = unzip.getNextEntry();
     assertTrue(dir != null);
-    assertTrue(dir.getName().startsWith("MRA-0068/23274-2008-06-18/"));
+    assertTrue(dir.getName().startsWith("MRA-0068/MRA_v_Hd_wo-2008-06-18/"));
     unzip.close();
   }
 
@@ -105,7 +105,7 @@ public class StudiesTest extends PACSTest {
     ZipInputStream unzip = new ZipInputStream(response.getEntityInputStream());
     ZipEntry dir = unzip.getNextEntry();
     assertTrue(dir != null);
-    assertTrue(dir.getName().startsWith(pool.name + "/"));
+    assertTrue(dir.getName().startsWith(pool.name + "-StudyDownload"));
     unzip.close();
   }
 

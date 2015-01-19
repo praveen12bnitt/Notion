@@ -63,7 +63,7 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
     $timeout(queryTick, 2000);
   };
   $scope.reset = function() {
-    alert ( "fix reset");
+    $state.go ( "^.query", { queryKey: $scope.query.get('QueryKey')});
   };
 
   $scope.fetch = function(){

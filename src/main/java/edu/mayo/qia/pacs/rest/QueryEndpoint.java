@@ -142,8 +142,11 @@ public class QueryEndpoint {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response getZipForFetch(final @Auth Subject subject, @PathParam("id") final int id) {
-    String base = "Query-Result-" + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
-    final String fn = base.replaceAll(StudiesEndpoint.regex, "_");
+    Pool pool = (Pool) sessionFactory.getCurrentSession().byId(Pool.class).load(poolKey);
+    StringBuilder fn = new StringBuilder(pool.name.replaceAll(StudiesEndpoint.regex, "_"));
+    fn.append("-Fetch-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+
+    final String base = fn.toString();
 
     StreamingOutput stream = new StreamingOutput() {
       @Override
@@ -156,7 +159,7 @@ public class QueryEndpoint {
 
           ZipOutputStream zip = new ZipOutputStream(output);
           File poolRootDir = poolManager.getContainer(poolKey).getPoolDirectory();
-          String path = fn + "/";
+          String path = base + "/";
           // Put the path to make a directory
           zip.putNextEntry(new ZipEntry(path));
           zip.closeEntry();
@@ -164,6 +167,7 @@ public class QueryEndpoint {
           // Find every result and append
           for (Item item : query.items) {
             for (Result result : item.items) {
+              logger.error("Looknig at StudyKey: " + result.studyKey);
               if (result.doFetch && result.studyKey != null && !zippedStudies.contains(result.studyKey)) {
                 // Add it
                 zippedStudies.add(result.studyKey);
