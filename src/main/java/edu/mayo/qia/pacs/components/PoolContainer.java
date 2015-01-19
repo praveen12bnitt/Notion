@@ -152,12 +152,12 @@ public class PoolContainer {
     configureCTP();
 
     // Pool-specific metrics
-    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "move", "timer"));
-    poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.name, "move", "count"));
-    poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.name, "process", "timer"));
-    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.name, "process", "meter"));
-    Notion.metrics.register(MetricRegistry.name("Pool", pool.name, "process", "rate"), imagesProcessedPerSecond);
-    Notion.metrics.register(MetricRegistry.name("Pool", pool.name, "move", "rate"), imagesMovedPerSecond);
+    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "timer"));
+    poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "count"));
+    poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "timer"));
+    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "meter"));
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "rate"), imagesProcessedPerSecond);
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "rate"), imagesMovedPerSecond);
 
     final Map<String, String> queryMap = new HashMap<String, String>();
     queryMap.put("instances", "select count(*) from INSTANCE, SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and SERIES.SeriesKey = INSTANCE.SeriesKey and STUDY.PoolKey = ?");
