@@ -31,7 +31,6 @@ dist: build
 	(cd zip-temp && zip -r $(versionDir).zip $(versionDir) && mv $(versionDir).zip ../)
 
 build:
-	./gradlew jar
 	rm -rf src/main/resources/public
 	(cd ui/ && make clean install)
 	(cd Documentation && make clean install)
