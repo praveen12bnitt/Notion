@@ -1,1 +1,246 @@
-{"version":1,"allow_edit":true,"plugins":[],"panes":[{"title":"DICOM Receiver","width":1,"row":{"3":1},"col":{"3":1},"col_width":1,"widgets":[{"type":"gauge","settings":{"title":"Recieved","value":"datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]","units":"images/second","min_value":0,"max_value":100}},{"type":"text_widget","settings":{"title":"Images Recieved (1 minute)","size":"regular","value":"datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m1_rate\"].toFixed(2)","sparkline":false,"animate":true,"units":"images/sec"}},{"type":"text_widget","settings":{"title":"Image Recieved (5 minute)","size":"regular","value":"datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m5_rate\"].toFixed(2)\n","sparkline":false,"animate":true,"units":"images/sec"}},{"type":"text_widget","settings":{"title":"Total Received","size":"regular","value":"datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]","animate":true,"units":"images"}},{"type":"sparkline","settings":{"title":"Sending","value":"datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]"}}]},{"title":"Global","width":1,"row":{"3":11},"col":{"3":3},"col_width":1,"widgets":[{"type":"text_widget","settings":{"title":"Pools","size":"regular","value":"datasources[\"Metrics\"][\"gauges\"][\"DB.table.pool\"][\"value\"]","animate":true}},{"type":"text_widget","settings":{"title":"Studies","size":"regular","value":"datasources[\"Metrics\"][\"gauges\"][\"DB.table.study\"][\"value\"]","animate":true}},{"type":"text_widget","settings":{"title":"Series","size":"regular","value":"datasources[\"Metrics\"][\"gauges\"][\"DB.table.series\"][\"value\"]","animate":true}},{"type":"text_widget","settings":{"title":"Images","size":"regular","value":"datasources[\"Metrics\"][\"gauges\"][\"DB.table.instance\"][\"value\"]","animate":true}}]},{"title":"DICOM Sender","width":1,"row":{"3":1},"col":{"3":2},"col_width":1,"widgets":[{"type":"gauge","settings":{"title":"Sent","value":"datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)","units":"images/sec","min_value":0,"max_value":"300"}},{"type":"text_widget","settings":{"title":"Queued","size":"regular","value":"datasources[\"Metrics\"][\"counters\"][\"DICOM.image.send.queue\"][\"count\"]","sparkline":true,"animate":true,"units":"images"}},{"type":"text_widget","settings":{"title":"Sent (mean rate)","size":"regular","value":"datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"mean_rate\"].toFixed(2)","sparkline":true,"animate":true,"units":"images/second"}},{"type":"text_widget","settings":{"title":"Total Sent","size":"regular","value":"datasources[\"Metrics\"][\"counters\"][\"DICOM.image.sent.count\"][\"count\"]","animate":true,"units":"images"}},{"type":"sparkline","settings":{"title":"Send","value":"datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)"}}]},{"title":"Associations","width":1,"row":{"3":1},"col":{"3":3},"col_width":1,"widgets":[{"type":"gauge","settings":{"title":"Associations","value":"datasources[\"Metrics\"][\"gauges\"][\"DICOM.associations.active\"][\"value\"]","min_value":0,"max_value":"20"}},{"type":"text_widget","settings":{"title":"Total Associations","size":"regular","value":"datasources[\"Metrics\"][\"counters\"][\"DICOM.associations.total\"][\"count\"]","animate":true}}]}],"datasources":[{"name":"Metrics","type":"JSON","settings":{"url":"/rest/metrics","use_thingproxy":true,"refresh":2,"method":"GET"}}],"columns":3}
+{
+  "version": 1,
+  "allow_edit": true,
+  "plugins": [],
+  "panes": [
+    {
+      "title": "DICOM Receiver",
+      "width": 1,
+      "row": {
+        "3": 5
+      },
+      "col": {
+        "3": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Recieved",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]",
+            "units": "images/second",
+            "min_value": 0,
+            "max_value": 100
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images Recieved (1 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m1_rate\"].toFixed(2)",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Image Recieved (5 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m5_rate\"].toFixed(2)\n",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Received",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Sending",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DICOM Sender",
+      "width": 1,
+      "row": {
+        "3": 1
+      },
+      "col": {
+        "3": 2
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Sent",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)",
+            "units": "images/sec",
+            "min_value": 0,
+            "max_value": "300"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Queued",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.send.queue\"][\"count\"]",
+            "sparkline": true,
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Sent (mean rate)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"mean_rate\"].toFixed(2)",
+            "sparkline": true,
+            "animate": true,
+            "units": "images/second"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Sent",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.sent.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Send",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Associations",
+      "width": 1,
+      "row": {
+        "3": 1
+      },
+      "col": {
+        "3": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Associations",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.associations.active\"][\"value\"]",
+            "min_value": 0,
+            "max_value": "20"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Associations",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.associations.total\"][\"count\"]",
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "title": "Global",
+      "width": 1,
+      "row": {
+        "3": 11
+      },
+      "col": {
+        "3": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pools",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.pool\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Studies",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.study\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Series",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.series\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.instance\"][\"value\"]",
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "width": 1,
+      "row": {
+        "3": 1
+      },
+      "col": {
+        "3": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pending Moves",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"Pool.move.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "Metrics",
+      "type": "JSON",
+      "settings": {
+        "url": "/rest/metrics",
+        "use_thingproxy": true,
+        "refresh": 2,
+        "method": "GET"
+      }
+    }
+  ],
+  "columns": 3
+}

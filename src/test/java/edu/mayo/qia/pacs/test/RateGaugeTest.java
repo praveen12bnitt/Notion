@@ -15,11 +15,12 @@ public class RateGaugeTest extends PACSTest {
     gauge.mark();
     gauge.mark();
     gauge.mark();
-
-    assertTrue(gauge.getValue() > 0.0);
+    Double v = gauge.getValue();
+    assertTrue(v.doubleValue() > 0.0);
     // Sleep 2 seconds
     Thread.sleep(2 * 1000);
-    assertTrue(gauge.getValue() == 0.0);
+    v = gauge.getValue();
+    assertTrue(v.doubleValue() == 0.0);
 
   }
 
