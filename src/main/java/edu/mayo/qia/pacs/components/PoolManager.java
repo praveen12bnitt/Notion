@@ -43,6 +43,7 @@ public class PoolManager implements Managed {
   @Autowired
   DICOMReceiver dicomReceiver;
 
+  @SuppressWarnings("unchecked")
   @Override
   public void start() {
     final Session session = sessionFactory.openSession();
@@ -113,4 +114,12 @@ public class PoolManager implements Managed {
       throw new RuntimeException("Could not remove pool for " + poolContainer.getPool().applicationEntityTitle);
     }
   }
+
+  /**
+   * @return the poolContainers
+   */
+  public static ConcurrentMap<String, PoolContainer> getPoolContainers() {
+    return poolContainers;
+  }
+
 }
