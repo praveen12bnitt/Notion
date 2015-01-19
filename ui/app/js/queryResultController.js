@@ -8,6 +8,10 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
   $scope.pools = $scope.$parent.poolCollection.toJSON();
   $scope.item = {};
   $scope.ordering = "PatientID";
+  $scope.sort = {
+    column: 'studyDate',
+    descending: false
+  };
 
   $scope.autodownload = false;
 
@@ -26,6 +30,8 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
       },0);
     }
   });
+
+
 
   // modes are:
   // 'setup' - not fetching, configuring the query
@@ -128,6 +134,20 @@ $scope.fetchAll = function(item){
 $scope.toggleFetch = function(item) {
   item.doFetch = !item.doFetch;
 };
+
+$scope.getOrdering = function() {
+  return $scope.sort.column;
+};
+$scope.setOrderBy = function(o) {
+  if ( o === $scope.sort.column ) {
+    $scope.sort.descending = !$scope.sort.descending;
+  }
+  $scope.sort.column = o;
+};
+$scope.sortingBy = function(o) {
+  return $scope.sort.column == o;
+};
+
 
 
 });
