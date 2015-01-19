@@ -51,7 +51,7 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
   var queryTick = function(){
     // Actually fetch only when mode is '*-pending'
     if ( $scope.query && $scope.mode.match('pending') ) {
-      console.log("queryTick");
+      // console.log("queryTick");
       $scope.query.fetch().done(function() {
         // console.log ("queryTick completed")
         if ($scope.query.get('status').match("query completed")) {
@@ -83,6 +83,8 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
         data: {},
         success: function(data){
           console.log("started ticker");
+          $scope.sort.column = 'status';
+          $scope.sort.descending = true;
           $scope.refresh();
         }
       });
