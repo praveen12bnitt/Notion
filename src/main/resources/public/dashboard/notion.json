@@ -298,7 +298,7 @@
       "settings": {
         "url": "/rest/metrics",
         "use_thingproxy": true,
-        "refresh": 2,
+        "refresh": 10,
         "method": "GET"
       }
     }
