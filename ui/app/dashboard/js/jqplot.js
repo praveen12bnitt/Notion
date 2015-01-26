@@ -1,7 +1,7 @@
 (function () {
 
   var jqChartIdCounter = 0;
-
+  jqChart = {};
   freeboard.addStyle('.jqchart', "width:100%; height:300px;");
 
 
@@ -36,7 +36,6 @@
 
     //seems to be called after render whenever a calculated value changes
     this.onCalculatedValueChanged = function (settingName, newValue) {
-      console.log('onCalculatedValueChanged for ' + settingName);
 
       if (settingName == 'data') {
         data = newValue;
@@ -48,7 +47,7 @@
 
       //render the chart
       htmlElement.empty();
-      $.jqplot(chartId, data, options);
+      jqChart[chartId] = $.jqplot(chartId, data, options);
     }
 
     this.onDispose = function () {
