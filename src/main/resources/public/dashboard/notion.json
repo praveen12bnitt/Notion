@@ -4,63 +4,34 @@
   "plugins": [],
   "panes": [
     {
-      "title": "DICOM Receiver",
+      "title": "Pending moves",
       "width": 1,
       "row": {
-        "3": 5
+        "3": 1,
+        "4": 1
       },
       "col": {
-        "3": 1
+        "3": 1,
+        "4": 1
       },
-      "col_width": 1,
+      "col_width": 5,
       "widgets": [
         {
-          "type": "gauge",
+          "type": "jqPlotWidget",
           "settings": {
-            "title": "Recieved",
-            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]",
-            "units": "images/second",
-            "min_value": 0,
-            "max_value": 100
+            "data": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\n// Create an array of all the pools move count\nvar data = [];\ndatasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n  data.push ( datasources[\"Metrics\"][\"counters\"][\"Pool.\" + item + \".move.count\"][\"count\"] );\n});\n\nreturn [data];\n\n",
+            "options": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\n// var series = []\n// datasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n//     series.push ( {label: item});\n// } );\n\nvar options = {\n        // The \"seriesDefaults\" option is an options object that will\n        // be applied to all series in the chart.\n        seriesDefaults:{\n            renderer:$.jqplot.BarRenderer,\n            rendererOptions: {fillToZero: true}\n        },\n        axes: {\n            // Use a category axis on the x axis and use our custom ticks.\n            xaxis: {\n                renderer: $.jqplot.CategoryAxisRenderer,\n                ticks: datasources[\"Metrics\"][\"pools\"]\n            },\n            // Pad the y axis just a little so bars can get close to, but\n            // not touch, the grid boundaries.  1.2 is the default padding.\n            yaxis: {\n                pad: 1.05,\n                tickOptions: {formatString: '%d'}\n            }\n        }\n    }\n\nreturn options;",
+            "chartHeight": 300,
+            "height": 5
           }
         },
         {
-          "type": "text_widget",
+          "type": "jqPlotWidget",
           "settings": {
-            "title": "Images Recieved (1 minute)",
-            "size": "regular",
-            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m1_rate\"].toFixed(2)",
-            "sparkline": false,
-            "animate": true,
-            "units": "images/sec"
-          }
-        },
-        {
-          "type": "text_widget",
-          "settings": {
-            "title": "Image Recieved (5 minute)",
-            "size": "regular",
-            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"m5_rate\"].toFixed(2)\n",
-            "sparkline": false,
-            "animate": true,
-            "units": "images/sec"
-          }
-        },
-        {
-          "type": "text_widget",
-          "settings": {
-            "title": "Total Received",
-            "size": "regular",
-            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]",
-            "animate": true,
-            "units": "images"
-          }
-        },
-        {
-          "type": "sparkline",
-          "settings": {
-            "title": "Sending",
-            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]"
+            "data": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\n// Create an array of all the pools move count\ntry {\n\nvar data = [];\ndatasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n//    console.log(\"Metrics for \" + item + \": \" + datasources[\"Metrics\"][\"gauges\"][\"Pool.\" + item + \".process.rate\"][\"value\"] );\n  data.push ( datasources[\"Metrics\"][\"gauges\"][\"Pool.\" + item + \".process.rate\"][\"value\"] );\n});\n// console.log (\" Data is: \", data);\n\nreturn [data];\n} catch (e) {\n    console.log(\"Data error:\", e);\n}\n",
+            "options": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\n// var series = []\n// datasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n//     series.push ( {label: item});\n// } );\n\nvar options = {\n    title: \"DICOM anonymization rate\",\n        // The \"seriesDefaults\" option is an options object that will\n        // be applied to all series in the chart.\n        seriesDefaults:{\n            renderer:$.jqplot.BarRenderer,\n            rendererOptions: {fillToZero: true}\n        },\n        axes: {\n            // Use a category axis on the x axis and use our custom ticks.\n            xaxis: {\n                renderer: $.jqplot.CategoryAxisRenderer,\n                ticks: datasources[\"Metrics\"][\"pools\"]\n            },\n            // Pad the y axis just a little so bars can get close to, but\n            // not touch, the grid boundaries.  1.2 is the default padding.\n            yaxis: {\n                pad: 1.05,\n                tickOptions: {formatString: '%d'},\n                               min: 0,\n                max: 15\n \n            }\n        }\n    }\n\nreturn options;",
+            "chartHeight": 300,
+            "height": 5
           }
         }
       ]
@@ -69,10 +40,14 @@
       "title": "DICOM Sender",
       "width": 1,
       "row": {
-        "3": 1
+        "3": 13,
+        "4": 23,
+        "5": 13
       },
       "col": {
-        "3": 2
+        "3": 2,
+        "4": 2,
+        "5": 2
       },
       "col_width": 1,
       "widgets": [
@@ -131,10 +106,16 @@
       "title": "Associations",
       "width": 1,
       "row": {
-        "3": 1
+        "3": 13,
+        "4": 23,
+        "5": 13,
+        "7": 13
       },
       "col": {
-        "3": 3
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "7": 3
       },
       "col_width": 1,
       "widgets": [
@@ -159,13 +140,115 @@
       ]
     },
     {
+      "width": 1,
+      "row": {
+        "3": 13,
+        "4": 23,
+        "5": 13,
+        "7": 13
+      },
+      "col": {
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "7": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pending Moves",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"Pool.move.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DICOM Receiver",
+      "width": 1,
+      "row": {
+        "3": 17,
+        "4": 27,
+        "5": 17,
+        "7": 17
+      },
+      "col": {
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "7": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Recieving",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]",
+            "units": "images/second",
+            "min_value": 0,
+            "max_value": 100
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images Recieved (1 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"oneMinuteRate\"].toFixed(2)",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Image Recieved (5 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"fiveMinuteRate\"].toFixed(2)\n",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Received",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Trend",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]"
+          }
+        }
+      ]
+    },
+    {
       "title": "Global",
       "width": 1,
       "row": {
-        "3": 11
+        "3": 23,
+        "4": 23,
+        "5": 23,
+        "7": 23
       },
       "col": {
-        "3": 3
+        "3": 3,
+        "4": 4,
+        "5": 3,
+        "7": 3
       },
       "col_width": 1,
       "widgets": [
@@ -206,28 +289,6 @@
           }
         }
       ]
-    },
-    {
-      "width": 1,
-      "row": {
-        "3": 1
-      },
-      "col": {
-        "3": 1
-      },
-      "col_width": 1,
-      "widgets": [
-        {
-          "type": "text_widget",
-          "settings": {
-            "title": "Pending Moves",
-            "size": "regular",
-            "value": "datasources[\"Metrics\"][\"counters\"][\"Pool.move.count\"][\"count\"]",
-            "animate": true,
-            "units": "images"
-          }
-        }
-      ]
     }
   ],
   "datasources": [
@@ -242,5 +303,5 @@
       }
     }
   ],
-  "columns": 3
+  "columns": 4
 }
