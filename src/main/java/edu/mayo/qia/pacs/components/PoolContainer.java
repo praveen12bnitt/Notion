@@ -165,7 +165,7 @@ public class PoolContainer {
     queryMap.put("studies", "select count(*) from STUDY where STUDY.PoolKey = ?");
 
     for (final String table : queryMap.keySet()) {
-      Notion.metrics.register(MetricRegistry.name("Pool", pool.name, table.toLowerCase()), new CachedGauge<Long>(5, TimeUnit.MINUTES) {
+      Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, table.toLowerCase()), new CachedGauge<Long>(5, TimeUnit.MINUTES) {
         @Override
         protected Long loadValue() {
           return template.queryForObject(queryMap.get(table), Long.class, pool.poolKey);
@@ -338,8 +338,10 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /* to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table; */
+      /*
+       * to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table;
+       */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
@@ -505,6 +507,7 @@ public class PoolContainer {
     long numberToMove = template.queryForObject("select count(INSTANCE.FilePath) from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?",
         new Object[] { this.pool.poolKey, studyInstanceUID }, Long.class);
     moveCounter.inc(numberToMove);
+    poolMoveCounter.inc(numberToMove);
     template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
         studyInstanceUID }, new RowCallbackHandler() {
 
@@ -523,6 +526,7 @@ public class PoolContainer {
         }
         imagesMovedPerSecond.mark();
         moveCounter.dec();
+        poolMoveCounter.dec();
       }
     });
     destination.processAnonymizationMap();
