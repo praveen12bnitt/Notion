@@ -1,5 +1,5 @@
 /**
- * w11k-select - v0.4.7 - 2014-09-29
+ * w11k-select - v0.4.5 - 2014-07-07
  * https://github.com/w11k/w11k-select
  *
  * Copyright (c) 2014 WeigleWilczek GmbH
@@ -104,8 +104,8 @@ angular.module('w11k.select').factory('optionParser', ['$parse', function ($pars
 }]);
 
 angular.module('w11k.select').directive('w11kSelect', [
-  'w11kSelectConfig', '$parse', '$document', 'optionParser', '$filter', '$timeout', '$window', '$q',
-  function (w11kSelectConfig, $parse, $document, optionParser, $filter, $timeout, $window, $q) {
+  'w11kSelectConfig', '$parse', '$document', 'optionParser', '$filter', '$timeout', '$window',
+  function (w11kSelectConfig, $parse, $document, optionParser, $filter, $timeout, $window) {
 
     var jqWindow = angular.element($window);
 
@@ -123,7 +123,6 @@ angular.module('w11k.select').directive('w11kSelect', [
 
         var hasBeenOpened = false;
         var options = [];
-        var optionsMap = {};
         var optionsFiltered = [];
 
         scope.options = {
@@ -158,9 +157,7 @@ angular.module('w11k.select').directive('w11kSelect', [
 
         function applyConfig() {
           checkSelection();
-          optionsAlreadyRead.then(function () {
-            setViewValue();
-          });
+          setViewValue();
 
           if (!configRead) {
             if (scope.config.filter.select.active && scope.config.filter.select.text) {
@@ -183,15 +180,12 @@ angular.module('w11k.select').directive('w11kSelect', [
         }
 
         function checkSelection() {
-          if (scope.config.multiple === false) {
-            var selectedOptions = options.filter(function (option) {
-              return  option.selected;
-            });
-
-            if (selectedOptions.length > 0) {
-              setSelected(selectedOptions, false);
-              selectedOptions[0].selected = true;
-            }
+          var selectedOptions = options.filter(function (option) {
+            return  option.selected;
+          });
+          if (scope.config.multiple === false && selectedOptions.length > 0) {
+            scope.deselectAll();
+            selectedOptions[0].selected = true;
           }
         }
 
@@ -425,7 +419,9 @@ angular.module('w11k.select').directive('w11kSelect', [
           }
 
           if (scope.config.multiple) {
-            setSelected(optionsFiltered, true);
+            angular.forEach(optionsFiltered, function (option) {
+              option.selected = true;
+            });
           }
           else if (optionsFiltered.length === 1) {
             optionsFiltered[0].selected = true;
@@ -440,7 +436,10 @@ angular.module('w11k.select').directive('w11kSelect', [
             $event.stopPropagation();
           }
 
-          setSelected(optionsFiltered, false);
+          angular.forEach(optionsFiltered, function (option) {
+            option.selected = false;
+          });
+
           setViewValue();
         };
 
@@ -450,7 +449,10 @@ angular.module('w11k.select').directive('w11kSelect', [
             $event.stopPropagation();
           }
 
-          setSelected(options, false);
+          angular.forEach(options, function (option) {
+            option.selected = false;
+          });
+
           setViewValue();
         };
 
@@ -462,21 +464,17 @@ angular.module('w11k.select').directive('w11kSelect', [
         var optionsExpParsed = optionParser.parse(optionsExp);
 
         function collection2options(collection, viewValue) {
-          var viewValueHashes = {};
+          var viewValueHashes = viewValue.map(function (selectedValue) {
+            return hashCode(selectedValue);
+          });
 
-          var i = viewValue.length;
-          while (i--) {
-            var hash = hashCode(viewValue[i]);
-            viewValueHashes[hash] = true;
-          }
-
-          var options = collection.map(function (element) {
-            var optionValue = modelElement2value(element);
+          return collection.map(function (option) {
+            var optionValue = modelElement2value(option);
             var optionValueHash = hashCode(optionValue);
-            var optionLabel = modelElement2label(element);
+            var optionLabel = modelElement2label(option);
 
             var selected;
-            if (viewValueHashes[optionValueHash]) {
+            if (viewValueHashes.indexOf(optionValueHash) !== -1) {
               selected = true;
             }
             else {
@@ -486,61 +484,26 @@ angular.module('w11k.select').directive('w11kSelect', [
             return {
               hash: optionValueHash.toString(36),
               label: optionLabel,
-              model: element,
+              model: option,
               selected: selected
             };
           });
-
-          return options;
         }
 
-        var optionsAlreadyRead;
+        function updateOptions() {
+          var collection = optionsExpParsed.collection(scope.$parent);
+          var viewValue = controller.$viewValue;
 
-        var updateOptions = (function () {
-          var deferred = $q.defer();
-          optionsAlreadyRead = deferred.promise;
+          options = collection2options(collection, viewValue);
 
-          return function updateOptions() {
-            var collection = optionsExpParsed.collection(scope.$parent);
-            var viewValue = controller.$viewValue;
-
-            if (angular.isArray(collection)) {
-              options = collection2options(collection, viewValue);
-
-              optionsMap = {};
-              var i = options.length;
-              while (i--) {
-                var option = options[i];
-                optionsMap[option.hash] = option;
-              }
-
-              filterOptions();
-
-              if (ngModelAlreadyRead) {
-                updateNgModel();
-              }
-              deferred.resolve();
-            }
-          };
-        })();
-
-        // watch for changes of options collection made outside
-        scope.$watchCollection(
-          function () {
-            return optionsExpParsed.collection(scope.$parent);
-          },
-          function (newVal) {
-            if (angular.isDefined(newVal)) {
-              updateOptions();
-            }
-          }
-        );
+          filterOptions();
+          updateNgModel();
+        }
 
         scope.select = function (option) {
           if (option.selected === false && scope.config.multiple === false) {
-            setSelected(options, false);
+            scope.deselectAll();
             option.selected = true;
-
             scope.dropdown.close();
             setViewValue();
           }
@@ -554,6 +517,18 @@ angular.module('w11k.select').directive('w11kSelect', [
             setViewValue();
           }
         };
+
+        // watch for changes of options collection made outside
+        scope.$watchCollection(
+          function () {
+            return optionsExpParsed.collection(scope.$parent);
+          },
+          function (newVal) {
+            if (angular.isDefined(newVal)) {
+              updateOptions();
+            }
+          }
+        );
 
         // called on click to a checkbox of an option
         scope.onOptionStateClick = function ($event, option) {
@@ -579,45 +554,33 @@ angular.module('w11k.select').directive('w11kSelect', [
           updateHeader();
         }
 
-        var ngModelSetter = $parse(attrs.ngModel).assign;
-
         function updateNgModel() {
           var value = options2model(options);
 
-          angular.forEach(controller.$parsers, function (parser) {
-            value = parser(value);
+          angular.forEach(controller.$parsers, function (fn) {
+            value = fn(value);
           });
 
-          ngModelSetter(scope.$parent, value);
+          $parse(attrs.ngModel).assign(scope.$parent, value);
         }
-
-
-        var ngModelAlreadyRead;
 
         function render() {
-          optionsAlreadyRead.then(function () {
-            ngModelAlreadyRead = true;
+          var viewValue = controller.$viewValue;
 
-            var viewValue = controller.$viewValue;
+          angular.forEach(options, function (option) {
+            var optionValue = option2value(option);
 
-            setSelected(options, false);
-
-            var i = viewValue.length;
-            while (i--) {
-              var hash = hashCode(viewValue[i]).toString(36);
-              var option = optionsMap[hash];
-
-              if (option) {
-                option.selected = true;
-              }
+            if (viewValue.indexOf(optionValue) !== -1) {
+              option.selected = true;
             }
-
-            validateRequired(viewValue);
-            updateHeader();
+            else {
+              option.selected = false;
+            }
           });
+
+          validateRequired(viewValue);
+          updateHeader();
         }
-
-
 
         function external2internal(modelValue) {
           var viewValue;
@@ -689,13 +652,6 @@ angular.module('w11k.select').directive('w11kSelect', [
         /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
          * helper functions
          * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-        function setSelected(options, selected) {
-          var i = options.length;
-          while (i--) {
-            options[i].selected = selected;
-          }
-        }
 
         function options2model(options) {
           var selectedOptions = options.filter(function (option) {
