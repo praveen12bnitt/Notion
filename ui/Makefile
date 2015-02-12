@@ -4,7 +4,8 @@ watch: config
 
 install: config
 	gulp build
-	rsync -r public ../src/main/resources/
+	# Copy to resources directory, deleting any extra files
+	rsync -r --delete public ../src/main/resources/
 
 config: node_modules bower_components
 	gulp vendor

@@ -13,6 +13,7 @@
     var htmlElement;
     var data;
     var options;
+    var chart;
     var chartHeight = 300;
     var chartWidth = 300;
 
@@ -46,8 +47,11 @@
       }
 
       //render the chart
-      htmlElement.empty();
-      jqChart[chartId] = $.jqplot(chartId, data, options);
+      if ( chart ) {
+        htmlElement.unbind();
+        chart.destroy();
+      }
+      jqChart[chartId] = chart = $.jqplot(chartId, data, options);
     }
 
     this.onDispose = function () {

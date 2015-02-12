@@ -3,6 +3,7 @@ package edu.mayo.qia.pacs.components;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -39,6 +40,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+import org.trimou.Mustache;
+import org.trimou.engine.MustacheEngine;
+import org.trimou.engine.MustacheEngineBuilder;
+import org.trimou.engine.locator.ClassPathTemplateLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -209,11 +214,21 @@ public class PoolContainer {
     element.setAttribute("root", new File(poolDirectory, "anonymizer").getAbsolutePath());
     File script = new File(scriptsDirectory, "anonymizer.script");
 
-    ClassPathResource resource = new ClassPathResource("ctp/anonymizer.script");
-    try {
-      IOUtils.copy(resource.getInputStream(), new FileOutputStream(script));
-    } catch (Exception e) {
-      logger.error("Error copying the anonymizer script", e);
+    // Create the script
+    if (!script.exists()) {
+      try {
+        ClassPathTemplateLocator locator = new ClassPathTemplateLocator(1, "ctp/", "script");
+        MustacheEngine engine = MustacheEngineBuilder.newBuilder().addTemplateLocator(locator).build();
+        Mustache mustache = engine.getMustache("anonymizer");
+        try (FileWriter out = new FileWriter(script);) {
+          mustache.render(out, pool);
+        }
+
+        // IOUtils.copy(resource.getInputStream(), new
+        // FileOutputStream(script));
+      } catch (Exception e) {
+        logger.error("Error copying the anonymizer script", e);
+      }
     }
     element.setAttribute("script", script.getAbsolutePath());
     ctpAnonymizer = new DicomAnonymizer(element);
@@ -338,10 +353,8 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /*
-       * to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table;
-       */
+      /* to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table; */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 

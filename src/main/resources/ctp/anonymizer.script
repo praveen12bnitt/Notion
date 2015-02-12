@@ -2,7 +2,7 @@
 <script>
 <!-- This is a slightly modified version of CTP default profile.  In particular
      Notion preserves several tags that CTP removed, they include:
-     
+
      InstanceCreationDate
      StudyDate
      SeriesDat
@@ -14,7 +14,7 @@
      StudyDescription
      PatientSex
      PatientBirthDate
-     
+
 
   Original settings
  <e en="T" t="00080012" n="InstanceCreationDate">@hashdate(this,PatientID)</e>
@@ -42,15 +42,15 @@
  <e en="T" t="00101020" n="PatientSize">@remove()</e>
  <e en="T" t="00101030" n="PatientWeight">@remove()</e>
  -->
-     
+
  <p t="DATEINC">-137</p>
  <p t="PROFILENAME">DICOM-S142-Baseline</p>
- <p t="PROJECTNAME">Project</p>
- <p t="SHORTNAME">Project</p>
- <p t="SITEID">99</p>
- <p t="SITENAME">SiteName</p>
- <p t="TRIALNAME">Trial</p>
- <p t="UIDROOT">9999</p>
+ <p t="PROJECTNAME">Notion Pool: {{.name}} / {{.applicationEntityTitle}}</p>
+ <p t="SHORTNAME">{{.name}}</p>
+ <p t="SITEID">{{.poolKey}}</p>
+ <p t="SITENAME">{{.name}} / {{.applicationEntityTitle}}</p>
+ <p t="TRIALNAME">Notion Pool: {{.name}}</p>
+ <p t="UIDROOT">99.{{.poolKey}}</p>
  <e en="T" t="00080005" n="SpecificCharacterSet">@keep()</e>
  <e en="F" t="00080008" n="ImageType"></e>
  <e en="T" t="00080014" n="InstanceCreatorUID">@hashuid(@UIDROOT,this)</e>
@@ -155,7 +155,9 @@
  <e en="T" t="00080050" n="AccessionNumber">@hash(this,16)</e>
  <e en="T" t="00100010" n="PatientName">@hashname(this,6,2)</e>
  <e en="T" t="00100020" n="PatientID">@param(@SHORTNAME)-@hashptid(@SITEID,this,10)</e>
- <e en="T" t="00100021" n="IssuerOfPatientID">@remove()</e>
+ <!-- Notion sets IssuerOfPatientID to "Notion-#" where # is the PoolKey.  This may
+      be used to recover images sent to an archive -->
+ <e en="T" t="00100021" n="IssuerOfPatientID">@always()Notion-@param(@SITEID)</e>
  <e en="T" t="00100050" n="PatientInsurancePlanCodeSeq">@remove()</e>
  <e en="T" t="00100101" n="PatientPrimaryLanguageCodeSeq">@remove()</e>
  <e en="T" t="00100102" n="PatientPrimaryLanguageModifierCodeSeq">@remove()</e>

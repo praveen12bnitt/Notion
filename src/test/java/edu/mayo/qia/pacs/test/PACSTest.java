@@ -10,7 +10,6 @@ import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
@@ -40,7 +39,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import edu.mayo.qia.pacs.Notion;
@@ -138,8 +136,6 @@ public class PACSTest implements ApplicationContextInitializer<GenericApplicatio
   };
 
   protected static int findFreePort(int start) {
-    // Find a random number between 49152 and 65535
-    Random random = new Random();
     boolean found = false;
     int testPort = start - 1;
     while (!found) {
