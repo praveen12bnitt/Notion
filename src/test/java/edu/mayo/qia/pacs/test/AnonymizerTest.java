@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.mayo.qia.pacs.components.Device;
 import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.PoolManager;
 import edu.mayo.qia.pacs.components.Script;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DcmQR;
@@ -26,6 +27,9 @@ public class AnonymizerTest extends PACSTest {
 
   @Autowired
   Anonymizer anonymizer;
+
+  @Autowired
+  PoolManager poolManager;
 
   @Test
   public void anonymizeBasics() throws Exception {
@@ -60,6 +64,17 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("PatientName", patientName, response.getString(Tag.PatientName));
     assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+
+    // Find the image on the filesystem and ensure the IssuerOfPatientID exists
+    // and is correct
+    List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, String.class);
+    File poolDirectory = poolManager.getContainer(pool.poolKey).getPoolDirectory();
+    for (String path : filePaths) {
+      File imageFile = new File(poolDirectory, path);
+      assertTrue("File exists", imageFile.exists());
+      DicomObject tags = TagLoader.loadTags(imageFile);
+      assertEquals("", "Notion-" + pool.poolKey, tags.getString(Tag.IssuerOfPatientID));
+    }
 
   }
 
@@ -198,6 +213,51 @@ public class AnonymizerTest extends PACSTest {
     assertEquals("StudyDescription", tags.getString(Tag.StudyDescription), response.getString(Tag.StudyDescription));
     assertEquals("NumberOfStudyRelatedSeries", 2, response.getInt(Tag.NumberOfStudyRelatedSeries));
     assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+  }
+
+  @Test
+  public void noAccessionNumber() throws Exception {
+
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    List<File> testSeries = sendDICOM(aet, aet, "CTE/*.dcm");
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    assertTrue("AccessionNumber", response.contains(Tag.AccessionNumber));
+    assertEquals("NumberOfStudyRelatedSeries", 1, response.getInt(Tag.NumberOfStudyRelatedSeries));
+    assertEquals("NumberOfStudyRelatedInstances", testSeries.size(), response.getInt(Tag.NumberOfStudyRelatedInstances));
+
+    // Find the image on the filesystem and ensure the IssuerOfPatientID exists
+    // and is correct
+    List<String> filePaths = template.queryForList("select FilePath from INSTANCE, SERIES, STUDY where INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.PoolKey = ? ", new Object[] { pool.poolKey }, String.class);
+    File poolDirectory = poolManager.getContainer(pool.poolKey).getPoolDirectory();
+    String an = null;
+    for (String path : filePaths) {
+      File imageFile = new File(poolDirectory, path);
+      assertTrue("File exists", imageFile.exists());
+      DicomObject tags = TagLoader.loadTags(imageFile);
+      if (an == null) {
+        an = tags.getString(Tag.AccessionNumber);
+      }
+      assertEquals("Accession number", an, tags.getString(Tag.AccessionNumber));
+    }
+
   }
 
 }

@@ -122,6 +122,9 @@ dependencies {
     'org.freemarker:freemarker:2.3.20',
     'com.novaquark:metrics-influxdb:0.3.0',
     'org.influxdb:influxdb-java:1.1',
+
+    // Template library
+    'org.trimou:trimou-core:1.7.1.Final',
   )
 }
 
