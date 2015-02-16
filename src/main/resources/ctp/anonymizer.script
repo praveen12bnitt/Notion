@@ -50,7 +50,7 @@
  <p t="SITEID">{{.poolKey}}</p>
  <p t="SITENAME">{{.name}} / {{.applicationEntityTitle}}</p>
  <p t="TRIALNAME">Notion Pool: {{.name}}</p>
- <p t="UIDROOT">99.{{.poolKey}}</p>
+ <p t="UIDROOT">1.2.840.113713.17.{{.poolKey}}</p>
  <e en="T" t="00080005" n="SpecificCharacterSet">@keep()</e>
  <e en="F" t="00080008" n="ImageType"></e>
  <e en="T" t="00080014" n="InstanceCreatorUID">@hashuid(@UIDROOT,this)</e>
