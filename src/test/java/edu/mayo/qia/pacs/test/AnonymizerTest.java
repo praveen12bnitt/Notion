@@ -260,4 +260,35 @@ public class AnonymizerTest extends PACSTest {
 
   }
 
+  @Test
+  public void customUUID() throws Exception {
+
+    UUID uid = UUID.randomUUID();
+    String aet = uid.toString().substring(0, 10);
+    Pool pool = new Pool(aet, aet, aet, true);
+    pool = createPool(pool);
+    Device device = new Device(".*", ".*", 1234, pool);
+    device = createDevice(device);
+
+    List<File> testSeries = sendDICOM(aet, aet, "CTE/*.dcm");
+
+    DcmQR dcmQR = new DcmQR();
+    dcmQR.setRemoteHost("localhost");
+    dcmQR.setRemotePort(DICOMPort);
+    dcmQR.setCalledAET(aet);
+    dcmQR.setCalling(aet);
+    dcmQR.open();
+
+    DicomObject response = dcmQR.query();
+    dcmQR.close();
+
+    logger.info("Got response: " + response);
+    assertTrue("Response was null", response != null);
+    // Expected value is the UID prefix (1.2.840.113713.17.) + the pool key +
+    // the MD5 hash of the original StudyInstanceUID
+    String expectedStudyInstanceUID = "1.2.840.113713.17." + pool.poolKey + ".14967650384527130252360958094476363837";
+    assertEquals("Anonymized StudyInstanceUID", expectedStudyInstanceUID, response.getString(Tag.StudyInstanceUID));
+
+  }
+
 }
