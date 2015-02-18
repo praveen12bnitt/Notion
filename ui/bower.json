@@ -15,18 +15,19 @@
   ],
   "dependencies": {
     "bootstrap": "3.1.1",
-    "ace-builds": "~1.1.1",
-    "chosen": "~1.1.0",
-    "backbone": "~1.1.2",
-    "angular": "~1.2.14",
-    "angular-route": "~1.2.14",
-    "angular-ui-router": "~0.2.13",
-    "angular-ui-bootstrap": "~0.10.0",
-    "angular-ui-bootstrap-bower": "~0.10.0",
-    "angular-ui-ace": "~0.1.0",
-    "font-awesome": "~4.0.3",
-    "w11k-select": "~0.4.4",
-    "notifyjs": "~0.3.2",
-    "toastr": "~2.0.3"
+    "ace-builds": "1.1.8",
+    "chosen": "1.1.0",
+    "backbone": "1.1.2",
+    "angular": "1.2.x",
+    "angular-route": "1.2.9",
+    "angular-ui-router": "0.2.13",
+    "angular-ui-bootstrap": "0.10.0",
+    "angular-ui-bootstrap-bower": "0.10.0",
+    "angular-ui-ace": "0.2.3",
+    "font-awesome": "4.0.3",
+    "w11k-select": "0.4.6",
+    "notifyjs": "0.3.2",
+    "toastr": "2.0.3",
+    "freeboard": "Freeboard/freeboard#~1.1.0"
   }
 }

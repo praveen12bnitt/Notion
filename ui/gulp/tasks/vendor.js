@@ -4,7 +4,7 @@ var gulp = require('gulp'),
 // Vended source
 gulp.task('vendor', function() {
   gulp.src([
-    'bower_components/jquery/jquery.js',
+    'bower_components/jquery/dist/jquery.js',
     'bower_components/toastr/toastr.js',
     'bower_components/angular-ui-ace/ui-ace.js',
     'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
@@ -37,5 +37,12 @@ gulp.task('vendor', function() {
   .pipe(gulp.dest('public/css'));
 
   gulp.src('bower_components/font-awesome/fonts/**').pipe(gulp.dest('public/fonts'));
+
+
+  gulp.src(['bower_components/freeboard/js/**']).pipe(gulp.dest('public/dashboard/js/'));
+  gulp.src(['bower_components/freeboard/css/**']).pipe(gulp.dest('public/dashboard/css/'));
+  gulp.src(['bower_components/freeboard/img/**']).pipe(gulp.dest('public/dashboard/img/'));
+gulp.src(['bower_components/freeboard/plugins/**']).pipe(gulp.dest('public/dashboard/plugins/'));
+
 
 });

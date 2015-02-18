@@ -18,6 +18,8 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Entity
 @Table
@@ -70,4 +72,37 @@ public class Study {
     StudyDescription = tags.getString(Tag.StudyDescription);
   }
 
+  @Override
+  public String toString() {
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("StudyInstanceUID=" + StudyInstanceUID);
+    buffer.append(" AccessionNumber=" + AccessionNumber);
+    buffer.append(" PatientID=" + PatientID);
+    buffer.append(" PatientName=" + PatientName);
+    buffer.append(" PatientBirthDate=" + PatientBirthDate);
+    buffer.append(" PatientSex=" + PatientSex);
+    buffer.append(" StudyID=" + StudyID);
+    buffer.append(" StudyDate=" + StudyDate);
+    buffer.append(" StudyTime=" + StudyTime);
+
+    buffer.append(" ReferringPhysicianName=" + ReferringPhysicianName);
+    buffer.append(" StudyDescription=" + StudyDescription);
+    return buffer.toString();
+  }
+
+  public ObjectNode toJson() {
+    ObjectNode node = new ObjectMapper().createObjectNode();
+    node.put("StudyInstanceUID", StudyInstanceUID);
+    node.put("AccessionNumber", AccessionNumber);
+    node.put("PatientID", PatientID);
+    node.put("PatientName", PatientName);
+    node.put("PatientBirthDate", PatientBirthDate == null ? "" : PatientBirthDate.toString());
+    node.put("PatientSex", PatientSex);
+    node.put("StudyID", StudyID);
+    node.put("StudyDate", StudyDate == null ? "" : StudyDate.toString());
+    node.put("StudyTime", StudyTime == null ? "" : StudyTime.toString());
+    node.put("ReferringPhysicianName", ReferringPhysicianName == null ? "" : ReferringPhysicianName.toString());
+    node.put("StudyDescription", StudyDescription.toString());
+    return node;
+  }
 }

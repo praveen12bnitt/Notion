@@ -1,0 +1,327 @@
+{
+  "version": 1,
+  "allow_edit": true,
+  "plugins": [],
+  "panes": [
+    {
+      "title": "Pending moves",
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 1
+      },
+      "col": {
+        "3": 1,
+        "4": 1
+      },
+      "col_width": 5,
+      "widgets": [
+        {
+          "type": "googlePlotWidget",
+          "settings": {
+            "chartType": "column",
+            "data": "var data;\n\ntry {\n    \ndata = new google.visualization.DataTable();\n    data.addColumn('string', \"Server Name\");\n    data.addColumn(\"number\", 'Pending Image Moves');\n\ndatasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n  data.addRow ( [ item, datasources[\"Metrics\"][\"counters\"][\"Pool.\" + item + \".move.count\"][\"count\"]]);\n});\n    \n} catch (e) {\n    console.log(\"error\", e);\n}\n\nreturn data;",
+            "options": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\nvar options = {\n    chart: {\n        title: 'Servers'\n    },\n    vAxis: {\n        minValue: 0\n    },\n    legend: {\n        position: 'in'\n    }\n};\n\nreturn options;",
+            "height": 5
+          }
+        },
+        {
+          "type": "googlePlotWidget",
+          "settings": {
+            "chartType": "column",
+            "data": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\nvar data;\n\ntry {\n    \n    // Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\n// Create an array of all the pools move count\nvar data = [];\n    \ndata = new google.visualization.DataTable();\n    data.addColumn('string', \"Server Name\");\n    data.addColumn(\"number\", 'Process Rate');\n\ndatasources[\"Metrics\"][\"pools\"].forEach ( function(item) {\n\tdata.addRow ( [ item, datasources[\"Metrics\"][\"gauges\"][\"Pool.\" + item + \".process.rate\"][\"value\"]]);\n});\n    \n} catch (e) {\n    console.log(\"error\", e);\n}\n\nreturn data;",
+            "options": "// Example: Convert temp from C to F and truncate to 2 decimal places.\n// return (datasources[\"MyDatasource\"].sensor.tempInF * 1.8 + 32).toFixed(2);\n\nvar options = {\n    chart: {\n        title: 'Servers'\n    },\n    vAxis: {\n        minValue: 0\n    },\n    legend: {\n        position: 'in'\n    }\n};\n\nreturn options;",
+            "height": 5
+          }
+        }
+      ]
+    },
+    {
+      "title": "DICOM Sender",
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 23,
+        "5": 13,
+        "7": 13,
+        "8": 13
+      },
+      "col": {
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "7": 2,
+        "8": 2
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Sent",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)",
+            "units": "images/sec",
+            "min_value": 0,
+            "max_value": "300"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Queued",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.send.queue\"][\"count\"]",
+            "sparkline": true,
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Sent (mean rate)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.sent\"][\"mean_rate\"].toFixed(2)",
+            "sparkline": true,
+            "animate": true,
+            "units": "images/second"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Sent",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.sent.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Send",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.sent.rate\"][\"value\"].toFixed(2)"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Associations",
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 23,
+        "5": 13,
+        "7": 13,
+        "8": 13,
+        "9": 13
+      },
+      "col": {
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "7": 3,
+        "8": 3,
+        "9": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Associations",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.associations.active\"][\"value\"]",
+            "min_value": 0,
+            "max_value": "20"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Associations",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.associations.total\"][\"count\"]",
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "width": 1,
+      "row": {
+        "3": 1,
+        "4": 23,
+        "5": 13,
+        "7": 13,
+        "8": 13,
+        "9": 13
+      },
+      "col": {
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pending Moves",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"Pool.move.count\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Global",
+      "width": 1,
+      "row": {
+        "3": 11,
+        "4": 23,
+        "5": 23,
+        "7": 23,
+        "8": 23,
+        "9": 23
+      },
+      "col": {
+        "3": 3,
+        "4": 4,
+        "5": 3,
+        "7": 3,
+        "8": 3,
+        "9": 3
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Pools",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.pool\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Studies",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.study\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Series",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.series\"][\"value\"]",
+            "animate": true
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DB.table.instance\"][\"value\"]",
+            "animate": true
+          }
+        }
+      ]
+    },
+    {
+      "title": "DICOM Receiver",
+      "width": 1,
+      "row": {
+        "3": 5,
+        "4": 27,
+        "5": 17,
+        "7": 17,
+        "8": 17,
+        "9": 17
+      },
+      "col": {
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "col_width": 1,
+      "widgets": [
+        {
+          "type": "gauge",
+          "settings": {
+            "title": "Recieving",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]",
+            "units": "images/second",
+            "min_value": 0,
+            "max_value": 100
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Images Recieved (1 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"oneMinuteRate\"].toFixed(2)",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Image Recieved (5 minute)",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"meters\"][\"DICOM.image.received\"][\"fiveMinuteRate\"].toFixed(2)\n",
+            "sparkline": false,
+            "animate": true,
+            "units": "images/sec"
+          }
+        },
+        {
+          "type": "text_widget",
+          "settings": {
+            "title": "Total Received",
+            "size": "regular",
+            "value": "datasources[\"Metrics\"][\"counters\"][\"DICOM.image.received.total\"][\"count\"]",
+            "animate": true,
+            "units": "images"
+          }
+        },
+        {
+          "type": "sparkline",
+          "settings": {
+            "title": "Trend",
+            "value": "datasources[\"Metrics\"][\"gauges\"][\"DICOM.image.received.rate\"][\"value\"]"
+          }
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "Metrics",
+      "type": "JSON",
+      "settings": {
+        "url": "/rest/metrics",
+        "use_thingproxy": true,
+        "refresh": 10,
+        "method": "GET"
+      }
+    }
+  ],
+  "columns": 4
+}

@@ -118,7 +118,7 @@ public class DicomStorageSCP extends DcmServiceBase {
     recentTimes = new LinkedList<Long>();
 
     // Set up a thread pool with 4 concurrent threads.
-    execSvc = Executors.newFixedThreadPool(4);
+    execSvc = Executors.newCachedThreadPool();
 
     initServer(dicomImportService.getPort());
     initPolicy();

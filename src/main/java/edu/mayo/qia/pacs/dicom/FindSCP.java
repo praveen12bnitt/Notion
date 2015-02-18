@@ -68,6 +68,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import edu.mayo.qia.pacs.Audit;
+import edu.mayo.qia.pacs.Notion;
+import edu.mayo.qia.pacs.components.Pool;
+import edu.mayo.qia.pacs.components.PoolManager;
+import edu.mayo.qia.pacs.ctp.Anonymizer;
 import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 
 @Component
@@ -79,7 +88,10 @@ public class FindSCP extends DicomService implements CFindSCP {
   JdbcTemplate template;
 
   @Autowired
-  DICOMReceiver dicomReceiver;
+  PoolManager poolManager;
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   public FindSCP() {
     super(PresentationContexts);
@@ -94,12 +106,18 @@ public class FindSCP extends DicomService implements CFindSCP {
 
   @Override
   public void cfind(final Association as, final int pcid, DicomObject rq, final DicomObject data) throws DicomServiceException, IOException {
-
+    DICOMReceiver dicomReceiver = Notion.context.getBean("dicomReceiver", DICOMReceiver.class);
     AssociationInfo info = dicomReceiver.getAssociationMap().get(as);
+
+    final String remoteDevice = as.getCallingAET() + "@" + as.getSocket().getInetAddress().getHostName();
+
     if (info == null) {
       throw new DicomServiceException(rq, Status.ProcessingFailure, "Invalid or unknown association");
     }
+    Pool pool = poolManager.getContainer(info.poolKey).getPool();
+
     if (!info.canConnect) {
+      Audit.log(remoteDevice, "association_rejected", "C-FIND to " + pool);
       throw new DicomServiceException(rq, Status.ProcessingFailure, info.failureMessage);
     }
 
@@ -141,7 +159,7 @@ public class FindSCP extends DicomService implements CFindSCP {
         tagColumn.put(Tag.SeriesDate, "SeriesDate");
         tagColumn.put(Tag.SeriesTime, "SeriesTime");
 
-        query.append(" STUDY.StudyDate as SeriesDate, STUDY.StudyTime as SeriesTime from SERIES, STUDY where STUDY.StudyInstanceUID = ? and STUDY.StudyKey = SERIES.StudyKey");
+        query.append(" STUDY.StudyDate as SeriesDate, STUDY.StudyTime as SeriesTime, from SERIES, STUDY where STUDY.StudyInstanceUID = ? and STUDY.StudyKey = SERIES.StudyKey");
         logger.info("SERIES Query: " + query);
         logger.info("StudyUID: " + uid);
         template.query(query.toString(), new Object[] { uid }, new RowCallbackHandler() {
@@ -149,13 +167,19 @@ public class FindSCP extends DicomService implements CFindSCP {
           @Override
           public void processRow(ResultSet rs) throws SQLException {
             logger.info("Found SERIES: " + rs.getString("SeriesInstanceUID"));
+
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("RemoteDevice", remoteDevice);
+            node.put("RetrieveAETitle", retrieveAETitle);
             DicomObject response = new BasicDicomObject();
 
             // Always send the Query/Retrieve level C.4.1.1.3.2
             response.putString(Tag.QueryRetrieveLevel, VR.CS, retrieveLevel);
+            node.put(Anonymizer.fieldMap.get(Tag.QueryRetrieveLevel), retrieveLevel);
 
             // RetrieveAETitle is also required C.4.1.1.3.2
             response.putString(Tag.RetrieveAETitle, VR.AE, retrieveAETitle);
+            node.put(Anonymizer.fieldMap.get(Tag.RetrieveAETitle), retrieveAETitle);
 
             // Just return what was asked for, if we have it
             Iterator<DicomElement> iterator = data.datasetIterator();
@@ -168,11 +192,14 @@ public class FindSCP extends DicomService implements CFindSCP {
                 int columnType = rs.getMetaData().getColumnType(columnNumber);
                 if (columnType == Types.VARCHAR || columnType == Types.INTEGER) {
                   response.putString(element.tag(), element.vr(), rs.getString(columnNumber));
+                  node.put(Anonymizer.fieldMap.get(element.tag()), rs.getString(columnNumber));
                 }
                 if (columnType == Types.DATE) {
                   response.putDate(element.tag(), element.vr(), rs.getDate(columnNumber));
+                  node.put(Anonymizer.fieldMap.get(element.tag()), rs.getDate(columnNumber).toString());
                 } else if (columnType == Types.TIME) {
                   response.putDate(element.tag(), element.vr(), rs.getTime(columnNumber));
+                  node.put(Anonymizer.fieldMap.get(element.tag()), rs.getTime(columnNumber).toString());
                 }
               } else {
                 logger.error("No match for " + element);
@@ -185,9 +212,8 @@ public class FindSCP extends DicomService implements CFindSCP {
             if (data.containsValue(Tag.SpecificCharacterSet)) {
               response.putString(Tag.SpecificCharacterSet, VR.CS, data.getString(Tag.SpecificCharacterSet));
             }
-            // data.containsValue(Tag.);
-            // response.putString(data.get)
 
+            Audit.log(remoteDevice, "find_success", node);
             try {
               logger.info("Sending \n" + response);
               as.writeDimseRSP(pcid, pending, response);
@@ -263,11 +289,15 @@ public class FindSCP extends DicomService implements CFindSCP {
       try {
         logger.info("Ready to run qeury " + query);
         logger.info("Arguments: " + args);
+
         template.query(query.toString(), args.toArray(), new RowCallbackHandler() {
 
           @Override
           public void processRow(ResultSet rs) throws SQLException {
             DicomObject response = new BasicDicomObject();
+            final ObjectNode node = objectMapper.createObjectNode();
+            node.put("RemoteDevice", remoteDevice);
+            node.put("RetrieveAETitle", retrieveAETitle);
 
             // Just return what was asked for, if we have it
             Iterator<DicomElement> iterator = data.datasetIterator();
@@ -295,15 +325,23 @@ public class FindSCP extends DicomService implements CFindSCP {
             if (data.contains(Tag.ModalitiesInStudy)) {
               List<String> modalityList = template.queryForList("select distinct ( Modality ) from SERIES where StudyKey = ?", new Object[] { rs.getInt("StudyKey") }, String.class);
               response.putStrings(Tag.ModalitiesInStudy, VR.CS, modalityList.toArray(new String[] {}));
+              ArrayNode a = node.withArray(Anonymizer.fieldMap.get(Tag.ModalitiesInStudy));
+              for (String v : modalityList) {
+                a.add(v);
+              }
             }
             if (data.containsValue(Tag.StudyInstanceUID)) {
               response.putString(Tag.StudyInstanceUID, VR.UI, data.getString(Tag.StudyInstanceUID));
+              node.put(Anonymizer.fieldMap.get(Tag.StudyInstanceUID), data.getString(Tag.StudyInstanceUID));
             }
             // Always send the Query/Retrieve level C.4.1.1.3.2
             response.putString(Tag.QueryRetrieveLevel, VR.CS, retrieveLevel);
+            node.put(Anonymizer.fieldMap.get(Tag.QueryRetrieveLevel), retrieveLevel);
 
             // RetrieveAETitle is also required C.4.1.1.3.2
             response.putString(Tag.RetrieveAETitle, VR.AE, retrieveAETitle);
+            node.put(Anonymizer.fieldMap.get(Tag.RetrieveAETitle), retrieveAETitle);
+            Audit.log(remoteDevice, "find_success", node);
             try {
               logger.info("Sending \n" + response);
               as.writeDimseRSP(pcid, pending, response);
@@ -322,5 +360,4 @@ public class FindSCP extends DicomService implements CFindSCP {
     // All done
     as.writeDimseRSP(pcid, CommandUtils.mkRSP(rq, CommandUtils.SUCCESS), null);
   }
-
 }

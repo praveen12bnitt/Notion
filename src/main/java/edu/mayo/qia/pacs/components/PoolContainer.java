@@ -3,15 +3,18 @@ package edu.mayo.qia.pacs.components;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -37,16 +40,28 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+import org.trimou.Mustache;
+import org.trimou.engine.MustacheEngine;
+import org.trimou.engine.MustacheEngineBuilder;
+import org.trimou.engine.locator.ClassPathTemplateLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.codahale.metrics.CachedGauge;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Files;
 
+import edu.mayo.qia.pacs.Audit;
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
 import edu.mayo.qia.pacs.ctp.Anonymizer;
-import edu.mayo.qia.pacs.dicom.DICOMReceiver.AssociationInfo;
 import edu.mayo.qia.pacs.dicom.TagLoader;
+import edu.mayo.qia.pacs.metric.RateGauge;
 
 /**
  * Manage a particular pool.
@@ -58,6 +73,17 @@ import edu.mayo.qia.pacs.dicom.TagLoader;
 @Scope("prototype")
 public class PoolContainer {
   static Logger logger = Logger.getLogger(PoolContainer.class);
+  static Timer moveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", "move", "timer"));
+  static Counter moveCounter = Notion.metrics.counter("Pool.move.count");
+  static Timer processTimer = Notion.metrics.timer("Pool.process.timer");
+  RateGauge imagesProcessedPerSecond = new RateGauge();
+  RateGauge imagesMovedPerSecond = new RateGauge();
+
+  // Pool versions
+  Timer poolMoveTimer;
+  Counter poolMoveCounter;
+  Timer poolProcessTimer;
+  Meter poolReceiveMeter;
 
   public static final int[] SortedFilename = { Tags.AccessionNumber, Tags.StudyInstanceUID, Tags.SeriesInstanceUID, Tags.SOPInstanceUID };
 
@@ -81,12 +107,15 @@ public class PoolContainer {
   @Autowired
   NotionConfiguration configuration;
 
+  @Autowired
+  ObjectMapper objectMapper;
+
   private String sequenceName;
 
   public PoolContainer() {
   }
 
-  public void start(Pool pool) {
+  public void start(final Pool pool) {
     this.pool = pool;
     if (this.pool.poolKey <= 0) {
       throw new RuntimeException("PoolKey must be set!");
@@ -126,6 +155,29 @@ public class PoolContainer {
     scriptsDirectory.mkdirs();
     // Would start CTP here as well
     configureCTP();
+
+    // Pool-specific metrics
+    poolMoveTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "timer"));
+    poolMoveCounter = Notion.metrics.counter(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "count"));
+    poolProcessTimer = Notion.metrics.timer(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "timer"));
+    poolReceiveMeter = Notion.metrics.meter(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "meter"));
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, "process", "rate"), imagesProcessedPerSecond);
+    Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, "move", "rate"), imagesMovedPerSecond);
+
+    final Map<String, String> queryMap = new HashMap<String, String>();
+    queryMap.put("instances", "select count(*) from INSTANCE, SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and SERIES.SeriesKey = INSTANCE.SeriesKey and STUDY.PoolKey = ?");
+    queryMap.put("series", "select count(*) from SERIES, STUDY where STUDY.StudyKey = SERIES.StudyKey and STUDY.PoolKey = ?");
+    queryMap.put("studies", "select count(*) from STUDY where STUDY.PoolKey = ?");
+
+    for (final String table : queryMap.keySet()) {
+      Notion.metrics.register(MetricRegistry.name("Pool", pool.applicationEntityTitle, table.toLowerCase()), new CachedGauge<Long>(5, TimeUnit.MINUTES) {
+        @Override
+        protected Long loadValue() {
+          return template.queryForObject(queryMap.get(table), Long.class, pool.poolKey);
+        }
+      });
+    }
+
   }
 
   public FileObject executePipeline(FileObject fileObject) throws Exception {
@@ -162,11 +214,21 @@ public class PoolContainer {
     element.setAttribute("root", new File(poolDirectory, "anonymizer").getAbsolutePath());
     File script = new File(scriptsDirectory, "anonymizer.script");
 
-    ClassPathResource resource = new ClassPathResource("ctp/anonymizer.script");
-    try {
-      IOUtils.copy(resource.getInputStream(), new FileOutputStream(script));
-    } catch (Exception e) {
-      logger.error("Error copying the anonymizer script", e);
+    // Create the script
+    if (!script.exists()) {
+      try {
+        ClassPathTemplateLocator locator = new ClassPathTemplateLocator(1, "ctp/", "script");
+        MustacheEngine engine = MustacheEngineBuilder.newBuilder().addTemplateLocator(locator).build();
+        Mustache mustache = engine.getMustache("anonymizer");
+        try (FileWriter out = new FileWriter(script);) {
+          mustache.render(out, pool);
+        }
+
+        // IOUtils.copy(resource.getInputStream(), new
+        // FileOutputStream(script));
+      } catch (Exception e) {
+        logger.error("Error copying the anonymizer script", e);
+      }
     }
     element.setAttribute("script", script.getAbsolutePath());
     ctpAnonymizer = new DicomAnonymizer(element);
@@ -257,7 +319,14 @@ public class PoolContainer {
   }
 
   public void process(File incoming, MoveStatus status) throws Exception, IOException {
+    process(incoming, status, new ProcessCache());
+  }
+
+  public void process(File incoming, MoveStatus status, ProcessCache cache) throws Exception {
     synchronized (this) {
+      poolReceiveMeter.mark();
+      Timer.Context poolContext = poolProcessTimer.time();
+      Timer.Context context = processTimer.time();
       // Handle one per container
       // Have the container process!
       DicomObject originalTags = TagLoader.loadTags(incoming);
@@ -291,37 +360,53 @@ public class PoolContainer {
 
       try {
 
+        // Assume that if the cache has a study, we can just use it. OTW query
+        // and update.
         Query query;
-        query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
-        query.setInteger("poolkey", pool.poolKey);
-        query.setString("suid", tags.getString(Tag.StudyInstanceUID));
-        Study study = (Study) query.uniqueResult();
-        if (study == null) {
-          study = new Study(tags);
-          study.pool = pool;
-        } else {
-          logger.error("Is Study dirty?: " + session.isDirty());
-          study.update(tags);
-          logger.error("Is Study dirty now?: " + session.isDirty());
-        }
-        session.saveOrUpdate(study);
-        session.getTransaction().commit();
-        session.beginTransaction();
 
-        // Find the Series
-        query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
-        query.setInteger("studykey", study.StudyKey);
-        query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
-        Series series = (Series) query.uniqueResult();
-        if (series == null) {
-          series = new Series(tags);
-          series.study = study;
-        } else {
-          series.update(tags);
+        Study study = cache.studies.get(tags.getString(Tag.StudyInstanceUID));
+        if (study == null) {
+
+          query = session.createQuery("from Study where PoolKey = :poolkey and StudyInstanceUID = :suid");
+          query.setInteger("poolkey", pool.poolKey);
+          query.setString("suid", tags.getString(Tag.StudyInstanceUID));
+          study = (Study) query.uniqueResult();
+
+          if (study == null) {
+            study = new Study(tags);
+            study.pool = pool;
+            // Log when we get a new study
+            Audit.log(pool.toString(), "create_study", tags);
+          } else {
+            study.update(tags);
+            Audit.log(pool.toString(), "update_study", tags);
+          }
+          session.saveOrUpdate(study);
+          cache.studies.put(tags.getString(Tag.StudyInstanceUID), study);
+          session.getTransaction().commit();
+          session.beginTransaction();
         }
-        session.saveOrUpdate(series);
-        session.getTransaction().commit();
-        session.beginTransaction();
+
+        Series series = cache.series.get(tags.getString(Tag.SeriesInstanceUID));
+        if (series == null) {
+          // Find the Series
+          query = session.createQuery("from Series where StudyKey = :studykey and SeriesInstanceUID = :suid");
+          query.setInteger("studykey", study.StudyKey);
+          query.setString("suid", tags.getString(Tag.SeriesInstanceUID));
+          series = (Series) query.uniqueResult();
+          if (series == null) {
+            series = new Series(tags);
+            series.study = study;
+            // Log when we get a new study
+            Audit.log(pool.toString(), "create_series", tags);
+          } else {
+            series.update(tags);
+          }
+          session.saveOrUpdate(series);
+          cache.series.put(tags.getString(Tag.SeriesInstanceUID), series);
+          session.getTransaction().commit();
+          session.beginTransaction();
+        }
 
         // Find the Instance
         query = session.createQuery("from Instance where SeriesKey = :serieskey and SOPInstanceUID = :suid").setInteger("serieskey", series.SeriesKey);
@@ -368,7 +453,10 @@ public class PoolContainer {
       } catch (Exception e) {
         logger.error("Caught exception", e);
       } finally {
+        poolContext.stop();
+        context.stop();
         session.close();
+        imagesProcessedPerSecond.mark();
       }
     }
   }
@@ -429,7 +517,11 @@ public class PoolContainer {
 
   public boolean moveStudyTo(String studyInstanceUID, final PoolContainer destination, final MoveStatus status) {
     final AtomicBoolean successful = new AtomicBoolean(true);
-    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES, POOL where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
+    long numberToMove = template.queryForObject("select count(INSTANCE.FilePath) from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?",
+        new Object[] { this.pool.poolKey, studyInstanceUID }, Long.class);
+    moveCounter.inc(numberToMove);
+    poolMoveCounter.inc(numberToMove);
+    template.query("select INSTANCE.FilePath from INSTANCE, STUDY, SERIES where STUDY.PoolKey = ? AND INSTANCE.SeriesKey = SERIES.SeriesKey and SERIES.StudyKey = STUDY.StudyKey and STUDY.StudyInstanceUID = ?", new Object[] { this.pool.poolKey,
         studyInstanceUID }, new RowCallbackHandler() {
 
       @Override
@@ -445,6 +537,9 @@ public class PoolContainer {
           successful.set(false);
           logger.error("Error processing file: " + f + " into pool " + pool, e);
         }
+        imagesMovedPerSecond.mark();
+        moveCounter.dec();
+        poolMoveCounter.dec();
       }
     });
     destination.processAnonymizationMap();
@@ -462,7 +557,7 @@ public class PoolContainer {
 
             @Override
             public void processRow(ResultSet rs) throws SQLException {
-              String opn, apn, opi, api, oan, aan, opbd, apdb;
+              String opn, apn, opi, api, oan, aan, opbd, apbd;
               opn = rs.getString(1);
               apn = rs.getString(2);
               opi = rs.getString(3);
@@ -470,29 +565,40 @@ public class PoolContainer {
               oan = rs.getString(5);
               aan = rs.getString(6);
               opbd = rs.getString(7);
-              apdb = rs.getString(8);
+              apbd = rs.getString(8);
+
+              ObjectNode node = objectMapper.createObjectNode();
+              node.put("OriginalPatientName", opn);
+              node.put("AnonymizedPatientName", apn);
+              node.put("OriginalPatientID", opi);
+              node.put("AnonymizedPatientID", api);
+              node.put("OriginalAccessionNumber", oan);
+              node.put("AnonymizedAccessionNumber", aan);
+              node.put("OriginalPatientBirthDate", opbd);
+              node.put("AnonymizedPatientBirthDate", apbd);
+              Audit.log(pool.toString(), "anonymization", node);
 
               int count = template
                   .queryForObject(
                       "select count(*) from ANONYMIZATIONMAP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb }, Integer.class);
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd }, Integer.class);
 
               if (count == 0) {
                 template
                     .update(
                         "insert into ANONYMIZATIONMAP ( PoolKey, OriginalPatientName, AnonymizedPatientName, OriginalPatientID, AnonymizedPatientID, OriginalAccessionNumber, AnonymizedAccessionNumber, OriginalPatientBirthDate, AnonymizedPatientBirthDate ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ? )",
-                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
               } else {
                 template
                     .update(
                         "update ANONYMIZATIONMAP set UpdatedTimestamp = current_timestamp where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                        new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
 
               }
               template
                   .update(
                       "delete from ANONYMIZATIONMAPTEMP where PoolKey = ? and OriginalPatientName = ? and AnonymizedPatientName = ? and OriginalPatientID = ? and AnonymizedPatientID = ? and OriginalAccessionNumber = ? and AnonymizedAccessionNumber = ? and OriginalPatientBirthDate = ? and AnonymizedPatientBirthDate = ?",
-                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apdb });
+                      new Object[] { pool.poolKey, opn, apn, opi, api, oan, aan, opbd, apbd });
 
             }
           });

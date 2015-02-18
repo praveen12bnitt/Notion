@@ -40,18 +40,47 @@
                       <table class="table table-striped table-hover table-condensed">
                         <thead>
                           <tr>
-                            <td>Fetch</td>
-                            <td>Patient Name</td>
-                            <td>Patient ID</td>
-                            <td>Accession Number</td>
-                            <td>Study Date</td>
-                            <td>Modality</td>
-                            <td>Description</td>
-                            <td>Status</td>
+                            <td ng-class="{ active: sortingBy('doFetch') }" ng-click="setOrderBy('doFetch')">
+                              Fetch
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('doFetch'), 'fa-sort-numeric-desc':sort.descending && sortingBy('doFetch')}" ></i>
+                            </td>
+                            <td ng-class="{ active: sortingBy('patientName') }" ng-click="setOrderBy('patientName')">
+                              Patient Name
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('patientName'), 'fa-sort-numeric-desc':sort.descending && sortingBy('patientName')}" ></i>
+                              </td>
+                            <td ng-class="{ active: sortingBy('patientID') }" ng-click="setOrderBy('patientID')">
+                              Patient ID
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('patientID'), 'fa-sort-numeric-desc':sort.descending && sortingBy('patientID')}" ></i>
+                            </td>
+                            <td ng-class="{ active: sortingBy('accessionNumber') }" ng-click="setOrderBy('accessionNumber')">
+                              Accession Number
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('accessionNumber'),
+                              'fa-sort-numeric-desc':sort.descending && sortingBy('accessionNumber')}" ></>
+                            </td>
+                            <td ng-class="{ active: sortingBy('studyDate') }" ng-click="setOrderBy('studyDate')">
+                              Study Date
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('studyDate'),
+                              'fa-sort-numeric-desc':sort.descending && sortingBy('studyDate')}" ></>
+                            </td>
+                            <td ng-class="{ active: sortingBy('modalitiesInStudy') }" ng-click="setOrderBy('modalitiesInStudy')">
+                              Modality
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('modalitiesInStudy'),
+                              'fa-sort-numeric-desc':sort.descending && sortingBy('modalitiesInStudy')}" ></>
+                            </td>
+                            <td ng-class="{ active: sortingBy('studyDescription') }" ng-click="setOrderBy('studyDescription')">
+                              Description
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('studyDescription'),
+                              'fa-sort-numeric-desc':sort.descending && sortingBy('studyDescription')}" ></>
+                            </td>
+                            <td ng-class="{ active: sortingBy('status') }" ng-click="setOrderBy('status')">
+                              Status
+                              <i ng-class="{'fa':true, 'fa-fw':true, 'fa-sort-numeric-asc':!sort.descending && sortingBy('status'),
+                              'fa-sort-numeric-desc':sort.descending && sortingBy('status')}" ></>
+                            </td>
                           </td>
                         </thead>
                         <tbody >
-                          <tr ng-repeat="result in item.items | orderBy:'status'" ng-class="{ 'success' : result.status.startsWith('success') || result.status.startsWith('completed'), 'warning' : result.status.contains('fail') }">
+                          <tr ng-repeat="result in item.items | orderBy:sort.column:sort.descending" ng-class="{ 'success' : result.status.startsWith('success') || result.status.startsWith('completed'), 'warning' : result.status.contains('fail') }">
                             <td><input type="checkbox" ng-checked="result.doFetch" ng-click="toggleFetch(result)"></td>
                             <td>{{result.patientName}}</td>
                             <td>{{result.patientID}}</td>

@@ -8,6 +8,10 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
   $scope.pools = $scope.$parent.poolCollection.toJSON();
   $scope.item = {};
   $scope.ordering = "PatientID";
+  $scope.sort = {
+    column: 'studyDate',
+    descending: false
+  };
 
   $scope.autodownload = false;
 
@@ -27,6 +31,8 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
     }
   });
 
+
+
   // modes are:
   // 'setup' - not fetching, configuring the query
   // 'query-pending' - letting the query run
@@ -45,7 +51,7 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
   var queryTick = function(){
     // Actually fetch only when mode is '*-pending'
     if ( $scope.query && $scope.mode.match('pending') ) {
-      console.log("queryTick")
+      // console.log("queryTick");
       $scope.query.fetch().done(function() {
         // console.log ("queryTick completed")
         if ($scope.query.get('status').match("query completed")) {
@@ -63,7 +69,7 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
     $timeout(queryTick, 2000);
   };
   $scope.reset = function() {
-    alert ( "fix reset");
+    $state.go ( "^.query", { queryKey: $scope.query.get('QueryKey')});
   };
 
   $scope.fetch = function(){
@@ -77,6 +83,8 @@ notionApp.controller ( 'QueryResultController', function($scope,$timeout,$stateP
         data: {},
         success: function(data){
           console.log("started ticker");
+          $scope.sort.column = 'status';
+          $scope.sort.descending = true;
           $scope.refresh();
         }
       });
@@ -92,7 +100,7 @@ $scope.download = function() {
   // Have the browser download the completed fetch
   var url = "/rest/pool/" + $scope.pool.get('poolKey') + "/query/" + $scope.query.get('queryKey') + "/zip";
   downloadFile ( url );
-}
+};
 
 
 $scope.doQuery = function() {
@@ -116,8 +124,8 @@ var successCallback = function(data) {
 $scope.selectAll = function() {
   $.each($scope.query.get('items'), function(index,value) {
     $scope.fetchAll(value);
-  })
-}
+  });
+};
 
 $scope.fetchAll = function(item){
   $.each(item.items, function(index,value){
@@ -128,6 +136,20 @@ $scope.fetchAll = function(item){
 $scope.toggleFetch = function(item) {
   item.doFetch = !item.doFetch;
 };
+
+$scope.getOrdering = function() {
+  return $scope.sort.column;
+};
+$scope.setOrderBy = function(o) {
+  if ( o === $scope.sort.column ) {
+    $scope.sort.descending = !$scope.sort.descending;
+  }
+  $scope.sort.column = o;
+};
+$scope.sortingBy = function(o) {
+  return $scope.sort.column == o;
+};
+
 
 
 });
