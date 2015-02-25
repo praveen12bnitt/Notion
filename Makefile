@@ -17,8 +17,8 @@ Makefile for Notion
 endef
 export help
 
-show-help:
-		@echo "$$help"
+help:
+	@echo "$$help"
 
 dist: build
 	./gradlew jar
