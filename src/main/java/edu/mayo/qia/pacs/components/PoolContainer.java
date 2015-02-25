@@ -217,9 +217,12 @@ public class PoolContainer {
     // Create the script
     if (!script.exists()) {
       try {
-        ClassPathTemplateLocator locator = new ClassPathTemplateLocator(1, "ctp/", "script");
-        MustacheEngine engine = MustacheEngineBuilder.newBuilder().addTemplateLocator(locator).build();
-        Mustache mustache = engine.getMustache("anonymizer");
+        // Read the template from resources and run
+        ClassPathResource resource = new ClassPathResource("ctp/anonymizer.script");
+        String template = IOUtils.toString(resource.getInputStream());
+
+        MustacheEngine engine = MustacheEngineBuilder.newBuilder().build();
+        Mustache mustache = engine.compileMustache("anonymizer", template);
         try (FileWriter out = new FileWriter(script);) {
           mustache.render(out, pool);
         }
@@ -353,8 +356,10 @@ public class PoolContainer {
       outFile.getParentFile().mkdirs();
 
       // Start a transaction
-      /* to debug: select * from syscs_diag.lock_table; select * from
-       * syscs_diag.transaction_table; */
+      /*
+       * to debug: select * from syscs_diag.lock_table; select * from
+       * syscs_diag.transaction_table;
+       */
       Session session = sessionFactory.openSession();
       session.beginTransaction();
 
