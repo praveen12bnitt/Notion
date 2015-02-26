@@ -24,6 +24,7 @@
   head.js("js/freeboard+plugins.min.js",
   "js/jqplot.js",
   "js/googleChart.js",
+  "js/mustache.min.js",
   // *** Load more plugins here ***
   function(){
     $(function()
@@ -48,10 +49,10 @@
         if ( vars["pool"] ) {
           console.log("Loading " + vars["pool"] + " -- Pool Dashboard ");
           document.title = vars['pool'] + " -- Notion dashboard";
-          $.ajax({url:"pool.json"}).done(function(data) {
-            // console.log("Got data: ", data);
-            var string = data.replace ( /XX/g, vars['pool'] );
-            console.log(string);
+          $.ajax({url:"pool.json", dataType:'text'}).done(function(data) {
+            console.log("Got data: ", data);
+            // Render using Mustache...
+            var string = Mustache.render( data, {'pool': vars['pool']} );
             freeboard.loadDashboard(JSON.parse(string));
           });
         } else {
