@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.representation.Form;
@@ -58,13 +59,18 @@ public class PoolTest extends PACSTest {
     assertEquals("Got result", 200, response.getStatus());
     ObjectNode result = response.getEntity(ObjectNode.class);
     assertTrue(result.withArray("pool").size() > 0);
+
+    ArrayNode pools = result.withArray("pool");
+    assertTrue("Has port value", pools.get(0).has("port"));
   }
 
   @Test
   public void createPool() {
     // CURL Code
-    /* curl -X POST -H "Content-Type: application/json" -d
-     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool */
+    /*
+     * curl -X POST -H "Content-Type: application/json" -d
+     * '{"name":"foo","path":"bar"}' http://localhost:11118/pool
+     */
     ClientResponse response = null;
     URI uri = UriBuilder.fromUri(baseUri).path("/pool").build();
     Pool pool = new Pool("empty", "empty", "empty", false);
