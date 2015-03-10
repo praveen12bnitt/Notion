@@ -1,10 +1,24 @@
 
+define help
+
+Makefile for Notion/ui
+  watch	  - configure and run gulp watch
+  install - configure, build the ui and install in ../src/main/resources
+  config  - install node and bower components, then have gulp build vendor resources
+  docs	  - make Notion documentation
+  clean	  - delete the public directory
+endef
+export help
+
+help:
+	@echo "$$help"
+
 watch: config
 	gulp watch
 
+# Copy to resources directory, deleting any extra files
 install: config
 	gulp build
-	# Copy to resources directory, deleting any extra files
 	rsync -r --delete public ../src/main/resources/
 
 config: node_modules bower_components
