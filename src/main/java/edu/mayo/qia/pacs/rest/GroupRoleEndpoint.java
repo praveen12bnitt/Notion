@@ -1,8 +1,8 @@
 package edu.mayo.qia.pacs.rest;
 
-import java.util.List;
-
 import io.dropwizard.hibernate.UnitOfWork;
+
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.mayo.qia.pacs.components.GroupRole;
-import edu.mayo.qia.pacs.components.Pool;
 import edu.mayo.qia.pacs.db.GroupRoleDAO;
 
 @Component
@@ -63,8 +62,8 @@ public class GroupRoleEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response getGroups(@Auth Subject subject) {
+    subject.checkPermission("pool:admin:" + poolKey);
     Session session = sessionFactory.getCurrentSession();
     Criteria criteria = session.createCriteria(GroupRole.class).add(Restrictions.eq("poolKey", poolKey));
     @SuppressWarnings("unchecked")
@@ -76,8 +75,8 @@ public class GroupRoleEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response updateGroup(@Auth Subject subject, @PathParam("id") int id, GroupRole group) {
+    subject.checkPermission("pool:admin:" + poolKey);
     if (group.poolKey != poolKey) {
       return Response.serverError().entity("Group role is not defined in this pool").build();
     }
@@ -88,8 +87,8 @@ public class GroupRoleEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response getGroup(@Auth Subject subject, @PathParam("id") int id) {
+    subject.checkPermission("pool:admin:" + poolKey);
     GroupRole group = groupRoleDAO.get(id);
     if (group.poolKey != poolKey) {
       return Response.serverError().entity("Group role is not defined in this pool").build();
