@@ -1,4 +1,5 @@
 
+
 dbWeb: 8084
 
 # Database connection info
@@ -57,7 +58,7 @@ logging:
 
     org.hibernate.engine: ERROR
 
-    # Suppress hibernat statistics
+    # Suppress hibernate statistics
     org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: ERROR
 
     # Suppress Shiro info messages
