@@ -51,7 +51,6 @@ public class GroupEndpoint {
   @GET
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response getGroups(@Auth Subject subject) {
     return Response.ok(new SimpleResponse("group", groupDAO.findAll(Group.class))).build();
   }
@@ -60,7 +59,6 @@ public class GroupEndpoint {
   @Path("/{id: [1-9][0-9]*}")
   @UnitOfWork
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions({ "admin" })
   public Response updateGroup(@Auth Subject subject, @PathParam("id") int id, Group group) {
     CacheCleaner.clean();
     return Response.ok(groupDAO.update(group)).build();

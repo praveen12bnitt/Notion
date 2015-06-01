@@ -3,7 +3,6 @@ package edu.mayo.qia.pacs.rest;
 import io.dropwizard.hibernate.UnitOfWork;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -14,7 +13,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -34,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.core.ResourceContext;
 
 import edu.mayo.qia.pacs.components.Group;
 import edu.mayo.qia.pacs.components.GroupRole;
@@ -72,6 +69,9 @@ public class PoolEndpoint extends Endpoint {
   @Autowired
   GroupRoleDAO groupRoleDAO;
 
+  @Autowired
+  ObjectMapper objectMapper;
+
   /** List all the pools */
   @SuppressWarnings("unchecked")
   @GET
@@ -99,8 +99,12 @@ public class PoolEndpoint extends Endpoint {
       result = session.createSQLQuery(query).addEntity("p", Pool.class).setParameter("username", subject.getPrincipal().toString()).list();
     }
     // Test for permission
-    SimpleResponse s = new SimpleResponse("pool", result);
-    return Response.ok(s).build();
+    ObjectNode json = new ObjectMapper().createObjectNode();
+    ArrayNode pools = json.putArray("pool");
+    for (Pool p : result) {
+      pools.addPOJO(p);
+    }
+    return Response.ok(json).build();
   }
 
   /** Get a pool. */

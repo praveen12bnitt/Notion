@@ -111,8 +111,9 @@ public class NotionApplication extends Application<NotionConfiguration> {
   @Override
   public void run(NotionConfiguration configuration, Environment environment) throws Exception {
 
-    // Register Joda time
+    // Register Joda time, allows serialization/deserialization of times
     environment.getObjectMapper().registerModule(new JodaModule());
+    // Metrics have their own specialized serialization
     environment.getObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, true));
     environment.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

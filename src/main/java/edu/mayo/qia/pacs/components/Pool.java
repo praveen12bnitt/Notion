@@ -17,6 +17,8 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import edu.mayo.qia.pacs.Notion;
 import edu.mayo.qia.pacs.NotionConfiguration;
@@ -50,7 +52,6 @@ public final class Pool {
   // @JoinColumn(name = "PoolKey")
   public Script script;
 
-  @Transient
   public int getPort() {
     if (Notion.context != null) {
       return Notion.context.getBean("configuration", NotionConfiguration.class).notion.dicomPort;
@@ -59,7 +60,6 @@ public final class Pool {
     }
   };
 
-  @Transient
   public String getHost() {
     if (Notion.context != null) {
       return Notion.context.getBean("configuration", NotionConfiguration.class).notion.host;
@@ -85,7 +85,7 @@ public final class Pool {
   }
 
   public String toString() {
-    return this.name + "(" + poolKey + ") " + "description: " + description + " AETitle: " + applicationEntityTitle;
+    return this.name + "(" + poolKey + ") " + "description: " + description + " " + applicationEntityTitle + "@" + getHost() + ":" + getPort();
   }
 
   @JsonIgnore
