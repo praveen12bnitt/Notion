@@ -1,0 +1,272 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Concepts &mdash; Notion: a PACS for researchers 1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Notion: a PACS for researchers 1.0 documentation" href="../index.html"/>
+        <link rel="next" title="Development" href="../Development/development.html"/>
+        <link rel="prev" title="Use Cases" href="../GettingStarted/use_cases.html"/>
+<link rel="stylesheet" href="../_static/notion.css" />
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+ 
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> Notion: a PACS for researchers</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/installation.html#running-notion">Running Notion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/installation.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#create-a-user">Create a User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#create-a-pool">Create a Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#working-with-the-pool">Working with the pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#sending-images-to-the-pool">Sending images to the Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/getting_started.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/dicom.html">DICOM Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#device-setup">Device Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#store">Store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#retrieve">Retrieve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/dicom.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/anonymization.html">Anonymziation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#scripts">Scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/anonymization.html#anonymize-images">Anonymize Images</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/moving_images.html">Using Connectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/moving_images.html#configure-a-connector">Configure a Connector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/moving_images.html#performing-a-query">Performing a Query</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../GettingStarted/use_cases.html">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/use_cases.html#multi-researcher-multi-pool">Multi-Researcher / Multi-Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/use_cases.html#irb-pool">IRB Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GettingStarted/use_cases.html#research-pacs">Research PACS</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pool">Pool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#device">Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#anonymization">Anonymization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#connector">Connectors</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Development/development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Development/metrics.html">Metrics and Monitoring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#dicom">DICOM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#query-fetch">Query / Fetch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#id1">Gauges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#id2">Counters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#id3">Meters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development/metrics.html#id4">Timers</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#dicom-configuration">DICOM Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#authentication-and-authorization-configuration">Authentication and Authorization Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#users-and-groups">Users and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#dbweb-interface">DBWeb Interface</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Notion: a PACS for researchers</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Concepts</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="concepts">
+<span id="id1"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pool">
+<span id="pools"></span><span id="id2"></span><h2>Pool<a class="headerlink" href="#pool" title="Permalink to this headline">¶</a></h2>
+<p>A Pool is a collection of DICOM images, anonymization rules and Devices to manage access.</p>
+</div>
+<div class="section" id="device">
+<span id="devices"></span><span id="id3"></span><h2>Device<a class="headerlink" href="#device" title="Permalink to this headline">¶</a></h2>
+<p>A Device consists of a descriptive name, <a class="reference external" href="https://www.dabsoft.ch/dicom/8/C.1/">Application Entity Title</a> (which must be unique for the Pool, and is abbreviated AETitle), Hostname, Port and a freetext Description.  The AETitle is used to restrict access to images using DICOM protocols.  The AETitle and Hostname must match incoming DICOM connections to the Pool to allow access.  Both AETitle and Hostname are matched using Java&#8217;s regular expressions.  For instance <tt class="docutils literal"><span class="pre">.*</span></tt> matches any entry.</p>
+</div>
+<div class="section" id="anonymization">
+<span id="id4"></span><h2>Anonymization<a class="headerlink" href="#anonymization" title="Permalink to this headline">¶</a></h2>
+<p>Anonymization is handled in two stages.  Each incoming image is processed separately by the two stages.  First, an instance of the <a class="reference external" href="http://mircwiki.rsna.org/index.php?title=The_CTP_DICOM_Anonymizer">CTP DICOM anonymizer</a> processes images first according to its configuration file that is editable via the web app (see <a class="reference internal" href="../GettingStarted/anonymization.html#anonymizationintro"><em>Anonymziation</em></a> for details).  The second stage is a series of custom <a class="reference external" href="http://en.wikipedia.org/wiki/JavaScript">Javascript</a> commands that are run on specific tags.  The Javascript has access to a custom map called <tt class="docutils literal"><span class="pre">tags</span></tt> that contains the original tags of the incoming image.  Javascript also has access to an object (<tt class="docutils literal"><span class="pre">anonymization</span></tt>) containing several useful methods for anonymization.  The methods are:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">debug(text)</span> <span class="pre">/</span> <span class="pre">info(text)</span> <span class="pre">/</span> <span class="pre">warn(text)</span> <span class="pre">/</span> <span class="pre">error(text)</span></tt></dt>
+<dd>Print a debug / info / warn / error message to the log</dd>
+<dt><tt class="docutils literal"><span class="pre">hash(text,[length])</span></tt></dt>
+<dd>Return a string containing the first <tt class="docutils literal"><span class="pre">length</span></tt> digits of the MD5 hash of <tt class="docutils literal"><span class="pre">text</span></tt> (default length is all characters)</dd>
+<dt><tt class="docutils literal"><span class="pre">setValue(Type,Key,Value)</span></tt></dt>
+<dd>Store a <tt class="docutils literal"><span class="pre">Value</span></tt> for later <tt class="docutils literal"><span class="pre">lookup</span></tt>.  <tt class="docutils literal"><span class="pre">Value</span></tt> is indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> and <tt class="docutils literal"><span class="pre">Key</span></tt>.  The previous <tt class="docutils literal"><span class="pre">Value</span></tt> is overwritten by this method</dd>
+<dt><tt class="docutils literal"><span class="pre">lookup(Type,Key)</span></tt></dt>
+<dd>Lookup and return a value indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> and <tt class="docutils literal"><span class="pre">Key</span></tt>.  If the value does not exist, <tt class="docutils literal"><span class="pre">lookup</span></tt> returns null</dd>
+<dt><tt class="docutils literal"><span class="pre">sequenceNumber(Type,Key)</span></tt></dt>
+<dd>First lookup the sequence number indexed by <tt class="docutils literal"><span class="pre">Type</span></tt> and <tt class="docutils literal"><span class="pre">Value</span></tt>.  If it does not exist, generate a unique number by incrementing the <tt class="docutils literal"><span class="pre">Type</span></tt> sequence.  For instance the first time <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Jones')</span></tt> is called, the return value is the string <tt class="docutils literal"><span class="pre">'1'</span></tt>.  On the second call, <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Jones')</span></tt> also returns the string <tt class="docutils literal"><span class="pre">'1'</span></tt>, however <tt class="docutils literal"><span class="pre">anonymizer.sequenceNumber('PatientName',</span> <span class="pre">'Smith')</span></tt> returns the string <tt class="docutils literal"><span class="pre">'2'</span></tt>.  Sequence numbers are used to generate <tt class="docutils literal"><span class="pre">PatientName</span></tt> and <tt class="docutils literal"><span class="pre">PatientID</span></tt> tags if particular identifiers are not required.  <em>NB:</em> see the <a class="reference internal" href="#anonymization"><em>anonymizer reference</em></a> for details on prepopulating the lookup tables.</dd>
+<dt><tt class="docutils literal"><span class="pre">Exception(text)</span></tt></dt>
+<dd>Throw an exception, immediately stopping any further processing of this image.  Exceptions can be used to reject images that do not have proper lookup information.</dd>
+</dl>
+<p>The <a class="reference internal" href="../GettingStarted/anonymization.html#anonymizationintro"><em>anonymization tutorial</em></a> contains more details.</p>
+</div>
+<div class="section" id="connector">
+<span id="connectors"></span><span id="id5"></span><h2>Connectors<a class="headerlink" href="#connector" title="Permalink to this headline">¶</a></h2>
+<p>Notion supports the concept of Connectors, that is a specific Pool that is configured to query and receive DICOM images from a PACS system.  It is easier for PACS administrators to configure to send to a single Notion Pool, rather than configuring each individual Pool.  A Connector is a configuration involving several pools.</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/create_connector.png"><img alt="../_images/create_connector.png" src="../_images/create_connector.png" style="width: 512px;" /></a>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">Query</span> <span class="pre">Pool</span></tt> will be used to query the <tt class="docutils literal"><span class="pre">Query</span> <span class="pre">Device</span></tt> (often a hospital PACS).  <tt class="docutils literal"><span class="pre">Receiving</span> <span class="pre">Pool</span></tt> will be used for moving the images into Notion.  The PACS will be given a <tt class="docutils literal"><span class="pre">C-MOVE</span></tt> request to move images to the <tt class="docutils literal"><span class="pre">Receiving</span> <span class="pre">Pool</span></tt>.  Connectors can be used by any Pool in Notion, allowing researchers to query and retrieve images from remote PACS to their pool.  See <a class="reference internal" href="../GettingStarted/moving_images.html#usingconnectors"><em>Using Connectors</em></a> for more details.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Development/development.html" class="btn btn-neutral float-right" title="Development">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../GettingStarted/use_cases.html" class="btn btn-neutral" title="Use Cases"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, William Ryan, Patricio Fajnwaks, Daniel Blezek, Steve Langer, Brad Erickson.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
