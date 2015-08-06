@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.codahale.metrics.MetricRegistry;
@@ -25,7 +26,7 @@ public class Notion {
     }
   }
 
-  public static AnnotationConfigApplicationContext context;
+  public static ApplicationContext context;
   public static ExecutorService executor = Executors.newCachedThreadPool();
   public static String version = "2.3.4.0";
   public static Logger audit = Audit.logger;

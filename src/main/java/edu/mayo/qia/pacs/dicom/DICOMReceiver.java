@@ -138,14 +138,19 @@ public class DICOMReceiver implements AssociationListener, Managed {
       }
     }
     ae.setTransferCapability(tc.toArray(new TransferCapability[] {}));
-    ae.register(new VerificationService());
-    ae.register(storageSCP);
-    ae.register(findSCP);
-    ae.register(moveSCP);
-
+   
+    registerDicomServices();
+    
     ae.addAssociationListener(this);
 
     device.startListening(executor);
+  }
+  
+  protected void registerDicomServices() {
+	  ae.register(new VerificationService());
+	    ae.register(storageSCP);
+	    ae.register(findSCP);
+	    ae.register(moveSCP);
   }
 
   @Override
